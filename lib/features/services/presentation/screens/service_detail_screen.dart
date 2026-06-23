@@ -6,6 +6,7 @@ import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/main_scaffold.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../viewmodels/service_viewmodel.dart';
+import '../../../bookings/data/datasources/booking_remote_datasource.dart';
 
 class ServiceDetailScreen extends ConsumerStatefulWidget {
   final String serviceId;
@@ -74,7 +75,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppTheme.brandGreen.withOpacity(0.15),
+                  color: AppTheme.brandGreen.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text('${service.category.emoji} ${service.category.displayName}',
@@ -85,7 +86,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.warningOrange.withOpacity(0.15),
+                    color: AppTheme.warningOrange.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text('⭐ DESTACADO',
@@ -111,7 +112,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
                   border: Border.all(color: AppTheme.borderDark, width: 0.5),
                 ),
                 child: Text(service.serviceType.displayName,
-                    style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12)),
+                    style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12)),
               ),
             ]),
             const SizedBox(height: 20),
@@ -134,7 +135,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
                     RatingStars(rating: service.rating),
                     const SizedBox(width: 6),
                     Text('${service.totalReviews} reseñas',
-                        style: TextStyle(color: AppTheme.textHintDark, fontSize: 11)),
+                        style: const TextStyle(color: AppTheme.textHintDark, fontSize: 11)),
                   ]),
                 ])),
                 const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: AppTheme.textHintDark),
@@ -146,7 +147,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
                 style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Text(service.description,
-                style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 14, height: 1.6)),
+                style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 14, height: 1.6)),
 
             if (service.specialties.isNotEmpty) ...[
               const SizedBox(height: 20),
@@ -161,7 +162,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: AppTheme.borderDark, width: 0.5),
                     ),
-                    child: Text(s, style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12)),
+                    child: Text(s, style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12)),
                   )).toList()),
             ],
 
@@ -175,7 +176,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
                 child: Row(children: [
                   const Icon(Icons.check_circle_rounded, color: AppTheme.brandGreen, size: 16),
                   const SizedBox(width: 8),
-                  Text(item, style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
+                  Text(item, style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
                 ]),
               )),
             ],
@@ -188,9 +189,9 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
       bottomNavigationBar: user?.isClient == true
           ? Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppTheme.surfaceDark,
-                border: const Border(top: BorderSide(color: AppTheme.borderDark, width: 0.5)),
+                border: Border(top: BorderSide(color: AppTheme.borderDark, width: 0.5)),
               ),
               child: SafeArea(
                 child: ElevatedButton(
@@ -238,7 +239,7 @@ class _BookingSheet extends ConsumerStatefulWidget {
 
 class _BookingSheetState extends ConsumerState<_BookingSheet> {
   DateTime? _date;
-  String _time = '10:00';
+  final String _time = '10:00';
   final _addressCtrl = TextEditingController();
 
   @override
@@ -283,7 +284,7 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
                 icon: const Icon(Icons.close_rounded, color: AppTheme.textHintDark)),
           ]),
           const SizedBox(height: 20),
-          Text(widget.serviceName, style: TextStyle(color: AppTheme.textSecondaryDark)),
+          Text(widget.serviceName, style: const TextStyle(color: AppTheme.textSecondaryDark)),
           const SizedBox(height: 4),
           Text('\$${widget.totalPrice.toStringAsFixed(0)} MXN',
               style: const TextStyle(color: AppTheme.brandGreen, fontSize: 20, fontWeight: FontWeight.w800)),
@@ -317,7 +318,7 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: 'Dirección del servicio',
-              hintStyle: TextStyle(color: AppTheme.textHintDark),
+              hintStyle: const TextStyle(color: AppTheme.textHintDark),
               prefixIcon: const Icon(Icons.location_on_outlined, color: AppTheme.textSecondaryDark, size: 18),
               filled: true, fillColor: AppTheme.cardDark,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -342,5 +343,3 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
     );
   }
 }
-
-import '../../../bookings/data/datasources/booking_remote_datasource.dart';

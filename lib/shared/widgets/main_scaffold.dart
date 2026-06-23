@@ -125,7 +125,7 @@ class _NavItem extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppTheme.brandGreen.withOpacity(0.15)
+                    ? AppTheme.brandGreen.withValues(alpha: 0.15)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -182,13 +182,13 @@ class BookingStatusChip extends StatelessWidget {
 
   (Color, Color, String) _resolve(String status) {
     switch (status) {
-      case 'PENDIENTE':   return (AppTheme.warningOrange, AppTheme.warningOrange.withOpacity(0.15), 'Pendiente');
-      case 'CONFIRMADA':  return (AppTheme.brandGreen, AppTheme.brandGreen.withOpacity(0.15), 'Confirmada');
-      case 'EN_PROGRESO': return (AppTheme.infoBlue, AppTheme.infoBlue.withOpacity(0.15), 'En progreso');
-      case 'COMPLETADA':  return (AppTheme.brandGreen, AppTheme.brandGreen.withOpacity(0.15), 'Completada');
-      case 'CANCELADA':   return (AppTheme.alertRedLight, AppTheme.alertRedLight.withOpacity(0.15), 'Cancelada');
-      case 'RECHAZADA':   return (AppTheme.alertRedLight, AppTheme.alertRedLight.withOpacity(0.15), 'Rechazada');
-      default:            return (AppTheme.textHintDark, AppTheme.textHintDark.withOpacity(0.15), status);
+      case 'PENDIENTE':   return (AppTheme.warningOrange, AppTheme.warningOrange.withValues(alpha: 0.15), 'Pendiente');
+      case 'CONFIRMADA':  return (AppTheme.brandGreen, AppTheme.brandGreen.withValues(alpha: 0.15), 'Confirmada');
+      case 'EN_PROGRESO': return (AppTheme.infoBlue, AppTheme.infoBlue.withValues(alpha: 0.15), 'En progreso');
+      case 'COMPLETADA':  return (AppTheme.brandGreen, AppTheme.brandGreen.withValues(alpha: 0.15), 'Completada');
+      case 'CANCELADA':   return (AppTheme.alertRedLight, AppTheme.alertRedLight.withValues(alpha: 0.15), 'Cancelada');
+      case 'RECHAZADA':   return (AppTheme.alertRedLight, AppTheme.alertRedLight.withValues(alpha: 0.15), 'Rechazada');
+      default:            return (AppTheme.textHintDark, AppTheme.textHintDark.withValues(alpha: 0.15), status);
     }
   }
 }
@@ -260,7 +260,7 @@ class _LoadingOverlayState extends State<LoadingOverlay> {
                   key: ValueKey(_phraseIndex),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppTheme.brandGreenAccent.withOpacity(0.8),
+                    color: AppTheme.brandGreenAccent.withValues(alpha: 0.8),
                     fontSize: 13,
                   ),
                 ),

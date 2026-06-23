@@ -1,9 +1,7 @@
 // lib/features/payments/data/datasources/payment_remote_datasource.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:uuid/uuid.dart';
 import '../../../../app/config/supabase_config.dart';
-import '../../../../shared/dto/service_dto.dart';
 
 enum PaymentMethodType {
   efectivo, tarjetaCredito, tarjetaDebito,
@@ -160,8 +158,6 @@ class PaymentCardEntity {
 
 class PaymentRemoteDataSource {
   final SupabaseClient _client;
-  final _uuid = const Uuid();
-
   PaymentRemoteDataSource(this._client);
 
   Future<PaymentEntity> createPayment({
@@ -376,7 +372,7 @@ class PaymentViewModel extends StateNotifier<PaymentState> {
     bool isDefault = false,
   }) async {
     try {
-      final card = await _ds.addCard(
+      await _ds.addCard(
         userId: userId,
         cardNumber: cardNumber,
         cardHolderName: cardHolderName,

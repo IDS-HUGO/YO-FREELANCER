@@ -176,7 +176,7 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: sel ? AppTheme.brandGreen.withOpacity(0.15) : AppTheme.cardDark,
+                      color: sel ? AppTheme.brandGreen.withValues(alpha: 0.15) : AppTheme.cardDark,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: sel ? AppTheme.brandGreen : AppTheme.borderDark,
@@ -313,7 +313,7 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
 
   InputDecoration _deco(String hint, IconData icon) => InputDecoration(
     hintText: hint,
-    hintStyle: TextStyle(color: AppTheme.textHintDark),
+    hintStyle: const TextStyle(color: AppTheme.textHintDark),
     prefixIcon: Icon(icon, color: AppTheme.textSecondaryDark, size: 18),
     filled: true,
     fillColor: AppTheme.cardDark,

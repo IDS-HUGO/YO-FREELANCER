@@ -1,6 +1,8 @@
 // lib/features/auth/presentation/screens/splash_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../app/router/app_router.dart';
 import '../../../../shared/theme/app_theme.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -82,7 +84,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
+                  const Text(
                     'Tu trabajo habla por ti',
                     style: TextStyle(
                       color: AppTheme.textSecondaryDark,
@@ -90,12 +92,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     ),
                   ),
                   const SizedBox(height: 60),
-                  SizedBox(
+                  const SizedBox(
                     width: 24,
                     height: 24,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: const AlwaysStoppedAnimation(AppTheme.brandGreen),
+                      valueColor: AlwaysStoppedAnimation(AppTheme.brandGreen),
                     ),
                   ),
                 ],
@@ -191,7 +193,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
+              const Text(
                 'Conecta talento con oportunidades en México',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -249,7 +251,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     const SizedBox(height: 24),
                     GestureDetector(
                       onTap: () => context.go(AppRoutes.clientHome),
-                      child: Text(
+                      child: const Text(
                         'Explorar sin cuenta',
                         style: TextStyle(
                           color: AppTheme.textSecondaryDark,
@@ -268,6 +270,3 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     );
   }
 }
-
-import 'package:go_router/go_router.dart';
-import '../../../../app/router/app_router.dart';

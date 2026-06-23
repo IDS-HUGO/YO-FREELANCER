@@ -91,7 +91,7 @@ class _YoerVitrinaScreenState extends ConsumerState<YoerVitrinaScreen> {
       const Text('Sin servicios publicados',
           style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
       const SizedBox(height: 8),
-      Text('Crea tu primer servicio', style: TextStyle(color: AppTheme.textSecondaryDark)),
+      const Text('Crea tu primer servicio', style: TextStyle(color: AppTheme.textSecondaryDark)),
       const SizedBox(height: 24),
       ElevatedButton(
         onPressed: () => context.push(AppRoutes.createService),
@@ -131,11 +131,11 @@ class _ServiceCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: service.isActive
-                    ? AppTheme.brandGreen.withOpacity(0.15)
-                    : AppTheme.textHintDark.withOpacity(0.15),
+                    ? AppTheme.brandGreen.withValues(alpha: 0.15)
+                    : AppTheme.textHintDark.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Text(service.category.emoji + ' ' + service.category.displayName,
+              child: Text('${service.category.emoji} ${service.category.displayName}',
                   style: TextStyle(
                     color: service.isActive ? AppTheme.brandGreen : AppTheme.textHintDark,
                     fontSize: 11, fontWeight: FontWeight.w700)),
@@ -164,14 +164,14 @@ class _ServiceCard extends StatelessWidget {
               maxLines: 2, overflow: TextOverflow.ellipsis),
           const SizedBox(height: 6),
           Text(service.description,
-              style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12),
+              style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12),
               maxLines: 2, overflow: TextOverflow.ellipsis),
           const SizedBox(height: 14),
           Row(children: [
             RatingStars(rating: service.rating),
             const SizedBox(width: 6),
             Text('(${service.totalReviews})',
-                style: TextStyle(color: AppTheme.textHintDark, fontSize: 11)),
+                style: const TextStyle(color: AppTheme.textHintDark, fontSize: 11)),
             const Spacer(),
             Text(service.priceLabel,
                 style: const TextStyle(color: AppTheme.brandGreen, fontSize: 16, fontWeight: FontWeight.w800)),

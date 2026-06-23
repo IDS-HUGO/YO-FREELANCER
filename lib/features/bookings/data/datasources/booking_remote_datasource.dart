@@ -1,7 +1,7 @@
 // lib/features/bookings/data/datasources/booking_remote_datasource.dart
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
-import '../../../../shared/dto/service_dto.dart';
 
 enum BookingStatus {
   pendiente, confirmada, enProgreso, completada, cancelada, rechazada;
@@ -279,9 +279,6 @@ class BookingRemoteDataSource {
 // BOOKING VIEWMODEL
 // lib/features/bookings/presentation/viewmodels/booking_viewmodel.dart
 // (incluido aquí por organización)
-
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class BookingState {
   final bool isLoading;

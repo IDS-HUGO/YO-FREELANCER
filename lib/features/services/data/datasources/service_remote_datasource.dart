@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
 import '../../../../shared/dto/service_dto.dart';
 import '../../domain/entities/service_entity.dart';
+import 'dart:io';
 
 class ServiceRemoteDataSource {
   final SupabaseClient _client;
@@ -174,7 +175,6 @@ class ServiceRemoteDataSource {
 
   // ── Subir imagen de servicio ──────────────────────────────────────────────
   Future<String> uploadServiceImage(String serviceId, String filePath) async {
-    import 'dart:io';
     final file = File(filePath);
     final ext = filePath.split('.').last;
     final path = '$serviceId/${DateTime.now().millisecondsSinceEpoch}.$ext';

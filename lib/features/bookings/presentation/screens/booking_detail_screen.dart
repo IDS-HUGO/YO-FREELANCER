@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../../app/router/app_router.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/main_scaffold.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
@@ -28,9 +27,7 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
 
   Future<void> _load() async {
     try {
-      final ds = BookingRemoteDataSource(
-        ref.read(bookingDataSourceProvider)._client,
-      );
+      final ds = ref.read(bookingDataSourceProvider);
       final b = await ds.getBookingById(widget.bookingId);
       if (mounted) setState(() { _booking = b; _loading = false; });
     } catch (_) {
@@ -53,7 +50,7 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
       return Scaffold(
         backgroundColor: AppTheme.bgDark,
         appBar: _appBar(context),
-        body: Center(child: Text('Reserva no encontrada',
+        body: const Center(child: Text('Reserva no encontrada',
             style: TextStyle(color: AppTheme.textSecondaryDark))),
       );
     }
@@ -84,7 +81,7 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [AppTheme.brandGreen, AppTheme.brandGreenDark],
                 begin: Alignment.topLeft, end: Alignment.bottomRight,
               ),
@@ -101,7 +98,7 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(b.paymentStatus == PaymentStatus.pagado ? 'PAGADO ✓' : 'PENDIENTE',
@@ -234,7 +231,7 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
     child: Row(children: [
       Icon(icon, color: AppTheme.textSecondaryDark, size: 18),
       const SizedBox(width: 12),
-      Text(label, style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
+      Text(label, style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
       const Spacer(),
       Flexible(child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
           textAlign: TextAlign.right, maxLines: 2, overflow: TextOverflow.ellipsis)),
@@ -247,7 +244,7 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
       UserAvatar(imageUrl: imageUrl, initials: name.isNotEmpty ? name[0].toUpperCase() : '?', size: 44),
       const SizedBox(width: 12),
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(role, style: TextStyle(color: AppTheme.textHintDark, fontSize: 11, letterSpacing: 0.5)),
+        Text(role, style: const TextStyle(color: AppTheme.textHintDark, fontSize: 11, letterSpacing: 0.5)),
         Text(name, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
       ]),
     ]),
@@ -267,14 +264,14 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Cancelar reserva', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text('¿Por qué deseas cancelar?', style: TextStyle(color: AppTheme.textSecondaryDark)),
+          const Text('¿Por qué deseas cancelar?', style: TextStyle(color: AppTheme.textSecondaryDark)),
           const SizedBox(height: 12),
           TextField(
             controller: reasonCtrl,
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: 'Motivo...',
-              hintStyle: TextStyle(color: AppTheme.textHintDark),
+              hintStyle: const TextStyle(color: AppTheme.textHintDark),
               filled: true, fillColor: AppTheme.surfaceDark,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
               contentPadding: const EdgeInsets.all(12),
@@ -283,7 +280,7 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
         ]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context),
-              child: Text('Atrás', style: TextStyle(color: AppTheme.textSecondaryDark))),
+              child: const Text('Atrás', style: TextStyle(color: AppTheme.textSecondaryDark))),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);

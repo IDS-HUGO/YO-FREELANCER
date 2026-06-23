@@ -78,7 +78,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       fontWeight: FontWeight.w800, height: 1.2,
                     )),
                 const SizedBox(height: 10),
-                Text('Introduce tus datos para continuar',
+                const Text('Introduce tus datos para continuar',
                     style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 15)),
                 const SizedBox(height: 40),
 
@@ -155,7 +155,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 28),
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text('¿No tienes cuenta? ',
+                  const Text('¿No tienes cuenta? ',
                       style: TextStyle(color: AppTheme.textSecondaryDark)),
                   GestureDetector(
                     onTap: () => context.go(AppRoutes.register),
@@ -181,7 +181,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   InputDecoration _inputDeco(String hint, IconData icon) => InputDecoration(
     hintText: hint,
-    hintStyle: TextStyle(color: AppTheme.textHintDark),
+    hintStyle: const TextStyle(color: AppTheme.textHintDark),
     prefixIcon: Icon(icon, color: AppTheme.textSecondaryDark, size: 18),
     filled: true,
     fillColor: AppTheme.cardDark,

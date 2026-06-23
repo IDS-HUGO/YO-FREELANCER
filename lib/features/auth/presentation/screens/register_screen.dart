@@ -94,7 +94,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       fontWeight: FontWeight.w800, height: 1.2,
                     )),
                 const SizedBox(height: 10),
-                Text('Elige cómo quieres usar la plataforma',
+                const Text('Elige cómo quieres usar la plataforma',
                     style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 14)),
                 const SizedBox(height: 28),
 
@@ -146,7 +146,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 const SizedBox(height: 20),
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text('¿Ya tienes cuenta? ',
+                  const Text('¿Ya tienes cuenta? ',
                       style: TextStyle(color: AppTheme.textSecondaryDark)),
                   GestureDetector(
                     onTap: () => context.go(AppRoutes.login),
@@ -172,7 +172,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           duration: const Duration(milliseconds: 200),
           height: 90,
           decoration: BoxDecoration(
-            color: selected ? AppTheme.brandGreen.withOpacity(0.15) : AppTheme.cardDark,
+            color: selected ? AppTheme.brandGreen.withValues(alpha: 0.15) : AppTheme.cardDark,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: selected ? AppTheme.brandGreen : AppTheme.borderDark,
@@ -185,7 +185,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             Text(title, style: TextStyle(
               color: selected ? AppTheme.brandGreen : Colors.white,
               fontSize: 13, fontWeight: FontWeight.w700)),
-            Text(subtitle, style: TextStyle(
+            Text(subtitle, style: const TextStyle(
               color: AppTheme.textSecondaryDark, fontSize: 10)),
           ]),
         ),
@@ -270,7 +270,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   InputDecoration _deco(String hint, IconData icon) => InputDecoration(
     hintText: hint,
-    hintStyle: TextStyle(color: AppTheme.textHintDark),
+    hintStyle: const TextStyle(color: AppTheme.textHintDark),
     prefixIcon: Icon(icon, color: AppTheme.textSecondaryDark, size: 18),
     filled: true,
     fillColor: AppTheme.cardDark,

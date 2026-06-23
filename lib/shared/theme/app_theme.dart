@@ -1,6 +1,5 @@
 // lib/shared/theme/app_theme.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Sistema de diseño de YO FREE-LANCER
@@ -161,7 +160,7 @@ class AppTheme {
         actionsIconTheme: const IconThemeData(color: textPrimaryDark),
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: cardDark,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -254,7 +253,7 @@ class AppTheme {
 
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: surfaceDark,
-        indicatorColor: brandGreen.withOpacity(0.2),
+        indicatorColor: brandGreen.withValues(alpha: 0.2),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: brandGreen);
@@ -274,7 +273,7 @@ class AppTheme {
 
       chipTheme: ChipThemeData(
         backgroundColor: cardDark,
-        selectedColor: brandGreen.withOpacity(0.2),
+        selectedColor: brandGreen.withValues(alpha: 0.2),
         labelStyle: GoogleFonts.spaceGrotesk(
           fontSize: 12, fontWeight: FontWeight.w500,
         ),
@@ -312,7 +311,7 @@ class AppTheme {
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return brandGreen.withOpacity(0.4);
+            return brandGreen.withValues(alpha: 0.4);
           }
           return borderDark;
         }),
@@ -341,7 +340,7 @@ class AppTheme {
         ),
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: surfaceLight,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -403,7 +402,7 @@ class AppTheme {
     end: Alignment.bottomRight,
     colors: [
       cardDark,
-      cardInnerDark.withOpacity(0.8),
+      cardInnerDark.withValues(alpha: 0.8),
     ],
   );
 }

@@ -1,19 +1,16 @@
 // lib/app/router/app_router.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
-import '../../features/auth/presentation/screens/welcome_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/domain/entities/user_entity.dart';
 import '../../features/yoer/presentation/screens/yoer_home_screen.dart';
 import '../../features/yoer/presentation/screens/yoer_vitrina_screen.dart';
 import '../../features/yoer/presentation/screens/yoer_profile_screen.dart';
-import '../../features/client/presentation/screens/client_home_screen.dart';
-import '../../features/client/presentation/screens/client_bookings_screen.dart';
-import '../../features/client/presentation/screens/client_profile_screen.dart';
 import '../../features/services/presentation/screens/service_detail_screen.dart';
 import '../../features/services/presentation/screens/create_service_screen.dart';
 import '../../features/bookings/presentation/screens/booking_detail_screen.dart';
@@ -218,9 +215,6 @@ CustomTransitionPage _fadePage(Widget child, GoRouterState state) {
     transitionDuration: const Duration(milliseconds: 200),
   );
 }
-
-// ── GoRouterRefreshStream ─────────────────────────────────────────────────────
-import 'dart:async';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   late final StreamSubscription<dynamic> _subscription;

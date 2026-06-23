@@ -1,5 +1,6 @@
 // lib/features/auth/domain/repositories/auth_repository.dart
 import '../entities/user_entity.dart';
+import '../../data/datasources/auth_remote_datasource.dart';
 
 abstract class AuthRepository {
   Future<UserEntity> signUp({
@@ -31,16 +32,6 @@ abstract class AuthRepository {
 }
 
 // ─── Implementación con Supabase ──────────────────────────────────────────────
-// lib/features/auth/data/repositories/auth_repository_impl.dart
-
-import 'dart:io';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../../app/config/supabase_config.dart';
-import '../../../../shared/dto/user_dto.dart';
-import '../../domain/entities/user_entity.dart';
-import '../../domain/repositories/auth_repository.dart';
-import '../../data/datasources/auth_remote_datasource.dart';
-
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
 

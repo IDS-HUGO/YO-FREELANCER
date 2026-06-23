@@ -65,7 +65,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                 style: const TextStyle(color: AppTheme.brandGreen, fontSize: 24, fontWeight: FontWeight.w900)),
             const SizedBox(height: 8),
             Text('Método: ${_selectedMethod!.displayName}',
-                style: TextStyle(color: AppTheme.textSecondaryDark)),
+                style: const TextStyle(color: AppTheme.textSecondaryDark)),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
@@ -117,7 +117,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     colors: [AppTheme.cardDark, AppTheme.cardInnerDark],
                     begin: Alignment.topLeft, end: Alignment.bottomRight,
                   ),
@@ -133,7 +133,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 6),
                   Text('YOER: ${_booking!.yoerName}',
-                      style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
+                      style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
                   const Divider(color: AppTheme.borderDark, height: 24),
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                     const Text('Total a pagar',
@@ -162,9 +162,9 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppTheme.alertRed.withOpacity(0.15),
+                  color: AppTheme.alertRed.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.alertRed.withOpacity(0.3)),
+                  border: Border.all(color: AppTheme.alertRed.withValues(alpha: 0.3)),
                 ),
                 child: Row(children: [
                   const Icon(Icons.error_outline_rounded, color: AppTheme.alertRedLight, size: 18),
@@ -234,7 +234,7 @@ class _MethodCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.brandGreen.withOpacity(0.1) : AppTheme.cardDark,
+          color: isSelected ? AppTheme.brandGreen.withValues(alpha: 0.1) : AppTheme.cardDark,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? AppTheme.brandGreen : AppTheme.borderDark,
@@ -251,7 +251,7 @@ class _MethodCard extends StatelessWidget {
                   fontSize: 14, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 )),
             Text(_subtitle(method),
-                style: TextStyle(color: AppTheme.textHintDark, fontSize: 11)),
+                style: const TextStyle(color: AppTheme.textHintDark, fontSize: 11)),
           ])),
           if (isSelected)
             const Icon(Icons.check_circle_rounded, color: AppTheme.brandGreen, size: 22),

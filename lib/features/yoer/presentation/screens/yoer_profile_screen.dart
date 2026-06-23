@@ -2,10 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../app/router/app_router.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/main_scaffold.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../auth/domain/entities/user_entity.dart';
+import '../../../services/presentation/viewmodels/service_viewmodel.dart';
+import '../../../services/domain/entities/service_entity.dart';
+import '../../../bookings/data/datasources/booking_remote_datasource.dart';
 
 class YoerProfileScreen extends ConsumerWidget {
   const YoerProfileScreen({super.key});
@@ -23,7 +26,7 @@ class YoerProfileScreen extends ConsumerWidget {
             Stack(children: [
               Container(
                 height: 160,
-                decoration: BoxDecoration(gradient: AppTheme.greenGradient),
+                decoration: const BoxDecoration(gradient: AppTheme.greenGradient),
               ),
               Positioned(
                 bottom: -40, left: 24,
@@ -58,14 +61,14 @@ class YoerProfileScreen extends ConsumerWidget {
                     Text(user?.fullName ?? 'YOER',
                         style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
                     Text('@${user?.username ?? 'usuario'}',
-                        style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
+                        style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
                   ])),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppTheme.brandGreen.withOpacity(0.15),
+                      color: AppTheme.brandGreen.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppTheme.brandGreen.withOpacity(0.4)),
+                      border: Border.all(color: AppTheme.brandGreen.withValues(alpha: 0.4)),
                     ),
                     child: Text(user?.status.displayName ?? 'Disponible',
                         style: const TextStyle(color: AppTheme.brandGreen,
@@ -76,13 +79,13 @@ class YoerProfileScreen extends ConsumerWidget {
 
                 if (user?.bio != null) ...[
                   Text(user!.bio!,
-                      style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 14, height: 1.5)),
+                      style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 14, height: 1.5)),
                   const SizedBox(height: 16),
                 ],
 
                 // Métricas
                 Row(children: [
-                  _stat('${user?.rating.toStringAsFixed(1) ?? '0.0'}', 'Rating', Icons.star_rounded),
+                  _stat(user?.rating.toStringAsFixed(1) ?? '0.0', 'Rating', Icons.star_rounded),
                   _stat('${user?.totalReviews ?? 0}', 'Reseñas', Icons.reviews_outlined),
                   _stat('${user?.completedJobs ?? 0}', 'Trabajos', Icons.check_circle_outline_rounded),
                 ]),
@@ -131,7 +134,7 @@ class YoerProfileScreen extends ConsumerWidget {
           Icon(icon, color: AppTheme.brandGreen, size: 18),
           const SizedBox(height: 6),
           Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
-          Text(label, style: TextStyle(color: AppTheme.textHintDark, fontSize: 10)),
+          Text(label, style: const TextStyle(color: AppTheme.textHintDark, fontSize: 10)),
         ]),
       ),
     );
@@ -143,7 +146,7 @@ class YoerProfileScreen extends ConsumerWidget {
       child: Row(children: [
         Icon(icon, color: AppTheme.textSecondaryDark, size: 18),
         const SizedBox(width: 10),
-        Text(text, style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
+        Text(text, style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
       ]),
     );
   }
@@ -219,7 +222,7 @@ class _ClientHomeScreenState extends ConsumerState<ClientHomeScreen> {
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('Hola, ${user?.firstName ?? 'Usuario'} 👋',
                       style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-                  Text('¿Qué servicio necesitas hoy?',
+                  const Text('¿Qué servicio necesitas hoy?',
                       style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
                 ])),
                 UserAvatar(imageUrl: user?.profileImageUrl, initials: user?.initials ?? '?', size: 44),
@@ -236,7 +239,7 @@ class _ClientHomeScreenState extends ConsumerState<ClientHomeScreen> {
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Buscar servicios...',
-                  hintStyle: TextStyle(color: AppTheme.textHintDark),
+                  hintStyle: const TextStyle(color: AppTheme.textHintDark),
                   prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.textHintDark),
                   suffixIcon: _searchCtrl.text.isNotEmpty
                       ? IconButton(
@@ -260,7 +263,7 @@ class _ClientHomeScreenState extends ConsumerState<ClientHomeScreen> {
                 height: 36,
                 child: ListView(scrollDirection: Axis.horizontal, children: [
                   _catChip(null, 'Todas'),
-                  ...ServiceCategory.values.map((c) => _catChip(c, c.emoji + ' ' + c.displayName)),
+                  ...ServiceCategory.values.map((c) => _catChip(c, '${c.emoji} ${c.displayName}')),
                 ]),
               ),
               const SizedBox(height: 20),
@@ -272,10 +275,10 @@ class _ClientHomeScreenState extends ConsumerState<ClientHomeScreen> {
               ? const SliverFillRemaining(child: Center(
                   child: CircularProgressIndicator(color: AppTheme.brandGreen)))
               : displayed.isEmpty
-                  ? SliverFillRemaining(child: Center(
+                  ? const SliverFillRemaining(child: Center(
                       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        const Icon(Icons.search_off_rounded, color: AppTheme.textHintDark, size: 56),
-                        const SizedBox(height: 12),
+                        Icon(Icons.search_off_rounded, color: AppTheme.textHintDark, size: 56),
+                        SizedBox(height: 12),
                         Text('Sin resultados', style: TextStyle(color: AppTheme.textSecondaryDark)),
                       ])))
                   : SliverPadding(
@@ -300,8 +303,11 @@ class _ClientHomeScreenState extends ConsumerState<ClientHomeScreen> {
     return GestureDetector(
       onTap: () {
         setState(() => _selectedCat = cat);
-        if (cat != null) ref.read(serviceViewModelProvider.notifier).filterByCategory(cat);
-        else ref.read(serviceViewModelProvider.notifier).getAllServices();
+        if (cat != null) {
+          ref.read(serviceViewModelProvider.notifier).filterByCategory(cat);
+        } else {
+          ref.read(serviceViewModelProvider.notifier).getAllServices();
+        }
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -325,7 +331,7 @@ class _ClientHomeScreenState extends ConsumerState<ClientHomeScreen> {
 }
 
 class _ClientServiceCard extends StatelessWidget {
-  final service;
+  final ServiceEntity service;
   final VoidCallback onTap;
   const _ClientServiceCard({required this.service, required this.onTap});
 
@@ -362,7 +368,7 @@ class _ClientServiceCard extends StatelessWidget {
                 UserAvatar(imageUrl: service.yoerImageUrl, initials: service.yoerName.isNotEmpty ? service.yoerName[0].toUpperCase() : '?', size: 28),
                 const SizedBox(width: 8),
                 Expanded(child: Text(service.yoerName,
-                    style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12),
+                    style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12),
                     overflow: TextOverflow.ellipsis)),
                 RatingStars(rating: service.rating),
                 const SizedBox(width: 8),
@@ -444,9 +450,9 @@ class _BookingList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (bookings.isEmpty) {
-      return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        const Icon(Icons.calendar_today_outlined, color: AppTheme.textHintDark, size: 48),
-        const SizedBox(height: 12),
+      return const Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(Icons.calendar_today_outlined, color: AppTheme.textHintDark, size: 48),
+        SizedBox(height: 12),
         Text('Sin reservas', style: TextStyle(color: AppTheme.textSecondaryDark)),
       ]));
     }
@@ -476,7 +482,7 @@ class _BookingList extends StatelessWidget {
               Row(children: [
                 const Icon(Icons.person_outline_rounded, size: 14, color: AppTheme.textHintDark),
                 const SizedBox(width: 4),
-                Text(b.yoerName, style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12)),
+                Text(b.yoerName, style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12)),
                 const Spacer(),
                 Text('\$${b.totalPrice.toStringAsFixed(0)}',
                     style: const TextStyle(color: AppTheme.brandGreen, fontSize: 14, fontWeight: FontWeight.w800)),
@@ -508,7 +514,7 @@ class ClientProfileScreen extends ConsumerWidget {
             Text(user?.fullName ?? 'Cliente',
                 style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
             Text('@${user?.username ?? ''}',
-                style: TextStyle(color: AppTheme.textSecondaryDark)),
+                style: const TextStyle(color: AppTheme.textSecondaryDark)),
             const SizedBox(height: 32),
             _tile(Icons.person_outline_rounded, 'Editar perfil', () {}),
             _tile(Icons.credit_card_outlined, 'Métodos de pago', () {}),
@@ -529,7 +535,7 @@ class ClientProfileScreen extends ConsumerWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 2),
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           border: Border(bottom: BorderSide(color: AppTheme.borderDark, width: 0.5)),
         ),
         child: Row(children: [
@@ -543,9 +549,3 @@ class ClientProfileScreen extends ConsumerWidget {
     );
   }
 }
-
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/presentation/viewmodels/service_viewmodel.dart';
-import '../../../services/domain/entities/service_entity.dart';
-import '../../../bookings/data/datasources/booking_remote_datasource.dart';
-import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';

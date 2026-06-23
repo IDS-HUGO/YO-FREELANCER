@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../app/router/app_router.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/main_scaffold.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
@@ -56,7 +55,7 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
                     Container(width: 7, height: 7,
                         decoration: const BoxDecoration(color: AppTheme.brandGreen, shape: BoxShape.circle)),
                     const SizedBox(width: 5),
-                    Text('Disponible', style: TextStyle(color: AppTheme.brandGreen, fontSize: 12)),
+                    const Text('Disponible', style: TextStyle(color: AppTheme.brandGreen, fontSize: 12)),
                   ]),
                 ])),
                 // Botones icono
@@ -95,7 +94,7 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [AppTheme.cardDark, AppTheme.cardInnerDark],
@@ -105,12 +104,12 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(children: [
-                    Expanded(child: Text('Bono Sorpresa Semanal',
-                        style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700))),
+                    const Expanded(child: Text('Bono Sorpresa Semanal',
+                        style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700))),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppTheme.brandGreen.withOpacity(0.15),
+                        color: AppTheme.brandGreen.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Text('5 / 10 TAREAS',
@@ -120,15 +119,15 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
                   const SizedBox(height: 16),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(6),
-                    child: LinearProgressIndicator(
+                    child: const LinearProgressIndicator(
                       value: 0.5,
                       minHeight: 8,
                       backgroundColor: Colors.black38,
-                      valueColor: const AlwaysStoppedAnimation(AppTheme.brandGreen),
+                      valueColor: AlwaysStoppedAnimation(AppTheme.brandGreen),
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Text('¡Te faltan 5 tareas para desbloquear el bono!',
+                  const Text('¡Te faltan 5 tareas para desbloquear el bono!',
                       style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12)),
                 ]),
               ),
@@ -187,7 +186,7 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
         width: 42, height: 42,
         decoration: BoxDecoration(
           border: Border.all(
-            color: color != null ? color.withOpacity(0.5) : AppTheme.borderDark,
+            color: color != null ? color.withValues(alpha: 0.5) : AppTheme.borderDark,
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -215,8 +214,8 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
           child: const Icon(Icons.flash_on_rounded, color: AppTheme.brandGreen, size: 22),
         ),
         const SizedBox(width: 14),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('TAREAS URGENTES',
+        const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('TAREAS URGENTES',
               style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
           Text('3 servicios cancelados cerca de ti',
               style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12)),
@@ -235,10 +234,10 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.borderDark, width: 0.5),
       ),
-      child: Column(children: [
-        const Icon(Icons.calendar_today_outlined,
+      child: const Column(children: [
+        Icon(Icons.calendar_today_outlined,
             color: AppTheme.textHintDark, size: 40),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Text('Sin trabajos programados',
             style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 14)),
       ]),
@@ -266,7 +265,7 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Text(b.scheduledTime,
                   style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
-              Text('AM', style: TextStyle(color: AppTheme.textHintDark, fontSize: 9)),
+              const Text('AM', style: TextStyle(color: AppTheme.textHintDark, fontSize: 9)),
             ]),
           ),
           const SizedBox(width: 14),
@@ -275,7 +274,7 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
                 color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
                 maxLines: 1, overflow: TextOverflow.ellipsis),
             Text('Con ${b.clientName}',
-                style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 11)),
+                style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 11)),
           ])),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
             Text('\$${b.totalPrice.toStringAsFixed(0)}',
@@ -303,7 +302,7 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
           Text(value, style: const TextStyle(
               color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
-          Text(label, style: TextStyle(color: AppTheme.textHintDark, fontSize: 10),
+          Text(label, style: const TextStyle(color: AppTheme.textHintDark, fontSize: 10),
               textAlign: TextAlign.center),
         ]),
       ),
