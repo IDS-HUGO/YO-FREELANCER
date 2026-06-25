@@ -1,5 +1,4 @@
 // lib/app/router/app_router.dart
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,75 +15,86 @@ import '../../features/services/presentation/screens/create_service_screen.dart'
 import '../../features/bookings/presentation/screens/booking_detail_screen.dart';
 import '../../features/payments/presentation/screens/payment_screen.dart';
 import '../../shared/widgets/main_scaffold.dart';
+import 'app_routes.dart';
 
-// ── Rutas ─────────────────────────────────────────────────────────────────────
-abstract class AppRoutes {
-  static const splash         = '/splash';
-  static const welcome        = '/welcome';
-  static const login          = '/login';
-  static const register       = '/register';
+// ── Notifier que escucha cambios de auth y refresca el router ─────────────────
+class _RouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+  late final ProviderSubscription<AuthState> _sub;
 
-  // YOER
-  static const yoerHome       = '/yoer/home';
-  static const yoerVitrina    = '/yoer/vitrina';
-  static const yoerProfile    = '/yoer/profile';
-  static const yoerAgenda     = '/yoer/agenda';
-  static const yoerRadar      = '/yoer/radar';
+  _RouterNotifier(this._ref) {
+    // Escucha cambios en el estado de auth y notifica al router
+    _sub = _ref.listen<AuthState>(
+      authViewModelProvider,
+      (_, __) => notifyListeners(),
+    );
+  }
 
-  // CLIENT
-  static const clientHome     = '/client/home';
-  static const clientBookings = '/client/bookings';
-  static const clientProfile  = '/client/profile';
-  static const clientPayments = '/client/payments';
-
-  // Shared
-  static const serviceDetail  = '/service/:id';
-  static const createService  = '/service/create';
-  static const bookingDetail  = '/booking/:id';
-  static const payment        = '/payment/:bookingId';
+  @override
+  void dispose() {
+    _sub.close();
+    super.dispose();
+  }
 }
 
-// ── Provider del router ───────────────────────────────────────────────────────
+final _routerNotifierProvider = ChangeNotifierProvider<_RouterNotifier>(
+  (ref) => _RouterNotifier(ref),
+);
+
+// ── Provider del router (se crea UNA sola vez) ─────────────────────────────────
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authViewModelProvider);
+  final notifier = ref.watch(_routerNotifierProvider);
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
-    refreshListenable: GoRouterRefreshStream(
-      ref.watch(authViewModelProvider.notifier).stream,
-    ),
+    refreshListenable: notifier,
     redirect: (context, state) {
+      final authState      = ref.read(authViewModelProvider);
       final isAuthenticated = authState.isAuthenticated;
       final isLoading       = authState.isLoading;
       final user            = authState.user;
       final loc             = state.matchedLocation;
 
-      // Durante carga inicial, ir a splash
+      // Durante carga inicial, quedarse en splash
       if (isLoading && loc != AppRoutes.splash) return AppRoutes.splash;
 
-      // Pantallas públicas
+      // Rutas completamente públicas (sin autenticación)
       final publicRoutes = [
-        AppRoutes.splash,
         AppRoutes.welcome,
         AppRoutes.login,
         AppRoutes.register,
       ];
 
+      // Rutas accesibles como "invitado" (sin cuenta)
+      final guestRoutes = [
+        AppRoutes.clientHome,
+        AppRoutes.serviceDetail,
+      ];
+
+      // Si no está autenticado
       if (!isAuthenticated) {
+        // Si está en una ruta pública o de invitado, dejar pasar
         if (publicRoutes.contains(loc)) return null;
+        if (guestRoutes.any((r) => loc.startsWith(r.replaceAll(':id', '')))) {
+          return null;
+        }
+        // Cualquier otra ruta protegida → welcome
         return AppRoutes.welcome;
       }
 
-      // Redirigir según tipo de usuario
-      if (publicRoutes.contains(loc)) {
+      // ── Usuario autenticado ───────────────────────────────────────────────
+
+      // Si viene desde splash o rutas de auth → redirigir al home correcto
+      if (publicRoutes.contains(loc) || loc == AppRoutes.splash) {
         if (user?.isYoer == true) return AppRoutes.yoerHome;
         return AppRoutes.clientHome;
       }
 
-      // YOER tratando de acceder a rutas de client o viceversa
+      // YOER intentando acceder a rutas exclusivas de cliente (excepto shared)
       if (user?.isYoer == true && loc.startsWith('/client')) {
         return AppRoutes.yoerHome;
       }
+      // Cliente intentando acceder a rutas exclusivas de yoer
       if (user?.isClient == true && loc.startsWith('/yoer')) {
         return AppRoutes.clientHome;
       }
@@ -129,7 +139,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // ── CLIENT shell ──────────────────────────────────────────────────────
+      // ── CLIENT shell (accesible como invitado) ────────────────────────────
       ShellRoute(
         builder: (context, state, child) =>
             MainScaffold(userType: UserType.client, child: child),
@@ -214,19 +224,4 @@ CustomTransitionPage _fadePage(Widget child, GoRouterState state) {
     },
     transitionDuration: const Duration(milliseconds: 200),
   );
-}
-
-class GoRouterRefreshStream extends ChangeNotifier {
-  late final StreamSubscription<dynamic> _subscription;
-
-  GoRouterRefreshStream(Stream<dynamic> stream) {
-    notifyListeners();
-    _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
-  }
-
-  @override
-  void dispose() {
-    _subscription.cancel();
-    super.dispose();
-  }
 }

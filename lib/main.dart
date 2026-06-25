@@ -21,7 +21,7 @@ Future<void> main() async {
   // Inicializar Supabase
   await Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
-    anonKey: SupabaseConfig.supabaseAnonKey,
+    anonKey: SupabaseConfig.supabaseAnonKey, // ignore: deprecated_member_use
     authOptions: const FlutterAuthClientOptions(
       authFlowType: AuthFlowType.pkce,
     ),

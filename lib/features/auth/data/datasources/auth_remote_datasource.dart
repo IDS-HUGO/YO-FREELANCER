@@ -54,7 +54,18 @@ class AuthRemoteDataSource {
       throw Exception('Email o contraseña incorrectos.');
     }
 
-    return _fetchProfile(response.user!.id);
+    // Reintenta hasta 3 veces en caso de que el trigger de Supabase
+    // tarde en crear el perfil (más común justo después del registro)
+    Exception? lastError;
+    for (int i = 0; i < 3; i++) {
+      try {
+        return await _fetchProfile(response.user!.id);
+      } catch (e) {
+        lastError = Exception(e.toString());
+        await Future.delayed(Duration(milliseconds: 300 * (i + 1)));
+      }
+    }
+    throw lastError ?? Exception('No se pudo cargar tu perfil.');
   }
 
   // ── Sign Out ──────────────────────────────────────────────────────────────

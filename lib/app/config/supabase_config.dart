@@ -11,8 +11,8 @@ class SupabaseConfig {
   // ────────────────────────────────────────────────────────────────────────
   // Reemplaza con tus credenciales reales de Supabase
   // ────────────────────────────────────────────────────────────────────────
-  static const String supabaseUrl = 'https://TU_PROYECTO.supabase.co';
-  static const String supabaseAnonKey = 'TU_ANON_KEY_AQUI';
+  static const String supabaseUrl = 'https://qomlpwvnqqrvalzvkqqr.supabase.co';
+  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFvbWxwd3ZucXFydmFsenZra3FyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTcyMTEsImV4cCI6MjA5Nzc5MzIxMX0.mKHosA4u8Qav5wkG8BKgZVw6EHxh9vf4yB7IhPQS5CA';
 
   // ── Nombres de tablas ────────────────────────────────────────────────────
   static const String usersTable       = 'users';

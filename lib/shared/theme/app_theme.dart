@@ -425,13 +425,13 @@ class AppRadius {
   static const double xxl = 24;
   static const double pill = 100;
 
-  static BorderRadius get xs_r  => BorderRadius.circular(xs);
-  static BorderRadius get sm_r  => BorderRadius.circular(sm);
-  static BorderRadius get md_r  => BorderRadius.circular(md);
-  static BorderRadius get lg_r  => BorderRadius.circular(lg);
-  static BorderRadius get xl_r  => BorderRadius.circular(xl);
-  static BorderRadius get xxl_r => BorderRadius.circular(xxl);
-  static BorderRadius get pill_r => BorderRadius.circular(pill);
+  static BorderRadius get xsR   => BorderRadius.circular(xs);
+  static BorderRadius get smR   => BorderRadius.circular(sm);
+  static BorderRadius get mdR   => BorderRadius.circular(md);
+  static BorderRadius get lgR   => BorderRadius.circular(lg);
+  static BorderRadius get xlR   => BorderRadius.circular(xl);
+  static BorderRadius get xxlR  => BorderRadius.circular(xxl);
+  static BorderRadius get pillR => BorderRadius.circular(pill);
 }
 
 /// Espaciados estándar

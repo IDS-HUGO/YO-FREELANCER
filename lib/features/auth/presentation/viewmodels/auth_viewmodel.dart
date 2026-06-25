@@ -163,7 +163,13 @@ class AuthViewModel extends StateNotifier<AuthState> {
     if (raw.contains('Invalid login credentials')) {
       return 'Email o contraseña incorrectos.';
     }
-    if (raw.contains('network') || raw.contains('connection')) {
+    if (raw.contains('Email not confirmed')) {
+      return 'Confirma tu email antes de iniciar sesión.';
+    }
+    if (raw.contains('perfil') || raw.contains('profile') || raw.contains('PGRST116')) {
+      return 'No se encontró tu perfil. Contacta soporte.';
+    }
+    if (raw.contains('network') || raw.contains('connection') || raw.contains('SocketException')) {
       return 'Sin conexión. Verifica tu internet.';
     }
     return 'Ocurrió un error. Intenta de nuevo.';

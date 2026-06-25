@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/domain/entities/user_entity.dart';
-import '../../app/router/app_router.dart';
+import '../../app/router/app_routes.dart';
 import '../theme/app_theme.dart';
 
 class MainScaffold extends StatelessWidget {
