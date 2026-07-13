@@ -1,4 +1,5 @@
 // lib/features/auth/presentation/viewmodels/auth_viewmodel.dart
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -42,8 +43,16 @@ class AuthState {
 // ── ViewModel ─────────────────────────────────────────────────────────────────
 class AuthViewModel extends StateNotifier<AuthState> {
   final AuthRepository _repository;
+  late final StreamSubscription<UserEntity?> _authStateSub;
 
   AuthViewModel(this._repository) : super(const AuthState()) {
+    _authStateSub = _repository.authStateChanges.listen((user) {
+      state = state.copyWith(
+        isLoading: false,
+        user: user,
+        isAuthenticated: user != null,
+      );
+    });
     _init();
   }
 
@@ -59,6 +68,12 @@ class AuthViewModel extends StateNotifier<AuthState> {
     } catch (_) {
       state = state.copyWith(isLoading: false);
     }
+  }
+
+  @override
+  void dispose() {
+    _authStateSub.cancel();
+    super.dispose();
   }
 
   // ── Register ──────────────────────────────────────────────────────────────

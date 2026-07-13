@@ -1,4 +1,5 @@
 // lib/features/services/presentation/viewmodels/service_viewmodel.dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/service_entity.dart';
 import '../../data/datasources/service_remote_datasource.dart';
@@ -64,8 +65,11 @@ class ServiceViewModel extends StateNotifier<ServiceState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final services = await _dataSource.getAllServices();
+      debugPrint('ServiceViewModel: loaded ${services.length} services');
       state = state.copyWith(isLoading: false, services: services);
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('ServiceViewModel.getAllServices error: $e');
+      debugPrint('ServiceViewModel.getAllServices stack: $st');
       state = state.copyWith(isLoading: false, error: _parseError(e));
     }
   }

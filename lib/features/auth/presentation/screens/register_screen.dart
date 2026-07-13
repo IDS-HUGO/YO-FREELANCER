@@ -49,6 +49,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       userType: _selectedType!,
       phoneNumber: _phoneCtrl.text.isEmpty ? null : _phoneCtrl.text.trim(),
     );
+    if (ok && mounted) {
+      final route = _selectedType == UserType.yoer
+          ? AppRoutes.yoerHome
+          : AppRoutes.clientHome;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          debugPrint('Register: navigating to $route');
+          context.go(route);
+        }
+      });
+      return;
+    }
     if (!ok && mounted) {
       final err = ref.read(authViewModelProvider).error;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

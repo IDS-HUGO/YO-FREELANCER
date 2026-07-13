@@ -19,25 +19,60 @@ class AuthRemoteDataSource {
     required UserType userType,
     String? phoneNumber,
   }) async {
-    final response = await _client.auth.signUp(
-      email: email,
-      password: password,
-      data: {
+    print('[Supabase] 🚀 Iniciando registro manual para: $email');
+    
+    try {
+      // 1. Crear el usuario en Auth
+      final response = await _client.auth.signUp(
+        email: email,
+        password: password,
+        data: {
+          'username': username,
+          'full_name': fullName,
+          'user_type': userType.name,
+        },
+      );
+
+      if (response.user == null) {
+        throw Exception('No se pudo crear el usuario en Supabase Auth.');
+      }
+
+      final userId = response.user!.id;
+      print('[Supabase] ✅ Usuario creado en Auth (ID: $userId). Creando perfil en tabla...');
+
+      // 2. Crear el perfil MANUALMENTE (sin depender de triggers)
+      final profileData = {
+        'id': userId,
+        'email': email,
         'username': username,
         'full_name': fullName,
-        'user_type': userType.name,
-        if (phoneNumber != null) 'phone_number': phoneNumber,
-      },
-    );
+        'user_type': userType.name, // 'YOER' o 'CLIENT'
+        'status': 'NO_DISPONIBLE',
+        'country': 'MX',
+        'rating': 0.0,
+        'total_reviews': 0,
+        'completed_jobs': 0,
+        'created_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+      };
 
-    if (response.user == null) {
-      throw Exception('Error al crear la cuenta. Verifica los datos.');
+      final profileResponse = await _client
+          .from(SupabaseConfig.profilesTable)
+          .insert(profileData)
+          .select()
+          .maybeSingle();
+
+      if (profileResponse == null) {
+        print('[Supabase] ❌ Error: Se creó el usuario pero no el perfil.');
+        throw Exception('Usuario creado, pero hubo un problema con tu perfil. Intenta iniciar sesión.');
+      }
+
+      print('[Supabase] 🎉 Registro completado con éxito.');
+      return UserDto.fromJson(profileResponse).toEntity();
+    } catch (e) {
+      print('[Supabase] 🔥 ERROR EN REGISTRO: $e');
+      rethrow;
     }
-
-    // El trigger en Supabase crea el perfil automáticamente.
-    // Esperamos un momento y lo recuperamos.
-    await Future.delayed(const Duration(milliseconds: 500));
-    return _fetchProfile(response.user!.id);
   }
 
   // ── Sign In ───────────────────────────────────────────────────────────────
@@ -45,27 +80,37 @@ class AuthRemoteDataSource {
     required String email,
     required String password,
   }) async {
-    final response = await _client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
+    print('[Supabase] Intentando login para: $email');
+    try {
+      final response = await _client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
 
-    if (response.user == null) {
-      throw Exception('Email o contraseña incorrectos.');
-    }
-
-    // Reintenta hasta 3 veces en caso de que el trigger de Supabase
-    // tarde en crear el perfil (más común justo después del registro)
-    Exception? lastError;
-    for (int i = 0; i < 3; i++) {
-      try {
-        return await _fetchProfile(response.user!.id);
-      } catch (e) {
-        lastError = Exception(e.toString());
-        await Future.delayed(Duration(milliseconds: 300 * (i + 1)));
+      if (response.user == null) {
+        print('[Supabase] Login fallido: Usuario nulo');
+        throw Exception('Email o contraseña incorrectos.');
       }
+
+      print('[Supabase] Login exitoso para ID: ${response.user!.id}');
+      
+      // Reintenta hasta 3 veces en caso de que el trigger de Supabase
+      // tarde en crear el perfil (más común justo después del registro)
+      Exception? lastError;
+      for (int i = 0; i < 3; i++) {
+        try {
+          return await _fetchProfile(response.user!.id);
+        } catch (e) {
+          print('[Supabase] Reintento ${i+1} cargando perfil...');
+          lastError = Exception(e.toString());
+          await Future.delayed(Duration(milliseconds: 300 * (i + 1)));
+        }
+      }
+      throw lastError ?? Exception('No se pudo cargar tu perfil.');
+    } catch (e) {
+      print('[Supabase] Error en signIn: $e');
+      rethrow;
     }
-    throw lastError ?? Exception('No se pudo cargar tu perfil.');
   }
 
   // ── Sign Out ──────────────────────────────────────────────────────────────

@@ -43,20 +43,35 @@ final _routerNotifierProvider = ChangeNotifierProvider<_RouterNotifier>(
 
 // ── Provider del router (se crea UNA sola vez) ─────────────────────────────────
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final notifier = ref.watch(_routerNotifierProvider);
+  // USAMOS .read para obtener la instancia del notifier sin que el provider
+  // se destruya y recree cuando el notifier notifica cambios.
+  final notifier = ref.read(_routerNotifierProvider);
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
     refreshListenable: notifier,
+    debugLogDiagnostics: true, // Para ver qué pasa en la consola
     redirect: (context, state) {
+      // Obtenemos el estado actual SIN escuchar (watch) para evitar rebuilds del router
       final authState      = ref.read(authViewModelProvider);
       final isAuthenticated = authState.isAuthenticated;
       final isLoading       = authState.isLoading;
       final user            = authState.user;
-      final loc             = state.matchedLocation;
+      final loc             = state.uri.path;
+      debugPrint('GoRouter redirect: loc=$loc, auth=$isAuthenticated, isLoading=$isLoading, user=${user?.email}');
 
-      // Durante carga inicial, quedarse en splash
-      if (isLoading && loc != AppRoutes.splash) return AppRoutes.splash;
+      // 1. Durante carga inicial (o refresco de sesión), forzar Splash si no estamos ahí
+      if (isLoading) {
+        return (loc == AppRoutes.splash) ? null : AppRoutes.splash;
+      }
+
+      // 2. Si ya NO está cargando y estamos en Splash, decidir a dónde ir
+      if (loc == AppRoutes.splash) {
+        if (isAuthenticated) {
+          return (user?.isYoer == true) ? AppRoutes.yoerHome : AppRoutes.clientHome;
+        }
+        return AppRoutes.welcome;
+      }
 
       // Rutas completamente públicas (sin autenticación)
       final publicRoutes = [
@@ -103,81 +118,117 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(
+        path: '/',
+        redirect: (_, __) => AppRoutes.splash,
+      ),
+      GoRoute(
+        name: 'splash',
         path: AppRoutes.splash,
         builder: (_, __) => const SplashScreen(),
       ),
       GoRoute(
+        name: 'welcome',
         path: AppRoutes.welcome,
         pageBuilder: (_, state) => _slidePage(const WelcomeScreen(), state),
       ),
       GoRoute(
+        name: 'login',
         path: AppRoutes.login,
         pageBuilder: (_, state) => _slidePage(const LoginScreen(), state),
       ),
       GoRoute(
+        name: 'register',
         path: AppRoutes.register,
         pageBuilder: (_, state) => _slidePage(const RegisterScreen(), state),
       ),
 
-      // ── YOER shell ───────────────────────────────────────────────────────
-      ShellRoute(
-        builder: (context, state, child) =>
-            MainScaffold(userType: UserType.yoer, child: child),
-        routes: [
-          GoRoute(
-            path: AppRoutes.yoerHome,
-            pageBuilder: (_, state) => _fadePage(const YoerHomeScreen(), state),
-          ),
-          GoRoute(
-            path: AppRoutes.yoerVitrina,
-            pageBuilder: (_, state) => _fadePage(const YoerVitrinaScreen(), state),
-          ),
-          GoRoute(
-            path: AppRoutes.yoerProfile,
-            pageBuilder: (_, state) => _fadePage(const YoerProfileScreen(), state),
-          ),
-        ],
+      // ── YOER routes ───────────────────────────────────────────────────────
+      GoRoute(
+        name: 'yoerHome',
+        path: AppRoutes.yoerHome,
+        pageBuilder: (_, state) => _fadePage(
+          const MainScaffold(userType: UserType.yoer, child: YoerHomeScreen()),
+          state,
+        ),
+      ),
+      GoRoute(
+        name: 'yoerVitrina',
+        path: AppRoutes.yoerVitrina,
+        pageBuilder: (_, state) => _fadePage(
+          const MainScaffold(userType: UserType.yoer, child: YoerVitrinaScreen()),
+          state,
+        ),
+      ),
+      GoRoute(
+        name: 'yoerProfile',
+        path: AppRoutes.yoerProfile,
+        pageBuilder: (_, state) => _fadePage(
+          const MainScaffold(userType: UserType.yoer, child: YoerProfileScreen()),
+          state,
+        ),
       ),
 
-      // ── CLIENT shell (accesible como invitado) ────────────────────────────
-      ShellRoute(
-        builder: (context, state, child) =>
-            MainScaffold(userType: UserType.client, child: child),
-        routes: [
-          GoRoute(
-            path: AppRoutes.clientHome,
-            pageBuilder: (_, state) => _fadePage(const ClientHomeScreen(), state),
-          ),
-          GoRoute(
-            path: AppRoutes.clientBookings,
-            pageBuilder: (_, state) => _fadePage(const ClientBookingsScreen(), state),
-          ),
-          GoRoute(
-            path: AppRoutes.clientProfile,
-            pageBuilder: (_, state) => _fadePage(const ClientProfileScreen(), state),
-          ),
-        ],
+      // ── CLIENT routes (accesible como invitado) ────────────────────────────
+      GoRoute(
+        name: 'clientHome',
+        path: AppRoutes.clientHome,
+        pageBuilder: (_, state) => _fadePage(
+          const MainScaffold(userType: UserType.client, child: ClientHomeScreen()),
+          state,
+        ),
+      ),
+      GoRoute(
+        name: 'clientBookings',
+        path: AppRoutes.clientBookings,
+        pageBuilder: (_, state) => _fadePage(
+          const MainScaffold(userType: UserType.client, child: ClientBookingsScreen()),
+          state,
+        ),
+      ),
+      GoRoute(
+        name: 'clientProfile',
+        path: AppRoutes.clientProfile,
+        pageBuilder: (_, state) => _fadePage(
+          const MainScaffold(userType: UserType.client, child: ClientProfileScreen()),
+          state,
+        ),
       ),
 
       // ── Pantallas compartidas ─────────────────────────────────────────────
       GoRoute(
+        name: 'serviceDetail',
         path: AppRoutes.serviceDetail,
         builder: (context, state) =>
             ServiceDetailScreen(serviceId: state.pathParameters['id']!),
       ),
       GoRoute(
+        name: 'createService',
         path: AppRoutes.createService,
         builder: (_, __) => const CreateServiceScreen(),
       ),
       GoRoute(
+        name: 'bookingDetail',
         path: AppRoutes.bookingDetail,
         builder: (context, state) =>
             BookingDetailScreen(bookingId: state.pathParameters['id']!),
       ),
       GoRoute(
+        name: 'payment',
         path: AppRoutes.payment,
         builder: (context, state) =>
             PaymentScreen(bookingId: state.pathParameters['bookingId']!),
+      ),
+      GoRoute(
+        path: AppRoutes.yoerRoot,
+        redirect: (_, __) => AppRoutes.yoerHome,
+      ),
+      GoRoute(
+        path: AppRoutes.clientRoot,
+        redirect: (_, __) => AppRoutes.clientHome,
+      ),
+      GoRoute(
+        path: '/:rest(.*)',
+        redirect: (_, __) => AppRoutes.welcome,
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
@@ -186,7 +237,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text('Página no encontrada', style: TextStyle(fontSize: 20)),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            Text(
+              'Ruta: ${state.fullPath ?? state.uri.toString()}',
+              style: const TextStyle(fontSize: 14, color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => context.go(AppRoutes.welcome),
               child: const Text('Ir al inicio'),

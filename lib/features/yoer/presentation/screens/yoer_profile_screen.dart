@@ -274,6 +274,19 @@ class _ClientHomeScreenState extends ConsumerState<ClientHomeScreen> {
           state.isLoading
               ? const SliverFillRemaining(child: Center(
                   child: CircularProgressIndicator(color: AppTheme.brandGreen)))
+              : state.error != null
+              ? SliverFillRemaining(child: Center(
+                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    const Icon(Icons.error_outline_rounded, color: AppTheme.alertRedLight, size: 56),
+                    const SizedBox(height: 12),
+                    Text(state.error!, style: const TextStyle(color: AppTheme.textSecondaryDark), textAlign: TextAlign.center),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => ref.read(serviceViewModelProvider.notifier).getAllServices(),
+                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.brandGreen),
+                      child: const Text('Reintentar'),
+                    ),
+                  ])))
               : displayed.isEmpty
                   ? const SliverFillRemaining(child: Center(
                       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [

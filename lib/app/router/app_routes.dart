@@ -7,6 +7,7 @@ abstract class AppRoutes {
   static const register       = '/register';
 
   // YOER
+  static const yoerRoot       = '/yoer';
   static const yoerHome       = '/yoer/home';
   static const yoerVitrina    = '/yoer/vitrina';
   static const yoerProfile    = '/yoer/profile';
@@ -14,6 +15,7 @@ abstract class AppRoutes {
   static const yoerRadar      = '/yoer/radar';
 
   // CLIENT
+  static const clientRoot     = '/client';
   static const clientHome     = '/client/home';
   static const clientBookings = '/client/bookings';
   static const clientProfile  = '/client/profile';

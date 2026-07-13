@@ -9,10 +9,10 @@
 ///   - anon public  → [SUPABASE_ANON_KEY]
 class SupabaseConfig {
   // ────────────────────────────────────────────────────────────────────────
-  // Reemplaza con tus credenciales reales de Supabase
+  // ✅ CONFIGURACIÓN ACTUALIZADA CON LLAVES REALES
   // ────────────────────────────────────────────────────────────────────────
-  static const String supabaseUrl = 'https://qomlpwvnqqrvalzvkqqr.supabase.co';
-  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFvbWxwd3ZucXFydmFsenZra3FyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTcyMTEsImV4cCI6MjA5Nzc5MzIxMX0.mKHosA4u8Qav5wkG8BKgZVw6EHxh9vf4yB7IhPQS5CA';
+  static const String supabaseUrl = 'https://zbryibypjifbkhaufmtu.supabase.co';
+  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpicnlpYnlwamlmYmtoYXVmbXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTMwODQsImV4cCI6MjA5OTE4OTA4NH0.DQHjrZj8H4x2z8gz_30MT18R3sOFxwtVo8uKedPsYrQ';
 
   // ── Nombres de tablas ────────────────────────────────────────────────────
   static const String usersTable       = 'users';

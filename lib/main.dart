@@ -22,9 +22,6 @@ Future<void> main() async {
   await Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
     anonKey: SupabaseConfig.supabaseAnonKey, // ignore: deprecated_member_use
-    authOptions: const FlutterAuthClientOptions(
-      authFlowType: AuthFlowType.pkce,
-    ),
   );
 
   // Configurar DI

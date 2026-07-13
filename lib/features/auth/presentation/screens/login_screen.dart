@@ -31,6 +31,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       email: _emailCtrl.text.trim(),
       password: _passwordCtrl.text,
     );
+    if (ok && mounted) {
+      final user = ref.read(currentUserProvider);
+      final route = user?.isYoer == true
+          ? AppRoutes.yoerHome
+          : AppRoutes.clientHome;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          debugPrint('Login: navigating to $route');
+          context.go(route);
+        }
+      });
+      return;
+    }
     if (!ok && mounted) {
       final err = ref.read(authViewModelProvider).error;
       ScaffoldMessenger.of(context).showSnackBar(
