@@ -10,10 +10,27 @@ import '../../features/auth/domain/entities/user_entity.dart';
 import '../../features/yoer/presentation/screens/yoer_home_screen.dart';
 import '../../features/yoer/presentation/screens/yoer_vitrina_screen.dart';
 import '../../features/yoer/presentation/screens/yoer_profile_screen.dart';
+import '../../features/agenda/presentation/screens/agenda_screen.dart';
+import '../../features/tasks/presentation/screens/radar_screen.dart';
+import '../../features/tasks/presentation/screens/client_tasks_screen.dart';
+import '../../features/wallet/presentation/screens/wallet_screen.dart';
 import '../../features/services/presentation/screens/service_detail_screen.dart';
 import '../../features/services/presentation/screens/create_service_screen.dart';
 import '../../features/bookings/presentation/screens/booking_detail_screen.dart';
 import '../../features/payments/presentation/screens/payment_screen.dart';
+import '../../features/payments/presentation/screens/payment_methods_screen.dart';
+import '../../features/client/presentation/screens/client_home_screen.dart';
+import '../../features/client/presentation/screens/client_bookings_screen.dart';
+import '../../features/client/presentation/screens/client_profile_screen.dart';
+import '../../features/auth/presentation/screens/edit_profile_screen.dart';
+import '../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/sanctions/presentation/screens/sanctions_screen.dart';
+import '../../features/badges/presentation/screens/badges_screen.dart';
+import '../../features/ranking/presentation/screens/ranking_screen.dart';
+import '../../features/volunteering/presentation/screens/volunteering_screen.dart';
+import '../../features/artist/presentation/screens/artist_mode_screen.dart';
+import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/main_scaffold.dart';
 import 'app_routes.dart';
 
@@ -23,7 +40,6 @@ class _RouterNotifier extends ChangeNotifier {
   late final ProviderSubscription<AuthState> _sub;
 
   _RouterNotifier(this._ref) {
-    // Escucha cambios en el estado de auth y notifica al router
     _sub = _ref.listen<AuthState>(
       authViewModelProvider,
       (_, __) => notifyListeners(),
@@ -41,67 +57,74 @@ final _routerNotifierProvider = ChangeNotifierProvider<_RouterNotifier>(
   (ref) => _RouterNotifier(ref),
 );
 
-// ── Provider del router (se crea UNA sola vez) ─────────────────────────────────
+// ── Singleton del GoRouter ────────────────────────────────────────────────────
+// Se crea UNA sola vez. ref.read (no watch) para no invalidar este provider
+// cuando cambia el notifier. El refreshListenable se encarga de re-evaluar
+// el redirect sin recrear el router.
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final notifier = ref.watch(_routerNotifierProvider);
+  // Mantener vivo el provider mientras la app viva
+  ref.keepAlive();
+
+  // Leer sin observar — el GoRouter NO se recrea cuando cambia auth
+  final notifier = ref.read(_routerNotifierProvider);
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
     refreshListenable: notifier,
     redirect: (context, state) {
-      final authState      = ref.read(authViewModelProvider);
+      final authState       = ref.read(authViewModelProvider);
       final isAuthenticated = authState.isAuthenticated;
       final isLoading       = authState.isLoading;
       final user            = authState.user;
       final loc             = state.matchedLocation;
 
-      // Durante carga inicial, quedarse en splash
-      if (isLoading && loc != AppRoutes.splash) return AppRoutes.splash;
-
-      // Rutas completamente públicas (sin autenticación)
-      final publicRoutes = [
+      // Rutas públicas
+      const publicRoutes = [
         AppRoutes.welcome,
         AppRoutes.login,
         AppRoutes.register,
+        AppRoutes.splash,
       ];
 
-      // Rutas accesibles como "invitado" (sin cuenta)
-      final guestRoutes = [
-        AppRoutes.clientHome,
-        AppRoutes.serviceDetail,
-      ];
+      // ── Cargando: mantener en splash ──────────────────────────────────────
+      if (isLoading) {
+        return loc == AppRoutes.splash ? null : AppRoutes.splash;
+      }
 
-      // Si no está autenticado
+      // ── No autenticado ────────────────────────────────────────────────────
       if (!isAuthenticated) {
-        // Si está en una ruta pública o de invitado, dejar pasar
-        if (publicRoutes.contains(loc)) return null;
-        if (guestRoutes.any((r) => loc.startsWith(r.replaceAll(':id', '')))) {
+        // Si ya está en una ruta pública → no redirigir
+        if (publicRoutes.contains(loc)) {
+          // Salir del splash hacia welcome cuando terminó de cargar
+          if (loc == AppRoutes.splash) return AppRoutes.welcome;
           return null;
         }
+        // Si está en client/home puede explorar sin cuenta
+        if (loc.startsWith('/client')) return null;
         // Cualquier otra ruta protegida → welcome
         return AppRoutes.welcome;
       }
 
-      // ── Usuario autenticado ───────────────────────────────────────────────
+      // ── Autenticado ───────────────────────────────────────────────────────
 
-      // Si viene desde splash o rutas de auth → redirigir al home correcto
-      if (publicRoutes.contains(loc) || loc == AppRoutes.splash) {
-        if (user?.isYoer == true) return AppRoutes.yoerHome;
-        return AppRoutes.clientHome;
+      // Si está en una ruta de auth o en splash → mandar al home correcto
+      if (publicRoutes.contains(loc)) {
+        return user?.isYoer == true ? AppRoutes.yoerHome : AppRoutes.clientHome;
       }
 
-      // YOER intentando acceder a rutas exclusivas de cliente (excepto shared)
-      if (user?.isYoer == true && loc.startsWith('/client')) {
+      // YOER intentando entrar a rutas de cliente (excepto client/home público)
+      if (user?.isYoer == true && loc.startsWith('/client') && loc != AppRoutes.clientHome) {
         return AppRoutes.yoerHome;
       }
-      // Cliente intentando acceder a rutas exclusivas de yoer
+      // Cliente intentando entrar a rutas de yoer
       if (user?.isClient == true && loc.startsWith('/yoer')) {
         return AppRoutes.clientHome;
       }
 
-      return null;
+      return null; // Sin redirección: dejar pasar
     },
     routes: [
+      // ── Auth / splash ─────────────────────────────────────────────────────
       GoRoute(
         path: AppRoutes.splash,
         builder: (_, __) => const SplashScreen(),
@@ -126,35 +149,61 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: AppRoutes.yoerHome,
-            pageBuilder: (_, state) => _fadePage(const YoerHomeScreen(), state),
+            pageBuilder: (_, state) =>
+                _fadePage(const YoerHomeScreen(), state),
           ),
           GoRoute(
             path: AppRoutes.yoerVitrina,
-            pageBuilder: (_, state) => _fadePage(const YoerVitrinaScreen(), state),
+            pageBuilder: (_, state) =>
+                _fadePage(const YoerVitrinaScreen(), state),
           ),
           GoRoute(
             path: AppRoutes.yoerProfile,
-            pageBuilder: (_, state) => _fadePage(const YoerProfileScreen(), state),
+            pageBuilder: (_, state) =>
+                _fadePage(const YoerProfileScreen(), state),
+          ),
+          GoRoute(
+            path: AppRoutes.yoerAgenda,
+            pageBuilder: (_, state) =>
+                _fadePage(const AgendaScreen(), state),
+          ),
+          GoRoute(
+            path: AppRoutes.yoerRadar,
+            pageBuilder: (_, state) =>
+                _fadePage(const RadarScreen(), state),
+          ),
+          GoRoute(
+            path: AppRoutes.yoerWallet,
+            pageBuilder: (_, state) =>
+                _fadePage(const WalletScreen(), state),
           ),
         ],
       ),
 
-      // ── CLIENT shell (accesible como invitado) ────────────────────────────
+      // ── CLIENT shell ─────────────────────────────────────────────────────
       ShellRoute(
         builder: (context, state, child) =>
             MainScaffold(userType: UserType.client, child: child),
         routes: [
           GoRoute(
             path: AppRoutes.clientHome,
-            pageBuilder: (_, state) => _fadePage(const ClientHomeScreen(), state),
+            pageBuilder: (_, state) =>
+                _fadePage(const ClientHomeScreen(), state),
           ),
           GoRoute(
             path: AppRoutes.clientBookings,
-            pageBuilder: (_, state) => _fadePage(const ClientBookingsScreen(), state),
+            pageBuilder: (_, state) =>
+                _fadePage(const ClientBookingsScreen(), state),
           ),
           GoRoute(
             path: AppRoutes.clientProfile,
-            pageBuilder: (_, state) => _fadePage(const ClientProfileScreen(), state),
+            pageBuilder: (_, state) =>
+                _fadePage(const ClientProfileScreen(), state),
+          ),
+          GoRoute(
+            path: AppRoutes.clientTasks,
+            pageBuilder: (_, state) =>
+                _fadePage(const ClientTasksScreen(), state),
           ),
         ],
       ),
@@ -179,17 +228,70 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) =>
             PaymentScreen(bookingId: state.pathParameters['bookingId']!),
       ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        builder: (_, __) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.paymentMethods,
+        builder: (_, __) => const PaymentMethodsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        builder: (_, __) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.editProfile,
+        builder: (_, __) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.sanctions,
+        builder: (_, __) => const SanctionsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.badges,
+        builder: (_, __) => const BadgesScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.ranking,
+        builder: (_, __) => const RankingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.volunteering,
+        builder: (_, __) => const VolunteeringScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.artistMode,
+        builder: (_, __) => const ArtistModeScreen(),
+      ),
     ],
     errorBuilder: (context, state) => Scaffold(
+      backgroundColor: context.bg,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Página no encontrada', style: TextStyle(fontSize: 20)),
-            const SizedBox(height: 16),
+            Text(
+              '¡Ups!',
+              style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Página no encontrada: ${state.matchedLocation}',
+              style: TextStyle(color: context.textSecondary, fontSize: 13),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => context.go(AppRoutes.welcome),
-              child: const Text('Ir al inicio'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.brandGreen,
+              ),
+              child: const Text('Volver al inicio',
+                  style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -199,24 +301,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 });
 
 // ── Transiciones ──────────────────────────────────────────────────────────────
-CustomTransitionPage _slidePage(Widget child, GoRouterState state) {
-  return CustomTransitionPage(
+CustomTransitionPage<void> _slidePage(Widget child, GoRouterState state) {
+  return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);
       const end = Offset.zero;
-      const curve = Curves.easeInOutCubic;
       final tween = Tween(begin: begin, end: end)
-          .chain(CurveTween(curve: curve));
+          .chain(CurveTween(curve: Curves.easeInOutCubic));
       return SlideTransition(position: animation.drive(tween), child: child);
     },
     transitionDuration: const Duration(milliseconds: 300),
   );
 }
 
-CustomTransitionPage _fadePage(Widget child, GoRouterState state) {
-  return CustomTransitionPage(
+CustomTransitionPage<void> _fadePage(Widget child, GoRouterState state) {
+  return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {

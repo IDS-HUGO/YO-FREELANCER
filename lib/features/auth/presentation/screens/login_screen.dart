@@ -25,6 +25,47 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
+  void _showForgotPasswordDialog() {
+    final ctrl = TextEditingController(text: _emailCtrl.text);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: ctx.card,
+        title: Text('Recuperar contraseña', style: TextStyle(color: ctx.textPrimary)),
+        content: TextField(
+          controller: ctrl,
+          keyboardType: TextInputType.emailAddress,
+          style: TextStyle(color: ctx.textPrimary),
+          decoration: const InputDecoration(labelText: 'Tu email'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () async {
+              final email = ctrl.text.trim();
+              Navigator.pop(ctx);
+              if (email.isEmpty) return;
+              final ok = await ref.read(authViewModelProvider.notifier).resetPasswordForEmail(email);
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(ok
+                      ? 'Te enviamos un correo para restablecer tu contraseña'
+                      : 'No se pudo enviar el correo, intenta de nuevo'),
+                  backgroundColor: ok ? AppTheme.brandGreenDark : AppTheme.alertRed,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  margin: const EdgeInsets.all(16),
+                ),
+              );
+            },
+            child: const Text('Enviar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     final ok = await ref.read(authViewModelProvider.notifier).login(
@@ -49,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(authViewModelProvider);
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: context.bg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -64,22 +105,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   icon: Container(
                     width: 40, height: 40,
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppTheme.borderDark),
+                      border: Border.all(color: context.border),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.arrow_back_ios_new_rounded,
-                        size: 16, color: Colors.white),
+                    child: Icon(Icons.arrow_back_ios_new_rounded,
+                        size: 16, color: context.textPrimary),
                   ),
                 ),
                 const SizedBox(height: 48),
-                const Text('Bienvenido\nde vuelta',
+                Text('Bienvenido\nde vuelta',
                     style: TextStyle(
-                      color: Colors.white, fontSize: 34,
+                      color: context.textPrimary, fontSize: 34,
                       fontWeight: FontWeight.w800, height: 1.2,
                     )),
                 const SizedBox(height: 10),
-                const Text('Introduce tus datos para continuar',
-                    style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 15)),
+                Text('Introduce tus datos para continuar',
+                    style: TextStyle(color: context.textSecondary, fontSize: 15)),
                 const SizedBox(height: 40),
 
                 // Email
@@ -88,7 +129,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextFormField(
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: context.textPrimary),
                   decoration: _inputDeco('tu@email.com', Icons.mail_outline_rounded),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Ingresa tu correo';
@@ -104,13 +145,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextFormField(
                   controller: _passwordCtrl,
                   obscureText: _obscure,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: context.textPrimary),
                   decoration: _inputDeco('••••••••', Icons.lock_outline_rounded).copyWith(
                     suffixIcon: IconButton(
                       onPressed: () => setState(() => _obscure = !_obscure),
                       icon: Icon(
                         _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: AppTheme.textSecondaryDark, size: 20,
+                        color: context.textSecondary, size: 20,
                       ),
                     ),
                   ),
@@ -124,7 +165,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: _showForgotPasswordDialog,
                     child: const Text('¿Olvidaste tu contraseña?',
                         style: TextStyle(color: AppTheme.brandGreen, fontSize: 13)),
                   ),
@@ -155,8 +196,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 28),
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  const Text('¿No tienes cuenta? ',
-                      style: TextStyle(color: AppTheme.textSecondaryDark)),
+                  Text('¿No tienes cuenta? ',
+                      style: TextStyle(color: context.textSecondary)),
                   GestureDetector(
                     onTap: () => context.go(AppRoutes.register),
                     child: const Text('Regístrate',
@@ -174,24 +215,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Widget _label(String text) => Text(text,
-      style: const TextStyle(
-        color: Colors.white, fontSize: 11,
+      style: TextStyle(
+        color: context.textPrimary, fontSize: 11,
         fontWeight: FontWeight.w700, letterSpacing: 1.2,
       ));
 
   InputDecoration _inputDeco(String hint, IconData icon) => InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: AppTheme.textHintDark),
-    prefixIcon: Icon(icon, color: AppTheme.textSecondaryDark, size: 18),
+    hintStyle: TextStyle(color: context.textHint),
+    prefixIcon: Icon(icon, color: context.textSecondary, size: 18),
     filled: true,
-    fillColor: AppTheme.cardDark,
+    fillColor: context.card,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
       borderSide: BorderSide.none,
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: AppTheme.borderDark, width: 0.5),
+      borderSide: BorderSide(color: context.border, width: 0.5),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),

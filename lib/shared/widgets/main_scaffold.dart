@@ -1,7 +1,9 @@
 // lib/shared/widgets/main_scaffold.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/domain/entities/user_entity.dart';
+import '../../features/notifications/presentation/viewmodels/notification_viewmodel.dart';
 import '../../app/router/app_routes.dart';
 import '../theme/app_theme.dart';
 
@@ -80,12 +82,15 @@ class _BottomNavBar extends StatelessWidget {
 
   static const _yoerItems = [
     _NavItemData(icon: Icons.home_rounded,     label: 'Inicio',  route: AppRoutes.yoerHome),
-    _NavItemData(icon: Icons.store_rounded,    label: 'Vitrina', route: AppRoutes.yoerVitrina),
+    _NavItemData(icon: Icons.event_note_rounded, label: 'Agenda', route: AppRoutes.yoerAgenda),
+    _NavItemData(icon: Icons.radar_rounded,    label: 'Radar',   route: AppRoutes.yoerRadar),
+    _NavItemData(icon: Icons.account_balance_wallet_rounded, label: 'Billetera', route: AppRoutes.yoerWallet),
     _NavItemData(icon: Icons.person_rounded,   label: 'Perfil',  route: AppRoutes.yoerProfile),
   ];
 
   static const _clientItems = [
     _NavItemData(icon: Icons.explore_rounded,  label: 'Explorar', route: AppRoutes.clientHome),
+    _NavItemData(icon: Icons.assignment_outlined, label: 'Tareas', route: AppRoutes.clientTasks),
     _NavItemData(icon: Icons.book_rounded,     label: 'Reservas', route: AppRoutes.clientBookings),
     _NavItemData(icon: Icons.person_rounded,   label: 'Perfil',   route: AppRoutes.clientProfile),
   ];
@@ -131,7 +136,7 @@ class _NavItem extends StatelessWidget {
               ),
               child: Icon(
                 item.icon,
-                color: isSelected ? AppTheme.brandGreen : AppTheme.textHintDark,
+                color: isSelected ? AppTheme.brandGreen : context.textHint,
                 size: 22,
               ),
             ),
@@ -141,7 +146,7 @@ class _NavItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                color: isSelected ? AppTheme.brandGreen : AppTheme.textHintDark,
+                color: isSelected ? AppTheme.brandGreen : context.textHint,
               ),
             ),
           ],
@@ -320,8 +325,8 @@ class UserAvatar extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppTheme.cardDark,
-        border: Border.all(color: AppTheme.borderDark, width: 1),
+        color: context.card,
+        border: Border.all(color: context.border, width: 1),
       ),
       clipBehavior: Clip.antiAlias,
       child: imageUrl != null && imageUrl!.isNotEmpty
@@ -396,6 +401,53 @@ class SectionCard extends StatelessWidget {
         const SizedBox(height: 12),
         child,
       ],
+    );
+  }
+}
+
+/// Ícono de campana con contador de no-leídas, cableado a Supabase Realtime.
+class NotificationBell extends ConsumerWidget {
+  final String userId;
+  final Color? color;
+  final double size;
+
+  const NotificationBell({
+    super.key,
+    required this.userId,
+    this.color,
+    this.size = 20,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unread = ref.watch(notificationStreamProvider(userId)).maybeWhen(
+          data: (items) => items.where((n) => !n.isRead).length,
+          orElse: () => 0,
+        );
+
+    return GestureDetector(
+      onTap: () => context.push(AppRoutes.notifications),
+      child: Container(
+        width: 42, height: 42,
+        decoration: BoxDecoration(
+          border: Border.all(color: context.border),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Stack(clipBehavior: Clip.none, children: [
+          Center(
+            child: Icon(Icons.notifications_outlined, size: size,
+                color: color ?? context.textSecondary),
+          ),
+          if (unread > 0)
+            Positioned(
+              top: 4, right: 4,
+              child: Container(
+                width: 8, height: 8,
+                decoration: const BoxDecoration(color: AppTheme.alertRedLight, shape: BoxShape.circle),
+              ),
+            ),
+        ]),
+      ),
     );
   }
 }

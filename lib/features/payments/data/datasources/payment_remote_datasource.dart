@@ -400,6 +400,16 @@ class PaymentViewModel extends StateNotifier<PaymentState> {
     }
   }
 
+  Future<void> markDefaultCard(String userId, String cardId) async {
+    try {
+      await _ds.setDefaultCard(userId, cardId);
+      await loadCards(userId);
+      state = state.copyWith(successMessage: 'Tarjeta predeterminada actualizada');
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
   void clearMessages() => state = state.copyWith(clearError: true, clearSuccess: true);
 }
 

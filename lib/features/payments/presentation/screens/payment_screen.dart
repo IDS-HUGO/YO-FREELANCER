@@ -53,19 +53,19 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         context: context,
         barrierDismissible: false,
         builder: (_) => AlertDialog(
-          backgroundColor: AppTheme.cardDark,
+          backgroundColor: context.card,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
             const Icon(Icons.check_circle_rounded, color: AppTheme.brandGreen, size: 64),
             const SizedBox(height: 16),
-            const Text('¡Pago exitoso!',
-                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+            Text('¡Pago exitoso!',
+                style: TextStyle(color: context.textPrimary, fontSize: 20, fontWeight: FontWeight.w800)),
             const SizedBox(height: 8),
             Text('\$${_booking!.totalPrice.toStringAsFixed(2)} MXN',
                 style: const TextStyle(color: AppTheme.brandGreen, fontSize: 24, fontWeight: FontWeight.w900)),
             const SizedBox(height: 8),
             Text('Método: ${_selectedMethod!.displayName}',
-                style: const TextStyle(color: AppTheme.textSecondaryDark)),
+                style: TextStyle(color: context.textSecondary)),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
@@ -91,22 +91,22 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     final payState = ref.watch(paymentViewModelProvider);
 
     if (_loading) {
-      return const Scaffold(
-        backgroundColor: AppTheme.bgDark,
-        body: Center(child: CircularProgressIndicator(color: AppTheme.brandGreen)),
+      return Scaffold(
+        backgroundColor: context.bg,
+        body: const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen)),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: context.bg,
       appBar: AppBar(
-        backgroundColor: AppTheme.bgDark, elevation: 0,
+        backgroundColor: context.bg, elevation: 0,
         leading: IconButton(
           onPressed: () => context.pop(),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: context.textPrimary),
         ),
-        title: const Text('Realizar pago',
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+        title: Text('Realizar pago',
+            style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
       ),
       body: Column(children: [
         Expanded(child: SingleChildScrollView(
@@ -117,27 +117,27 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppTheme.cardDark, AppTheme.cardInnerDark],
+                  gradient: LinearGradient(
+                    colors: [context.card, context.cardInner],
                     begin: Alignment.topLeft, end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: AppTheme.borderDark, width: 0.5),
+                  border: Border.all(color: context.border, width: 0.5),
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('RESUMEN',
-                      style: TextStyle(color: AppTheme.textHintDark, fontSize: 11,
+                  Text('RESUMEN',
+                      style: TextStyle(color: context.textHint, fontSize: 11,
                           fontWeight: FontWeight.w700, letterSpacing: 1.2)),
                   const SizedBox(height: 12),
                   Text(_booking!.serviceName,
-                      style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+                      style: TextStyle(color: context.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 6),
                   Text('YOER: ${_booking!.yoerName}',
-                      style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
-                  const Divider(color: AppTheme.borderDark, height: 24),
+                      style: TextStyle(color: context.textSecondary, fontSize: 13)),
+                  Divider(color: context.border, height: 24),
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    const Text('Total a pagar',
-                        style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                    Text('Total a pagar',
+                        style: TextStyle(color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
                     Text('\$${_booking!.totalPrice.toStringAsFixed(2)} MXN',
                         style: const TextStyle(color: AppTheme.brandGreen, fontSize: 20, fontWeight: FontWeight.w900)),
                   ]),
@@ -147,8 +147,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             ],
 
             // Métodos de pago
-            const Text('MÉTODO DE PAGO',
-                style: TextStyle(color: AppTheme.textHintDark, fontSize: 11,
+            Text('MÉTODO DE PAGO',
+                style: TextStyle(color: context.textHint, fontSize: 11,
                     fontWeight: FontWeight.w700, letterSpacing: 1.2)),
             const SizedBox(height: 14),
             ...PaymentMethodType.values.map((m) => _MethodCard(
@@ -180,9 +180,9 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         // Botón de pago
         Container(
           padding: const EdgeInsets.all(20),
-          decoration: const BoxDecoration(
-            color: AppTheme.surfaceDark,
-            border: Border(top: BorderSide(color: AppTheme.borderDark, width: 0.5)),
+          decoration: BoxDecoration(
+            color: context.card,
+            border: Border(top: BorderSide(color: context.border, width: 0.5)),
           ),
           child: SafeArea(
             child: SizedBox(
@@ -191,7 +191,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                 onPressed: (_selectedMethod == null || payState.isLoading) ? null : _pay,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.brandGreen,
-                  disabledBackgroundColor: AppTheme.borderDark,
+                  disabledBackgroundColor: context.border,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   elevation: 0,
                 ),
@@ -234,10 +234,10 @@ class _MethodCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.brandGreen.withValues(alpha: 0.1) : AppTheme.cardDark,
+          color: isSelected ? AppTheme.brandGreen.withValues(alpha: 0.1) : context.card,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? AppTheme.brandGreen : AppTheme.borderDark,
+            color: isSelected ? AppTheme.brandGreen : context.border,
             width: isSelected ? 1.5 : 0.5,
           ),
         ),
@@ -247,11 +247,11 @@ class _MethodCard extends StatelessWidget {
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(method.displayName,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : AppTheme.textSecondaryDark,
+                  color: isSelected ? context.textPrimary : context.textSecondary,
                   fontSize: 14, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 )),
             Text(_subtitle(method),
-                style: const TextStyle(color: AppTheme.textHintDark, fontSize: 11)),
+                style: TextStyle(color: context.textHint, fontSize: 11)),
           ])),
           if (isSelected)
             const Icon(Icons.check_circle_rounded, color: AppTheme.brandGreen, size: 22),

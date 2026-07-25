@@ -31,8 +31,11 @@ class AppTheme {
   static const Color bgLight           = Color(0xFFF5F7F5);
   static const Color surfaceLight      = Color(0xFFFFFFFF);
   static const Color cardLight         = Color(0xFFF0F5F1);
+  static const Color cardInnerLight    = Color(0xFFE3EFE5);
+  static const Color borderLight       = Color(0xFFE0EAE2);
   static const Color textPrimaryLight  = Color(0xFF121513);
   static const Color textSecondaryLight= Color(0xFF4A6450);
+  static const Color textHintLight     = Color(0xFF93A899);
 
   // ── Typography ───────────────────────────────────────────────────────────
   static TextTheme _buildTextTheme(Color primary, Color secondary) {
@@ -359,12 +362,46 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          textStyle: GoogleFonts.spaceGrotesk(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.3,
+          ),
+        ),
+      ),
+
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: brandGreenDark,
+          side: const BorderSide(color: brandGreen, width: 1.5),
+          minimumSize: const Size.fromHeight(52),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: GoogleFonts.spaceGrotesk(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: brandGreenDark,
+          textStyle: GoogleFonts.spaceGrotesk(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: cardLight,
+        hintStyle: GoogleFonts.spaceGrotesk(
+          color: textHintLight,
+          fontSize: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -377,9 +414,90 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: brandGreen, width: 1.5),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: alertRed, width: 1.5),
+        ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16, vertical: 14,
         ),
+        prefixIconColor: textSecondaryLight,
+        suffixIconColor: textSecondaryLight,
+        labelStyle: GoogleFonts.spaceGrotesk(color: textSecondaryLight),
+      ),
+
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: surfaceLight,
+        selectedItemColor: brandGreen,
+        unselectedItemColor: textHintLight,
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+      ),
+
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: surfaceLight,
+        indicatorColor: brandGreen.withValues(alpha: 0.15),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: brandGreenDark);
+          }
+          return const IconThemeData(color: textHintLight);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final base = GoogleFonts.spaceGrotesk(fontSize: 10);
+          if (states.contains(WidgetState.selected)) {
+            return base.copyWith(
+              color: brandGreenDark, fontWeight: FontWeight.w700,
+            );
+          }
+          return base.copyWith(color: textHintLight);
+        }),
+      ),
+
+      chipTheme: ChipThemeData(
+        backgroundColor: cardLight,
+        selectedColor: brandGreen.withValues(alpha: 0.15),
+        labelStyle: GoogleFonts.spaceGrotesk(
+          fontSize: 12, fontWeight: FontWeight.w500,
+        ),
+        side: const BorderSide(color: Color(0xFFE0EAE2)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+
+      dividerTheme: const DividerThemeData(
+        color: Color(0xFFE0EAE2),
+        thickness: 0.5,
+        space: 0,
+      ),
+
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: textPrimaryLight,
+        contentTextStyle: GoogleFonts.spaceGrotesk(
+          color: Colors.white, fontSize: 14,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: brandGreen,
+      ),
+
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return brandGreen;
+          return const Color(0xFFCDD8CE);
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return brandGreen.withValues(alpha: 0.4);
+          }
+          return const Color(0xFFE0EAE2);
+        }),
       ),
     );
   }
@@ -397,22 +515,32 @@ class AppTheme {
     colors: [bgDark, surfaceDark],
   );
 
-  static LinearGradient cardGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      cardDark,
-      cardInnerDark.withValues(alpha: 0.8),
-    ],
-  );
+  static LinearGradient cardGradient(bool isDark) => LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: isDark
+            ? [cardDark, cardInnerDark.withValues(alpha: 0.8)]
+            : [cardLight, cardInnerLight.withValues(alpha: 0.8)],
+      );
 }
 
-/// Extensiones de contexto para acceso rápido al tema
+/// Extensiones de contexto para acceso rápido al tema.
+/// Los getters semánticos (bg, card, border, textSecondary, etc.) resuelven
+/// automáticamente al tono claro u oscuro según el ThemeMode activo.
 extension ThemeExtension on BuildContext {
   ThemeData get theme => Theme.of(this);
   ColorScheme get colors => Theme.of(this).colorScheme;
   TextTheme get textTheme => Theme.of(this).textTheme;
   bool get isDark => Theme.of(this).brightness == Brightness.dark;
+
+  Color get bg            => isDark ? AppTheme.bgDark : AppTheme.bgLight;
+  Color get surface        => isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight;
+  Color get card           => isDark ? AppTheme.cardDark : AppTheme.cardLight;
+  Color get cardInner      => isDark ? AppTheme.cardInnerDark : AppTheme.cardInnerLight;
+  Color get border         => isDark ? AppTheme.borderDark : AppTheme.borderLight;
+  Color get textPrimary    => isDark ? AppTheme.textPrimaryDark : AppTheme.textPrimaryLight;
+  Color get textSecondary  => isDark ? AppTheme.textSecondaryDark : AppTheme.textSecondaryLight;
+  Color get textHint       => isDark ? AppTheme.textHintDark : AppTheme.textHintLight;
 }
 
 /// Radios de borde estándar

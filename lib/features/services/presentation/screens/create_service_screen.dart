@@ -89,15 +89,15 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
     final state = ref.watch(serviceViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: context.bg,
       appBar: AppBar(
-        backgroundColor: AppTheme.bgDark,
+        backgroundColor: context.bg,
         leading: IconButton(
           onPressed: () => context.pop(),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: context.textPrimary),
         ),
-        title: const Text('Nuevo Servicio',
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+        title: Text('Nuevo Servicio',
+            style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
         elevation: 0,
       ),
       body: Form(
@@ -110,7 +110,7 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _titleCtrl,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: context.textPrimary),
               decoration: _deco('Ej: Desarrollo de App Android', Icons.title_rounded),
               validator: (v) => (v == null || v.isEmpty) ? 'Campo requerido' : null,
             ),
@@ -122,7 +122,7 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
             TextFormField(
               controller: _descCtrl,
               maxLines: 4,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: context.textPrimary),
               decoration: _deco('Describe detalladamente tu servicio...', Icons.description_outlined),
               validator: (v) => (v == null || v.length < 20) ? 'Mínimo 20 caracteres' : null,
             ),
@@ -144,16 +144,16 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
                       margin: const EdgeInsets.only(right: 8),
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: sel ? AppTheme.brandGreen : AppTheme.cardDark,
+                        color: sel ? AppTheme.brandGreen : context.card,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: sel ? AppTheme.brandGreen : AppTheme.borderDark,
+                          color: sel ? AppTheme.brandGreen : context.border,
                           width: 0.5,
                         ),
                       ),
                       child: Text('${c.emoji} ${c.displayName}',
                           style: TextStyle(
-                            color: sel ? Colors.white : AppTheme.textSecondaryDark,
+                            color: sel ? Colors.white : context.textSecondary,
                             fontSize: 12, fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
                           )),
                     ),
@@ -176,16 +176,16 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: sel ? AppTheme.brandGreen.withValues(alpha: 0.15) : AppTheme.cardDark,
+                      color: sel ? AppTheme.brandGreen.withValues(alpha: 0.15) : context.card,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: sel ? AppTheme.brandGreen : AppTheme.borderDark,
+                        color: sel ? AppTheme.brandGreen : context.border,
                         width: sel ? 1.5 : 0.5,
                       ),
                     ),
                     child: Text(t.displayName, textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: sel ? AppTheme.brandGreen : AppTheme.textSecondaryDark,
+                          color: sel ? AppTheme.brandGreen : context.textSecondary,
                           fontSize: 12, fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
                         )),
                   ),
@@ -202,7 +202,7 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
                 TextFormField(
                   controller: _priceCtrl,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: context.textPrimary),
                   decoration: _deco('0.00', Icons.attach_money_rounded),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Requerido';
@@ -218,17 +218,17 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: AppTheme.cardDark,
+                    color: context.card,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.borderDark, width: 0.5),
+                    border: Border.all(color: context.border, width: 0.5),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<PriceType>(
                       value: _priceType,
                       isExpanded: true,
-                      dropdownColor: AppTheme.cardDark,
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
-                      iconEnabledColor: AppTheme.textSecondaryDark,
+                      dropdownColor: context.card,
+                      style: TextStyle(color: context.textPrimary, fontSize: 13),
+                      iconEnabledColor: context.textSecondary,
                       items: PriceType.values.map((p) => DropdownMenuItem(
                         value: p,
                         child: Text(p.displayName),
@@ -246,7 +246,7 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _cityCtrl,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: context.textPrimary),
               decoration: _deco('Ej: Ciudad de México', Icons.location_city_outlined),
             ),
             const SizedBox(height: 18),
@@ -256,7 +256,7 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _specialtiesCtrl,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: context.textPrimary),
               decoration: _deco('Kotlin, Compose, Firebase', Icons.auto_awesome_outlined),
             ),
             const SizedBox(height: 36),
@@ -291,11 +291,11 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
               child: OutlinedButton(
                 onPressed: () => context.pop(),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppTheme.borderDark),
+                  side: BorderSide(color: context.border),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text('Cancelar',
-                    style: TextStyle(color: AppTheme.textSecondaryDark, fontWeight: FontWeight.w600)),
+                child: Text('Cancelar',
+                    style: TextStyle(color: context.textSecondary, fontWeight: FontWeight.w600)),
               ),
             ),
             const SizedBox(height: 32),
@@ -306,20 +306,20 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
   }
 
   Widget _label(String text) => Text(text,
-      style: const TextStyle(
-        color: Colors.white, fontSize: 11,
+      style: TextStyle(
+        color: context.textPrimary, fontSize: 11,
         fontWeight: FontWeight.w700, letterSpacing: 1.2,
       ));
 
   InputDecoration _deco(String hint, IconData icon) => InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: AppTheme.textHintDark),
-    prefixIcon: Icon(icon, color: AppTheme.textSecondaryDark, size: 18),
+    hintStyle: TextStyle(color: context.textHint),
+    prefixIcon: Icon(icon, color: context.textSecondary, size: 18),
     filled: true,
-    fillColor: AppTheme.cardDark,
+    fillColor: context.card,
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppTheme.borderDark, width: 0.5)),
+        borderSide: BorderSide(color: context.border, width: 0.5)),
     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppTheme.brandGreen, width: 1.5)),
     errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),

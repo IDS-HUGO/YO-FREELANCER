@@ -31,26 +31,26 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
     final user    = ref.watch(currentUserProvider);
 
     if (state.isLoading || service == null) {
-      return const Scaffold(
-        backgroundColor: AppTheme.bgDark,
-        body: Center(child: CircularProgressIndicator(color: AppTheme.brandGreen)),
+      return Scaffold(
+        backgroundColor: context.bg,
+        body: const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen)),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: context.bg,
       body: CustomScrollView(slivers: [
         // AppBar con imagen
         SliverAppBar(
-          backgroundColor: AppTheme.bgDark,
+          backgroundColor: context.bg,
           expandedHeight: service.hasImages ? 260 : 100,
           pinned: true,
           flexibleSpace: FlexibleSpaceBar(
             background: service.hasImages
                 ? Image.network(service.thumbnailUrl!, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(color: AppTheme.cardDark))
+                    errorBuilder: (_, __, ___) => Container(color: context.card))
                 : Container(
-                    color: AppTheme.surfaceDark,
+                    color: context.card,
                     child: Center(child: Text(service.category.emoji, style: const TextStyle(fontSize: 64))),
                   ),
           ),
@@ -96,7 +96,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
             const SizedBox(height: 12),
 
             Text(service.title,
-                style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800, height: 1.2)),
+                style: TextStyle(color: context.textPrimary, fontSize: 22, fontWeight: FontWeight.w800, height: 1.2)),
             const SizedBox(height: 16),
 
             // Precio + tipo
@@ -107,12 +107,12 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppTheme.cardDark,
+                  color: context.card,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppTheme.borderDark, width: 0.5),
+                  border: Border.all(color: context.border, width: 0.5),
                 ),
                 child: Text(service.serviceType.displayName,
-                    style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12)),
+                    style: TextStyle(color: context.textSecondary, fontSize: 12)),
               ),
             ]),
             const SizedBox(height: 20),
@@ -121,62 +121,62 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppTheme.cardDark,
+                color: context.card,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppTheme.borderDark, width: 0.5),
+                border: Border.all(color: context.border, width: 0.5),
               ),
               child: Row(children: [
                 UserAvatar(imageUrl: service.yoerImageUrl, initials: service.yoerName[0].toUpperCase(), size: 44),
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(service.yoerName,
-                      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                      style: TextStyle(color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
                   Row(children: [
                     RatingStars(rating: service.rating),
                     const SizedBox(width: 6),
                     Text('${service.totalReviews} reseñas',
-                        style: const TextStyle(color: AppTheme.textHintDark, fontSize: 11)),
+                        style: TextStyle(color: context.textHint, fontSize: 11)),
                   ]),
                 ])),
-                const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: AppTheme.textHintDark),
+                Icon(Icons.arrow_forward_ios_rounded, size: 13, color: context.textHint),
               ]),
             ),
             const SizedBox(height: 24),
 
-            const Text('Descripción',
-                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+            Text('Descripción',
+                style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Text(service.description,
-                style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 14, height: 1.6)),
+                style: TextStyle(color: context.textSecondary, fontSize: 14, height: 1.6)),
 
             if (service.specialties.isNotEmpty) ...[
               const SizedBox(height: 20),
-              const Text('Especialidades',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+              Text('Especialidades',
+                  style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
               const SizedBox(height: 10),
               Wrap(spacing: 8, runSpacing: 8,
                   children: service.specialties.map((s) => Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppTheme.cardDark,
+                      color: context.card,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppTheme.borderDark, width: 0.5),
+                      border: Border.all(color: context.border, width: 0.5),
                     ),
-                    child: Text(s, style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12)),
+                    child: Text(s, style: TextStyle(color: context.textSecondary, fontSize: 12)),
                   )).toList()),
             ],
 
             if (service.includedItems.isNotEmpty) ...[
               const SizedBox(height: 20),
-              const Text('¿Qué incluye?',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+              Text('¿Qué incluye?',
+                  style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
               const SizedBox(height: 10),
               ...service.includedItems.map((item) => Padding(
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Row(children: [
                   const Icon(Icons.check_circle_rounded, color: AppTheme.brandGreen, size: 16),
                   const SizedBox(width: 8),
-                  Text(item, style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
+                  Text(item, style: TextStyle(color: context.textSecondary, fontSize: 13)),
                 ]),
               )),
             ],
@@ -189,9 +189,9 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
       bottomNavigationBar: user?.isClient == true
           ? Container(
               padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: AppTheme.surfaceDark,
-                border: Border(top: BorderSide(color: AppTheme.borderDark, width: 0.5)),
+              decoration: BoxDecoration(
+                color: context.card,
+                border: Border(top: BorderSide(color: context.border, width: 0.5)),
               ),
               child: SafeArea(
                 child: ElevatedButton(
@@ -209,7 +209,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
       String yoerId, double price, String clientId) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceDark,
+      backgroundColor: context.card,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       isScrollControlled: true,
@@ -277,14 +277,14 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
         padding: const EdgeInsets.all(24),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            const Text('Reservar servicio',
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+            Text('Reservar servicio',
+                style: TextStyle(color: context.textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
             const Spacer(),
             IconButton(onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close_rounded, color: AppTheme.textHintDark)),
+                icon: Icon(Icons.close_rounded, color: context.textHint)),
           ]),
           const SizedBox(height: 20),
-          Text(widget.serviceName, style: const TextStyle(color: AppTheme.textSecondaryDark)),
+          Text(widget.serviceName, style: TextStyle(color: context.textSecondary)),
           const SizedBox(height: 4),
           Text('\$${widget.totalPrice.toStringAsFixed(0)} MXN',
               style: const TextStyle(color: AppTheme.brandGreen, fontSize: 20, fontWeight: FontWeight.w800)),
@@ -300,30 +300,30 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
             child: Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppTheme.cardDark,
+                color: context.card,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.borderDark, width: 0.5),
+                border: Border.all(color: context.border, width: 0.5),
               ),
               child: Row(children: [
-                const Icon(Icons.calendar_today_outlined, color: AppTheme.textSecondaryDark, size: 18),
+                Icon(Icons.calendar_today_outlined, color: context.textSecondary, size: 18),
                 const SizedBox(width: 10),
                 Text(_date == null ? 'Seleccionar fecha' : '${_date!.day}/${_date!.month}/${_date!.year}',
-                    style: TextStyle(color: _date == null ? AppTheme.textHintDark : Colors.white)),
+                    style: TextStyle(color: _date == null ? context.textHint : context.textPrimary)),
               ]),
             ),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _addressCtrl,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: context.textPrimary),
             decoration: InputDecoration(
               hintText: 'Dirección del servicio',
-              hintStyle: const TextStyle(color: AppTheme.textHintDark),
-              prefixIcon: const Icon(Icons.location_on_outlined, color: AppTheme.textSecondaryDark, size: 18),
-              filled: true, fillColor: AppTheme.cardDark,
+              hintStyle: TextStyle(color: context.textHint),
+              prefixIcon: Icon(Icons.location_on_outlined, color: context.textSecondary, size: 18),
+              filled: true, fillColor: context.card,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.borderDark, width: 0.5)),
+                  borderSide: BorderSide(color: context.border, width: 0.5)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: AppTheme.brandGreen, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

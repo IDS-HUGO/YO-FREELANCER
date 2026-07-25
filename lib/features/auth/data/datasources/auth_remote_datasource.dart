@@ -109,6 +109,16 @@ class AuthRemoteDataSource {
     return UserDto.fromJson(updated).toEntity();
   }
 
+  // ── Cambiar contraseña ─────────────────────────────────────────────────────
+  Future<void> changePassword(String newPassword) async {
+    await _client.auth.updateUser(UserAttributes(password: newPassword));
+  }
+
+  // ── Recuperar contraseña olvidada ──────────────────────────────────────────
+  Future<void> resetPasswordForEmail(String email) async {
+    await _client.auth.resetPasswordForEmail(email);
+  }
+
   // ── Upload Profile Image ──────────────────────────────────────────────────
   Future<String?> uploadProfileImage(String filePath) async {
     final user = _client.auth.currentUser;

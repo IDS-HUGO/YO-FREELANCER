@@ -25,6 +25,10 @@ abstract class AuthRepository {
 
   Future<String?> uploadProfileImage(String filePath);
 
+  Future<void> changePassword(String newPassword);
+
+  Future<void> resetPasswordForEmail(String email);
+
   Stream<UserEntity?> get authStateChanges;
 
   bool get isAuthenticated;
@@ -77,6 +81,14 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<String?> uploadProfileImage(String filePath) =>
       _remoteDataSource.uploadProfileImage(filePath);
+
+  @override
+  Future<void> changePassword(String newPassword) =>
+      _remoteDataSource.changePassword(newPassword);
+
+  @override
+  Future<void> resetPasswordForEmail(String email) =>
+      _remoteDataSource.resetPasswordForEmail(email);
 
   @override
   Stream<UserEntity?> get authStateChanges =>

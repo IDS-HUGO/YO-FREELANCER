@@ -18,10 +18,21 @@ abstract class AppRoutes {
   static const clientBookings = '/client/bookings';
   static const clientProfile  = '/client/profile';
   static const clientPayments = '/client/payments';
+  static const paymentMethods = '/payment-methods';
 
   // Shared
   static const serviceDetail  = '/service/:id';
   static const createService  = '/service/create';
   static const bookingDetail  = '/booking/:id';
   static const payment        = '/payment/:bookingId';
+  static const notifications  = '/notifications';
+  static const settings       = '/settings';
+  static const editProfile    = '/edit-profile';
+  static const sanctions      = '/sanctions';
+  static const yoerWallet     = '/yoer/wallet';
+  static const badges         = '/badges';
+  static const ranking        = '/ranking';
+  static const clientTasks    = '/client/tasks';
+  static const volunteering   = '/volunteering';
+  static const artistMode     = '/artist-mode';
 }

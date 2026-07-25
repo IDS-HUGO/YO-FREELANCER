@@ -40,18 +40,18 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
     final user = ref.watch(currentUserProvider);
 
     if (_loading) {
-      return const Scaffold(
-        backgroundColor: AppTheme.bgDark,
-        body: Center(child: CircularProgressIndicator(color: AppTheme.brandGreen)),
+      return Scaffold(
+        backgroundColor: context.bg,
+        body: const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen)),
       );
     }
 
     if (_booking == null) {
       return Scaffold(
-        backgroundColor: AppTheme.bgDark,
+        backgroundColor: context.bg,
         appBar: _appBar(context),
-        body: const Center(child: Text('Reserva no encontrada',
-            style: TextStyle(color: AppTheme.textSecondaryDark))),
+        body: Center(child: Text('Reserva no encontrada',
+            style: TextStyle(color: context.textSecondary))),
       );
     }
 
@@ -63,7 +63,7 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
     final isConfirmed = b.status == BookingStatus.confirmada;
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: context.bg,
       appBar: _appBar(context),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -71,7 +71,7 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
           // Estado + servicio
           Row(children: [
             Expanded(child: Text(b.serviceName,
-                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800),
+                style: TextStyle(color: context.textPrimary, fontSize: 20, fontWeight: FontWeight.w800),
                 maxLines: 2, overflow: TextOverflow.ellipsis)),
             BookingStatusChip(status: b.status.name),
           ]),
@@ -173,7 +173,10 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
           if (isClient && b.status == BookingStatus.completada &&
               b.paymentStatus == PaymentStatus.pendiente) ...[
             ElevatedButton(
-              onPressed: () => context.push('/payment/${b.id}'),
+              onPressed: () async {
+                await context.push('/payment/${b.id}');
+                _load();
+              },
               style: ElevatedButton.styleFrom(backgroundColor: AppTheme.brandGreen,
                   minimumSize: const Size(double.infinity, 50), elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
@@ -199,27 +202,27 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
   }
 
   AppBar _appBar(BuildContext context) => AppBar(
-    backgroundColor: AppTheme.bgDark, elevation: 0,
+    backgroundColor: context.bg, elevation: 0,
     leading: IconButton(
       onPressed: () => context.pop(),
-      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
+      icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: context.textPrimary),
     ),
-    title: const Text('Detalle de reserva',
-        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+    title: Text('Detalle de reserva',
+        style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
   );
 
   Widget _section(String title, List<Widget> rows) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(title.toUpperCase(),
-          style: const TextStyle(color: AppTheme.textHintDark, fontSize: 11,
+          style: TextStyle(color: context.textHint, fontSize: 11,
               fontWeight: FontWeight.w700, letterSpacing: 1.2)),
       const SizedBox(height: 12),
       Container(
         decoration: BoxDecoration(
-          color: AppTheme.cardDark,
+          color: context.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.borderDark, width: 0.5),
+          border: Border.all(color: context.border, width: 0.5),
         ),
         child: Column(children: rows),
       ),
@@ -229,11 +232,11 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
   Widget _row(IconData icon, String label, String value) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     child: Row(children: [
-      Icon(icon, color: AppTheme.textSecondaryDark, size: 18),
+      Icon(icon, color: context.textSecondary, size: 18),
       const SizedBox(width: 12),
-      Text(label, style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 13)),
+      Text(label, style: TextStyle(color: context.textSecondary, fontSize: 13)),
       const Spacer(),
-      Flexible(child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+      Flexible(child: Text(value, style: TextStyle(color: context.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
           textAlign: TextAlign.right, maxLines: 2, overflow: TextOverflow.ellipsis)),
     ]),
   );
@@ -244,8 +247,8 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
       UserAvatar(imageUrl: imageUrl, initials: name.isNotEmpty ? name[0].toUpperCase() : '?', size: 44),
       const SizedBox(width: 12),
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(role, style: const TextStyle(color: AppTheme.textHintDark, fontSize: 11, letterSpacing: 0.5)),
-        Text(name, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+        Text(role, style: TextStyle(color: context.textHint, fontSize: 11, letterSpacing: 0.5)),
+        Text(name, style: TextStyle(color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
       ]),
     ]),
   );
@@ -260,19 +263,19 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppTheme.cardDark,
+        backgroundColor: context.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Cancelar reserva', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        title: Text('Cancelar reserva', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Text('¿Por qué deseas cancelar?', style: TextStyle(color: AppTheme.textSecondaryDark)),
+          Text('¿Por qué deseas cancelar?', style: TextStyle(color: context.textSecondary)),
           const SizedBox(height: 12),
           TextField(
             controller: reasonCtrl,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: context.textPrimary),
             decoration: InputDecoration(
               hintText: 'Motivo...',
-              hintStyle: const TextStyle(color: AppTheme.textHintDark),
-              filled: true, fillColor: AppTheme.surfaceDark,
+              hintStyle: TextStyle(color: context.textHint),
+              filled: true, fillColor: context.card,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
               contentPadding: const EdgeInsets.all(12),
             ),
@@ -280,7 +283,7 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
         ]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context),
-              child: const Text('Atrás', style: TextStyle(color: AppTheme.textSecondaryDark))),
+              child: Text('Atrás', style: TextStyle(color: context.textSecondary))),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);

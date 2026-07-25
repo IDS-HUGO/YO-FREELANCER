@@ -2,10 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../app/router/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/main_scaffold.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../auth/domain/entities/user_entity.dart';
 import '../../../bookings/data/datasources/booking_remote_datasource.dart';
+import '../../../tasks/presentation/viewmodels/radar_viewmodel.dart';
+import '../../../../shared/widgets/daily_phrase.dart';
 
 class YoerHomeScreen extends ConsumerStatefulWidget {
   const YoerHomeScreen({super.key});
@@ -22,6 +26,7 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
       if (user != null) {
         ref.read(bookingViewModelProvider.notifier).loadBookingsForYoer(user.id);
       }
+      ref.read(radarViewModelProvider.notifier).loadUrgentTasks();
     });
   }
 
@@ -29,9 +34,10 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
   Widget build(BuildContext context) {
     final user         = ref.watch(currentUserProvider);
     final bookingState = ref.watch(bookingViewModelProvider);
+    final urgentCount  = ref.watch(radarViewModelProvider).urgentTasks.length;
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: context.bg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -50,95 +56,118 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
                 const SizedBox(width: 14),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(user?.firstName ?? 'YOER',
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                      style: TextStyle(color: context.textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
                   Row(children: [
                     Container(width: 7, height: 7,
-                        decoration: const BoxDecoration(color: AppTheme.brandGreen, shape: BoxShape.circle)),
+                        decoration: BoxDecoration(color: _statusColor(user?.status), shape: BoxShape.circle)),
                     const SizedBox(width: 5),
-                    const Text('Disponible', style: TextStyle(color: AppTheme.brandGreen, fontSize: 12)),
+                    Text(user?.status.displayName ?? 'Disponible',
+                        style: TextStyle(color: _statusColor(user?.status), fontSize: 12)),
                   ]),
                 ])),
                 // Botones icono
-                _iconBtn(Icons.notifications_outlined, () {}),
+                if (user != null) NotificationBell(userId: user.id),
                 const SizedBox(width: 8),
-                _iconBtn(Icons.block_rounded, () {}, color: AppTheme.alertRed),
+                _iconBtn(Icons.report_gmailerrorred_outlined,
+                    () => context.push(AppRoutes.sanctions), color: AppTheme.alertRed),
               ]),
+              const SizedBox(height: 14),
+              Text(dailyYoerPhrase(),
+                  style: TextStyle(color: context.textSecondary, fontSize: 12, fontStyle: FontStyle.italic)),
               const SizedBox(height: 28),
 
               // ── Card disponibilidad ────────────────────────────────────
               Container(
                 height: 56,
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceDark,
+                  color: context.card,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.borderDark, width: 0.5),
+                  border: Border.all(color: context.border, width: 0.5),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 18),
                 child: Row(children: [
                   Container(width: 10, height: 10,
-                      decoration: const BoxDecoration(color: AppTheme.brandGreen, shape: BoxShape.circle)),
+                      decoration: BoxDecoration(color: _statusColor(user?.status), shape: BoxShape.circle)),
                   const SizedBox(width: 12),
-                  const Text('Disponible',
-                      style: TextStyle(color: AppTheme.brandGreen, fontSize: 14, fontWeight: FontWeight.w600)),
+                  Text(user?.status.displayName ?? 'Disponible',
+                      style: TextStyle(color: _statusColor(user?.status), fontSize: 14, fontWeight: FontWeight.w600)),
                   const Spacer(),
                   GestureDetector(
-                    onTap: () {},
-                    child: const Text('CAMBIAR',
-                        style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
+                    onTap: () => _showAvailabilityPicker(context, user),
+                    child: Text('CAMBIAR',
+                        style: TextStyle(color: context.textPrimary, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
                   ),
                 ]),
               ),
               const SizedBox(height: 24),
 
-              // ── Bono semanal ───────────────────────────────────────────
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [AppTheme.cardDark, AppTheme.cardInnerDark],
+              // ── Bono semanal (calculado con tareas completadas reales) ──
+              Builder(builder: (context) {
+                const weeklyTarget = 10;
+                final now = DateTime.now();
+                final weekStart = now.subtract(Duration(days: now.weekday - 1));
+                final completedThisWeek = bookingState.completedBookings
+                    .where((b) => b.completedAt != null && b.completedAt!.isAfter(weekStart))
+                    .length;
+                final progress = (completedThisWeek / weeklyTarget).clamp(0.0, 1.0);
+                final remaining = (weeklyTarget - completedThisWeek).clamp(0, weeklyTarget);
+
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [context.card, context.cardInner],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: context.border, width: 0.5),
                   ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.borderDark, width: 0.5),
-                ),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Row(children: [
-                    const Expanded(child: Text('Bono Sorpresa Semanal',
-                        style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700))),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppTheme.brandGreen.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      Expanded(child: Text('Bono Sorpresa Semanal',
+                          style: TextStyle(color: context.textPrimary, fontSize: 15, fontWeight: FontWeight.w700))),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.brandGreen.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text('$completedThisWeek / $weeklyTarget TAREAS',
+                            style: const TextStyle(color: AppTheme.brandGreen, fontSize: 10, fontWeight: FontWeight.w800)),
                       ),
-                      child: const Text('5 / 10 TAREAS',
-                          style: TextStyle(color: AppTheme.brandGreen, fontSize: 10, fontWeight: FontWeight.w800)),
+                    ]),
+                    const SizedBox(height: 16),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 8,
+                        backgroundColor: Colors.black38,
+                        valueColor: const AlwaysStoppedAnimation(AppTheme.brandGreen),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      remaining == 0
+                          ? '¡Bono desbloqueado esta semana!'
+                          : '¡Te faltan $remaining tareas para desbloquear el bono!',
+                      style: TextStyle(color: context.textSecondary, fontSize: 12),
                     ),
                   ]),
-                  const SizedBox(height: 16),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: const LinearProgressIndicator(
-                      value: 0.5,
-                      minHeight: 8,
-                      backgroundColor: Colors.black38,
-                      valueColor: AlwaysStoppedAnimation(AppTheme.brandGreen),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text('¡Te faltan 5 tareas para desbloquear el bono!',
-                      style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12)),
-                ]),
-              ),
+                );
+              }),
               const SizedBox(height: 32),
 
               // ── Oportunidades ──────────────────────────────────────────
               SectionCard(
                 title: 'Oportunidades en tiempo real',
                 action: 'Abrir Radar',
-                onAction: () {},
-                child: _urgentCard(),
+                onAction: () => context.push(AppRoutes.yoerRadar),
+                child: GestureDetector(
+                  onTap: () => context.push(AppRoutes.yoerRadar),
+                  child: _urgentCard(urgentCount),
+                ),
               ),
               const SizedBox(height: 32),
 
@@ -146,7 +175,7 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
               SectionCard(
                 title: 'Próxima jornada',
                 action: 'Mi agenda',
-                onAction: () {},
+                onAction: () => context.push(AppRoutes.yoerAgenda),
                 child: bookingState.isLoading
                     ? const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen))
                     : bookingState.upcomingBookings.isEmpty
@@ -179,6 +208,48 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
     );
   }
 
+  Color _statusColor(UserStatus? status) {
+    switch (status) {
+      case UserStatus.ocupado:      return AppTheme.warningOrange;
+      case UserStatus.noDisponible: return context.textHint;
+      case UserStatus.warned:       return AppTheme.alertRedLight;
+      case UserStatus.disponible:
+      case null:
+        return AppTheme.brandGreen;
+    }
+  }
+
+  void _showAvailabilityPicker(BuildContext context, UserEntity? user) {
+    if (user == null) return;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.card,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text('¿Cuál es tu disponibilidad?',
+                style: TextStyle(color: context.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 16),
+            ...[UserStatus.disponible, UserStatus.ocupado, UserStatus.noDisponible].map((s) {
+              return ListTile(
+                leading: Container(width: 10, height: 10,
+                    decoration: BoxDecoration(color: _statusColor(s), shape: BoxShape.circle)),
+                title: Text(s.displayName, style: TextStyle(color: context.textPrimary)),
+                trailing: user.status == s ? const Icon(Icons.check_rounded, color: AppTheme.brandGreen) : null,
+                onTap: () {
+                  Navigator.pop(context);
+                  ref.read(authViewModelProvider.notifier).updateProfile(user.copyWith(status: s));
+                },
+              );
+            }),
+          ]),
+        ),
+      ),
+    );
+  }
+
   Widget _iconBtn(IconData icon, VoidCallback onTap, {Color? color}) {
     return GestureDetector(
       onTap: onTap,
@@ -186,42 +257,44 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
         width: 42, height: 42,
         decoration: BoxDecoration(
           border: Border.all(
-            color: color != null ? color.withValues(alpha: 0.5) : AppTheme.borderDark,
+            color: color != null ? color.withValues(alpha: 0.5) : context.border,
           ),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(icon, size: 20,
-            color: color ?? AppTheme.textSecondaryDark),
+            color: color ?? context.textSecondary),
       ),
     );
   }
 
-  Widget _urgentCard() {
+  Widget _urgentCard(int urgentCount) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardDark,
+        color: context.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderDark, width: 0.5),
+        border: Border.all(color: context.border, width: 0.5),
       ),
       child: Row(children: [
         Container(
           width: 46, height: 46,
           decoration: BoxDecoration(
-            color: AppTheme.cardInnerDark,
+            color: context.cardInner,
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Icon(Icons.flash_on_rounded, color: AppTheme.brandGreen, size: 22),
         ),
         const SizedBox(width: 14),
-        const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('TAREAS URGENTES',
-              style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
-          Text('3 servicios cancelados cerca de ti',
-              style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12)),
+              style: TextStyle(color: context.textPrimary, fontSize: 13, fontWeight: FontWeight.w700)),
+          Text(
+            urgentCount == 0 ? 'Sin tareas urgentes por ahora' : '$urgentCount tareas cerca de ti',
+            style: TextStyle(color: context.textSecondary, fontSize: 12),
+          ),
         ])),
-        const Icon(Icons.arrow_forward_ios_rounded,
-            size: 14, color: AppTheme.textHintDark),
+        Icon(Icons.arrow_forward_ios_rounded,
+            size: 14, color: context.textHint),
       ]),
     );
   }
@@ -230,16 +303,16 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.cardDark,
+        color: context.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderDark, width: 0.5),
+        border: Border.all(color: context.border, width: 0.5),
       ),
-      child: const Column(children: [
+      child: Column(children: [
         Icon(Icons.calendar_today_outlined,
-            color: AppTheme.textHintDark, size: 40),
-        SizedBox(height: 12),
+            color: context.textHint, size: 40),
+        const SizedBox(height: 12),
         Text('Sin trabajos programados',
-            style: TextStyle(color: AppTheme.textSecondaryDark, fontSize: 14)),
+            style: TextStyle(color: context.textSecondary, fontSize: 14)),
       ]),
     );
   }
@@ -251,30 +324,30 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppTheme.cardDark,
+          color: context.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.borderDark, width: 0.5),
+          border: Border.all(color: context.border, width: 0.5),
         ),
         child: Row(children: [
           Container(
             width: 52, height: 52,
             decoration: BoxDecoration(
-              color: AppTheme.cardInnerDark,
+              color: context.cardInner,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Text(b.scheduledTime,
-                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
-              const Text('AM', style: TextStyle(color: AppTheme.textHintDark, fontSize: 9)),
+                  style: TextStyle(color: context.textPrimary, fontSize: 12, fontWeight: FontWeight.w700)),
+              Text('AM', style: TextStyle(color: context.textHint, fontSize: 9)),
             ]),
           ),
           const SizedBox(width: 14),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(b.serviceName, style: const TextStyle(
-                color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+            Text(b.serviceName, style: TextStyle(
+                color: context.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
                 maxLines: 1, overflow: TextOverflow.ellipsis),
             Text('Con ${b.clientName}',
-                style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 11)),
+                style: TextStyle(color: context.textSecondary, fontSize: 11)),
           ])),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
             Text('\$${b.totalPrice.toStringAsFixed(0)}',
@@ -292,17 +365,17 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppTheme.cardDark,
+          color: context.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.borderDark, width: 0.5),
+          border: Border.all(color: context.border, width: 0.5),
         ),
         child: Column(children: [
           Icon(icon, color: AppTheme.brandGreen, size: 20),
           const SizedBox(height: 8),
-          Text(value, style: const TextStyle(
-              color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+          Text(value, style: TextStyle(
+              color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(color: AppTheme.textHintDark, fontSize: 10),
+          Text(label, style: TextStyle(color: context.textHint, fontSize: 10),
               textAlign: TextAlign.center),
         ]),
       ),

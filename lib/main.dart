@@ -2,12 +2,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'app/config/supabase_config.dart';
 import 'app/di/injection.dart';
 import 'app/router/app_router.dart';
 import 'shared/theme/app_theme.dart';
+import 'shared/theme/theme_mode_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +20,10 @@ Future<void> main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  timeago.setLocaleMessages('es', timeago.EsMessages());
+  timeago.setDefaultLocale('es');
+  await initializeDateFormatting('es');
 
   // Inicializar Supabase
   await Supabase.initialize(
@@ -42,14 +49,17 @@ class YoFreeLancerApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(appRouterProvider);
+    // ref.read: el router es singleton y no cambia nunca,
+    // ref.watch aquí causaría recostruir MaterialApp entero al cambiar auth.
+    final router = ref.read(appRouterProvider);
+    final themeMode = ref.watch(themeModeControllerProvider);
 
     return MaterialApp.router(
       title: 'YO FREE-LANCER',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark,
+      themeMode: themeMode,
       routerConfig: router,
     );
   }

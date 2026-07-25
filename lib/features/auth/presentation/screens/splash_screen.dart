@@ -43,7 +43,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: context.bg,
       body: Center(
         child: AnimatedBuilder(
           animation: _ctrl,
@@ -58,9 +58,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: AppTheme.surfaceDark,
+                      color: context.card,
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: AppTheme.borderDark),
+                      border: Border.all(color: context.border),
                     ),
                     child: const Center(
                       child: Text(
@@ -74,20 +74,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
+                  Text(
                     'YO FREE-LANCER',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.textPrimary,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 2,
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
+                  Text(
                     'Tu trabajo habla por ti',
                     style: TextStyle(
-                      color: AppTheme.textSecondaryDark,
+                      color: context.textSecondary,
                       fontSize: 13,
                     ),
                   ),
@@ -149,7 +149,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: context.bg,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -163,8 +163,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 height: 160,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppTheme.surfaceDark,
-                  border: Border.all(color: AppTheme.borderDark, width: 1),
+                  color: context.card,
+                  border: Border.all(color: context.border, width: 1),
                 ),
                 child: const Center(
                   child: Column(
@@ -183,21 +183,21 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 ),
               ),
               const SizedBox(height: 36),
-              const Text(
+              Text(
                 'YO FREE-LANCER',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: context.textPrimary,
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 2.5,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Conecta talento con oportunidades en México',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppTheme.textSecondaryDark,
+                  color: context.textSecondary,
                   fontSize: 14,
                 ),
               ),
@@ -251,10 +251,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     const SizedBox(height: 24),
                     GestureDetector(
                       onTap: () => context.go(AppRoutes.clientHome),
-                      child: const Text(
+                      child: Text(
                         'Explorar sin cuenta',
                         style: TextStyle(
-                          color: AppTheme.textSecondaryDark,
+                          color: context.textSecondary,
                           fontSize: 14,
                         ),
                       ),

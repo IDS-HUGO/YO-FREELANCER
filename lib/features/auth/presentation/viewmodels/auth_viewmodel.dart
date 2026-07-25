@@ -152,6 +152,29 @@ class AuthViewModel extends StateNotifier<AuthState> {
     }
   }
 
+  // ── Cambiar contraseña ────────────────────────────────────────────────────
+  Future<bool> changePassword(String newPassword) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      await _repository.changePassword(newPassword);
+      state = state.copyWith(isLoading: false);
+      return true;
+    } on Exception catch (e) {
+      state = state.copyWith(isLoading: false, error: _parseError(e.toString()));
+      return false;
+    }
+  }
+
+  // ── Recuperar contraseña olvidada ─────────────────────────────────────────
+  Future<bool> resetPasswordForEmail(String email) async {
+    try {
+      await _repository.resetPasswordForEmail(email);
+      return true;
+    } on Exception {
+      return false;
+    }
+  }
+
   void clearError() {
     state = state.copyWith(clearError: true);
   }

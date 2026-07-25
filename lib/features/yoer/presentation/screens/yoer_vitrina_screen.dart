@@ -30,15 +30,15 @@ class _YoerVitrinaScreenState extends ConsumerState<YoerVitrinaScreen> {
     final state = ref.watch(serviceViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: context.bg,
       body: SafeArea(
         child: Column(children: [
           // Header
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
             child: Row(children: [
-              const Text('Mi Vitrina',
-                  style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+              Text('Mi Vitrina',
+                  style: TextStyle(color: context.textPrimary, fontSize: 22, fontWeight: FontWeight.w800)),
               const Spacer(),
               GestureDetector(
                 onTap: () => context.push(AppRoutes.createService),
@@ -86,12 +86,12 @@ class _YoerVitrinaScreenState extends ConsumerState<YoerVitrinaScreen> {
 
   Widget _empty(BuildContext context) {
     return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      const Icon(Icons.store_outlined, color: AppTheme.textHintDark, size: 64),
+      Icon(Icons.store_outlined, color: context.textHint, size: 64),
       const SizedBox(height: 16),
-      const Text('Sin servicios publicados',
-          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+      Text('Sin servicios publicados',
+          style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
       const SizedBox(height: 8),
-      const Text('Crea tu primer servicio', style: TextStyle(color: AppTheme.textSecondaryDark)),
+      Text('Crea tu primer servicio', style: TextStyle(color: context.textSecondary)),
       const SizedBox(height: 24),
       ElevatedButton(
         onPressed: () => context.push(AppRoutes.createService),
@@ -121,9 +121,9 @@ class _ServiceCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.cardDark,
+          color: context.card,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppTheme.borderDark, width: 0.5),
+          border: Border.all(color: context.border, width: 0.5),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
@@ -132,17 +132,17 @@ class _ServiceCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: service.isActive
                     ? AppTheme.brandGreen.withValues(alpha: 0.15)
-                    : AppTheme.textHintDark.withValues(alpha: 0.15),
+                    : context.textHint.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text('${service.category.emoji} ${service.category.displayName}',
                   style: TextStyle(
-                    color: service.isActive ? AppTheme.brandGreen : AppTheme.textHintDark,
+                    color: service.isActive ? AppTheme.brandGreen : context.textHint,
                     fontSize: 11, fontWeight: FontWeight.w700)),
             ),
             const Spacer(),
             PopupMenuButton<String>(
-              color: AppTheme.cardDark,
+              color: context.card,
               onSelected: (v) {
                 if (v == 'toggle') onToggle();
                 if (v == 'delete') onDelete();
@@ -150,28 +150,28 @@ class _ServiceCard extends StatelessWidget {
               itemBuilder: (_) => [
                 PopupMenuItem(value: 'toggle',
                     child: Text(service.isActive ? 'Desactivar' : 'Activar',
-                        style: const TextStyle(color: Colors.white))),
+                        style: TextStyle(color: context.textPrimary))),
                 const PopupMenuItem(value: 'delete',
                     child: Text('Eliminar', style: TextStyle(color: AppTheme.alertRedLight))),
               ],
-              icon: const Icon(Icons.more_vert_rounded,
-                  color: AppTheme.textSecondaryDark, size: 20),
+              icon: Icon(Icons.more_vert_rounded,
+                  color: context.textSecondary, size: 20),
             ),
           ]),
           const SizedBox(height: 10),
           Text(service.title,
-              style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700),
+              style: TextStyle(color: context.textPrimary, fontSize: 15, fontWeight: FontWeight.w700),
               maxLines: 2, overflow: TextOverflow.ellipsis),
           const SizedBox(height: 6),
           Text(service.description,
-              style: const TextStyle(color: AppTheme.textSecondaryDark, fontSize: 12),
+              style: TextStyle(color: context.textSecondary, fontSize: 12),
               maxLines: 2, overflow: TextOverflow.ellipsis),
           const SizedBox(height: 14),
           Row(children: [
             RatingStars(rating: service.rating),
             const SizedBox(width: 6),
             Text('(${service.totalReviews})',
-                style: const TextStyle(color: AppTheme.textHintDark, fontSize: 11)),
+                style: TextStyle(color: context.textHint, fontSize: 11)),
             const Spacer(),
             Text(service.priceLabel,
                 style: const TextStyle(color: AppTheme.brandGreen, fontSize: 16, fontWeight: FontWeight.w800)),
