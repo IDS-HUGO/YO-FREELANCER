@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../../shared/widgets/main_scaffold.dart';
 import '../../domain/entities/user_entity.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
@@ -34,10 +35,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _submit() async {
     if (_selectedType == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Selecciona tu tipo de cuenta'),
-        backgroundColor: AppTheme.warningOrange,
-      ));
+      showAppSnackBar(context, 'Selecciona tu tipo de cuenta', isError: true);
       return;
     }
     if (!_formKey.currentState!.validate()) return;
@@ -51,13 +49,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
     if (!ok && mounted) {
       final err = ref.read(authViewModelProvider).error;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(err ?? 'Error al registrarse'),
-        backgroundColor: AppTheme.alertRed,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-      ));
+      showAppSnackBar(context, err ?? 'Error al registrarse', isError: true);
     }
   }
 
@@ -68,48 +60,67 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       backgroundColor: context.bg,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 IconButton(
                   onPressed: () => context.go(AppRoutes.welcome),
-                  icon: Container(
-                    width: 40, height: 40,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: context.border),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(Icons.arrow_back_ios_new_rounded,
-                        size: 16, color: context.textPrimary),
+                  style: IconButton.styleFrom(
+                    side: BorderSide(color: context.colors.outlineVariant),
                   ),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSpacing.xxxl),
                 Text('Crear\ncuenta',
-                    style: TextStyle(
-                      color: context.textPrimary, fontSize: 34,
-                      fontWeight: FontWeight.w800, height: 1.2,
-                    )),
-                const SizedBox(height: 10),
+                    style: context.textTheme.displaySmall?.copyWith(height: 1.2)),
+                const SizedBox(height: AppSpacing.sm),
                 Text('Elige cómo quieres usar la plataforma',
-                    style: TextStyle(color: context.textSecondary, fontSize: 14)),
-                const SizedBox(height: 28),
+                    style: context.textTheme.bodyMedium),
+                const SizedBox(height: AppSpacing.xxl),
 
                 // Tipo de usuario
-                Row(children: [
-                  _typeCard(context, UserType.yoer, '🔧', 'YOER', 'Ofrezco servicios'),
-                  const SizedBox(width: 12),
-                  _typeCard(context, UserType.client, '🛒', 'CLIENTE', 'Contrato servicios'),
-                ]),
-                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<UserType>(
+                    segments: const [
+                      ButtonSegment(
+                        value: UserType.yoer,
+                        label: Text('YOER'),
+                        icon: Text('🔧'),
+                      ),
+                      ButtonSegment(
+                        value: UserType.client,
+                        label: Text('Cliente'),
+                        icon: Text('🛒'),
+                      ),
+                    ],
+                    selected: _selectedType == null ? const {} : {_selectedType!},
+                    emptySelectionAllowed: true,
+                    showSelectedIcon: false,
+                    onSelectionChanged: (selection) => setState(
+                      () => _selectedType = selection.isEmpty ? null : selection.first,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Text(
+                    _selectedTypeDescription,
+                    key: ValueKey(_selectedType),
+                    style: context.textTheme.bodySmall,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxl),
 
                 _field(_nameCtrl,     'NOMBRE COMPLETO',  'Juan Pérez',         Icons.person_outline_rounded),
-                const SizedBox(height: 14),
+                const SizedBox(height: AppSpacing.lg),
                 _field(_usernameCtrl, 'USUARIO',          '@tu_usuario',         Icons.alternate_email_rounded),
-                const SizedBox(height: 14),
+                const SizedBox(height: AppSpacing.lg),
                 _field(_emailCtrl,    'CORREO',           'correo@email.com',    Icons.mail_outline_rounded,
                     type: TextInputType.emailAddress,
                     validator: (v) {
@@ -117,44 +128,45 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       if (!v.contains('@')) return 'Correo inválido';
                       return null;
                     }),
-                const SizedBox(height: 14),
+                const SizedBox(height: AppSpacing.lg),
                 _field(_phoneCtrl,    'TELÉFONO (OPCIONAL)', '+52 55 1234 5678', Icons.phone_outlined,
                     type: TextInputType.phone, required: false),
-                const SizedBox(height: 14),
+                const SizedBox(height: AppSpacing.lg),
                 _passwordField(),
-                const SizedBox(height: 14),
+                const SizedBox(height: AppSpacing.lg),
                 _confirmField(),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSpacing.xxxl),
 
                 SizedBox(
-                  width: double.infinity, height: 54,
-                  child: ElevatedButton(
+                  width: double.infinity,
+                  child: FilledButton(
                     onPressed: state.isLoading ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.brandGreen,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      elevation: 0,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: state.isLoading
+                          ? const SizedBox(
+                              key: ValueKey('loading'),
+                              width: 22, height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation(Colors.white)))
+                          : const Text('Crear Cuenta', key: ValueKey('label')),
                     ),
-                    child: state.isLoading
-                        ? const SizedBox(width: 22, height: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2.5,
-                                valueColor: AlwaysStoppedAnimation(Colors.white)))
-                        : const Text('Crear Cuenta',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text('¿Ya tienes cuenta? ',
-                      style: TextStyle(color: context.textSecondary)),
-                  GestureDetector(
+                  Text('¿Ya tienes cuenta? ', style: context.textTheme.bodyMedium),
+                  InkWell(
+                    borderRadius: AppRadius.smR,
                     onTap: () => context.go(AppRoutes.login),
-                    child: const Text('Inicia sesión',
-                        style: TextStyle(color: AppTheme.brandGreen, fontWeight: FontWeight.w700)),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xs / 2),
+                      child: Text('Inicia sesión',
+                          style: context.textTheme.labelLarge?.copyWith(color: context.colors.primary)),
+                    ),
                   ),
                 ]),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSpacing.xxxl),
               ],
             ),
           ),
@@ -163,34 +175,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  Widget _typeCard(BuildContext context, UserType type, String emoji, String title, String subtitle) {
-    final selected = _selectedType == type;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _selectedType = type),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          height: 90,
-          decoration: BoxDecoration(
-            color: selected ? AppTheme.brandGreen.withValues(alpha: 0.15) : context.card,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: selected ? AppTheme.brandGreen : context.border,
-              width: selected ? 1.5 : 0.5,
-            ),
-          ),
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Text(emoji, style: const TextStyle(fontSize: 24)),
-            const SizedBox(height: 4),
-            Text(title, style: TextStyle(
-              color: selected ? AppTheme.brandGreen : context.textPrimary,
-              fontSize: 13, fontWeight: FontWeight.w700)),
-            Text(subtitle, style: TextStyle(
-              color: context.textSecondary, fontSize: 10)),
-          ]),
-        ),
-      ),
-    );
+  String get _selectedTypeDescription {
+    switch (_selectedType) {
+      case UserType.yoer:
+        return 'Ofrecerás tus servicios a clientes en la plataforma';
+      case UserType.client:
+        return 'Contratarás los servicios de los YOERs';
+      case null:
+        return 'Elige el tipo de cuenta que quieres crear';
+    }
   }
 
   Widget _field(
@@ -203,15 +196,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     String? Function(String?)? validator,
   }) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: TextStyle(
-        color: context.textPrimary, fontSize: 11,
-        fontWeight: FontWeight.w700, letterSpacing: 1.2)),
-      const SizedBox(height: 8),
+      Text(label, style: context.textTheme.labelLarge?.copyWith(letterSpacing: 1.2)),
+      const SizedBox(height: AppSpacing.sm),
       TextFormField(
         controller: ctrl,
         keyboardType: type,
-        style: TextStyle(color: context.textPrimary),
-        decoration: _deco(hint, icon),
+        style: context.textTheme.bodyLarge,
+        decoration: InputDecoration(hintText: hint, prefixIcon: Icon(icon, size: 18)),
         validator: validator ?? (v) {
           if (required && (v == null || v.isEmpty)) return 'Campo requerido';
           return null;
@@ -221,19 +212,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget _passwordField() => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    Text('CONTRASEÑA', style: TextStyle(
-      color: context.textPrimary, fontSize: 11,
-      fontWeight: FontWeight.w700, letterSpacing: 1.2)),
-    const SizedBox(height: 8),
+    Text('CONTRASEÑA', style: context.textTheme.labelLarge?.copyWith(letterSpacing: 1.2)),
+    const SizedBox(height: AppSpacing.sm),
     TextFormField(
       controller: _passwordCtrl,
       obscureText: _obscure,
-      style: TextStyle(color: context.textPrimary),
-      decoration: _deco('••••••••', Icons.lock_outline_rounded).copyWith(
+      style: context.textTheme.bodyLarge,
+      decoration: InputDecoration(
+        hintText: '••••••••',
+        prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18),
         suffixIcon: IconButton(
           onPressed: () => setState(() => _obscure = !_obscure),
-          icon: Icon(_obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-              color: context.textSecondary, size: 20),
+          icon: Icon(_obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
         ),
       ),
       validator: (v) {
@@ -245,19 +235,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   ]);
 
   Widget _confirmField() => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    Text('CONFIRMAR CONTRASEÑA', style: TextStyle(
-      color: context.textPrimary, fontSize: 11,
-      fontWeight: FontWeight.w700, letterSpacing: 1.2)),
-    const SizedBox(height: 8),
+    Text('CONFIRMAR CONTRASEÑA', style: context.textTheme.labelLarge?.copyWith(letterSpacing: 1.2)),
+    const SizedBox(height: AppSpacing.sm),
     TextFormField(
       controller: _confirmCtrl,
       obscureText: _obscureConfirm,
-      style: TextStyle(color: context.textPrimary),
-      decoration: _deco('••••••••', Icons.lock_outline_rounded).copyWith(
+      style: context.textTheme.bodyLarge,
+      decoration: InputDecoration(
+        hintText: '••••••••',
+        prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18),
         suffixIcon: IconButton(
           onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
-          icon: Icon(_obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-              color: context.textSecondary, size: 20),
+          icon: Icon(_obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
         ),
       ),
       validator: (v) {
@@ -267,20 +256,4 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       },
     ),
   ]);
-
-  InputDecoration _deco(String hint, IconData icon) => InputDecoration(
-    hintText: hint,
-    hintStyle: TextStyle(color: context.textHint),
-    prefixIcon: Icon(icon, color: context.textSecondary, size: 18),
-    filled: true,
-    fillColor: context.card,
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: context.border, width: 0.5)),
-    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppTheme.brandGreen, width: 1.5)),
-    errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppTheme.alertRedLight, width: 1.5)),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-  );
 }

@@ -273,25 +273,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           children: [
             Text(
               '¡Ups!',
-              style: TextStyle(
-                  color: context.textPrimary,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800),
+              style: context.textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
-            Text(
-              'Página no encontrada: ${state.matchedLocation}',
-              style: TextStyle(color: context.textSecondary, fontSize: 13),
-              textAlign: TextAlign.center,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                'Página no encontrada: ${state.matchedLocation}',
+                style: context.textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
+            FilledButton(
               onPressed: () => context.go(AppRoutes.welcome),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.brandGreen,
-              ),
-              child: const Text('Volver al inicio',
-                  style: TextStyle(color: Colors.white)),
+              child: const Text('Volver al inicio'),
             ),
           ],
         ),

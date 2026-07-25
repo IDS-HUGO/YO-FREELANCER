@@ -42,43 +42,53 @@ class _SanctionsScreenState extends ConsumerState<SanctionsScreen> {
       backgroundColor: context.bg,
       appBar: AppBar(title: const Text('Amonestaciones')),
       body: SafeArea(
-        child: state.isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen))
-            : Column(children: [
-                Expanded(
-                  child: state.sanctions.isEmpty
-                      ? Center(
-                          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            const Icon(Icons.verified_user_outlined, color: AppTheme.brandGreen, size: 56),
-                            const SizedBox(height: 12),
-                            Text('Sin amonestaciones', style: TextStyle(color: context.textSecondary)),
-                            const SizedBox(height: 4),
-                            Text('Tu cuenta está en buen estado',
-                                style: TextStyle(color: context.textHint, fontSize: 12)),
-                          ]),
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.all(20),
-                          itemCount: state.sanctions.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 14),
-                          itemBuilder: (_, i) => _SanctionCard(
-                            sanction: state.sanctions[i],
-                            onAppeal: (msg) => user == null
-                                ? null
-                                : ref.read(sanctionViewModelProvider.notifier)
-                                    .appeal(state.sanctions[i].id, user.id, msg),
-                          ),
-                        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: state.isLoading
+              ? const Center(key: ValueKey('loading'), child: CircularProgressIndicator())
+              : Column(
+                  key: const ValueKey('content'),
+                  children: [
+                    Expanded(
+                      child: state.sanctions.isEmpty
+                          ? Center(
+                              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                Icon(Icons.verified_user_outlined, color: context.colors.primary, size: 56),
+                                const SizedBox(height: AppSpacing.md),
+                                Text('Sin amonestaciones', style: context.textTheme.bodyMedium),
+                                const SizedBox(height: AppSpacing.xs),
+                                Text(
+                                  'Tu cuenta está en buen estado',
+                                  style: TextStyle(color: context.textHint, fontSize: 12),
+                                ),
+                              ]),
+                            )
+                          : ListView.separated(
+                              padding: const EdgeInsets.all(AppSpacing.xl),
+                              itemCount: state.sanctions.length,
+                              separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.lg),
+                              itemBuilder: (_, i) => _SanctionCard(
+                                sanction: state.sanctions[i],
+                                onAppeal: (msg) => user == null
+                                    ? null
+                                    : ref.read(sanctionViewModelProvider.notifier)
+                                        .appeal(state.sanctions[i].id, user.id, msg),
+                              ),
+                            ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xl,
+                      ),
+                      child: OutlinedButton.icon(
+                        onPressed: user == null ? null : () => _requestSupportCall(context, user.id),
+                        icon: const Icon(Icons.support_agent_rounded, size: 18),
+                        label: const Text('Solicitar llamada a soporte'),
+                      ),
+                    ),
+                  ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                  child: OutlinedButton.icon(
-                    onPressed: user == null ? null : () => _requestSupportCall(context, user.id),
-                    icon: const Icon(Icons.support_agent_rounded, size: 18),
-                    label: const Text('Solicitar llamada a soporte'),
-                  ),
-                ),
-              ]),
+        ),
       ),
     );
   }
@@ -88,17 +98,15 @@ class _SanctionsScreenState extends ConsumerState<SanctionsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: context.card,
-        title: Text('Solicitar llamada a soporte', style: TextStyle(color: context.textPrimary)),
+        title: const Text('Solicitar llamada a soporte'),
         content: TextField(
           controller: ctrl,
           maxLines: 3,
-          style: TextStyle(color: context.textPrimary),
           decoration: const InputDecoration(hintText: 'Cuéntanos brevemente qué necesitas...'),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-          ElevatedButton(
+          FilledButton(
             onPressed: () {
               ref.read(sanctionViewModelProvider.notifier)
                   .requestSupportCall(userId, 'Solicitud desde amonestaciones', message: ctrl.text);
@@ -120,56 +128,62 @@ class _SanctionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasAppeal = sanction.appeals.isNotEmpty;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.border, width: 0.5),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppTheme.warningOrange.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+              decoration: BoxDecoration(
+                color: context.colors.tertiaryContainer,
+                borderRadius: AppRadius.pillR,
+              ),
+              child: Text(
+                sanction.severity.displayName,
+                style: TextStyle(
+                  color: context.colors.onTertiaryContainer,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-            child: Text(sanction.severity.displayName,
-                style: const TextStyle(color: AppTheme.warningOrange, fontSize: 11, fontWeight: FontWeight.w700)),
-          ),
-          const Spacer(),
-          Text('${sanction.createdAt.day}/${sanction.createdAt.month}/${sanction.createdAt.year}',
-              style: TextStyle(color: context.textHint, fontSize: 11)),
+            const Spacer(),
+            Text(
+              '${sanction.createdAt.day}/${sanction.createdAt.month}/${sanction.createdAt.year}',
+              style: TextStyle(color: context.textHint, fontSize: 11),
+            ),
+          ]),
+          const SizedBox(height: AppSpacing.md),
+          Text(sanction.reason, style: context.textTheme.titleSmall),
+          if (sanction.description != null) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(sanction.description!, style: context.textTheme.bodyMedium),
+          ],
+          const SizedBox(height: AppSpacing.lg),
+          if (hasAppeal)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: context.colors.surfaceContainerHighest,
+                borderRadius: AppRadius.mdR,
+              ),
+              child: Row(children: [
+                Icon(Icons.gavel_rounded, size: 14, color: context.textSecondary),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  'Apelación: ${sanction.appeals.first.status.displayName}',
+                  style: context.textTheme.bodyMedium,
+                ),
+              ]),
+            )
+          else
+            OutlinedButton(
+              onPressed: () => _showAppealDialog(context),
+              child: const Text('Apelar amonestación'),
+            ),
         ]),
-        const SizedBox(height: 10),
-        Text(sanction.reason, style: TextStyle(color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
-        if (sanction.description != null) ...[
-          const SizedBox(height: 6),
-          Text(sanction.description!, style: TextStyle(color: context.textSecondary, fontSize: 12)),
-        ],
-        const SizedBox(height: 14),
-        if (hasAppeal)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: context.bg,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(children: [
-              Icon(Icons.gavel_rounded, size: 14, color: context.textSecondary),
-              const SizedBox(width: 8),
-              Text('Apelación: ${sanction.appeals.first.status.displayName}',
-                  style: TextStyle(color: context.textSecondary, fontSize: 12)),
-            ]),
-          )
-        else
-          OutlinedButton(
-            onPressed: () => _showAppealDialog(context),
-            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(40)),
-            child: const Text('Apelar amonestación'),
-          ),
-      ]),
+      ),
     );
   }
 
@@ -178,17 +192,15 @@ class _SanctionCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: context.card,
-        title: Text('Apelar amonestación', style: TextStyle(color: context.textPrimary)),
+        title: const Text('Apelar amonestación'),
         content: TextField(
           controller: ctrl,
           maxLines: 4,
-          style: TextStyle(color: context.textPrimary),
           decoration: const InputDecoration(hintText: 'Explica por qué crees que esto fue un error...'),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-          ElevatedButton(
+          FilledButton(
             onPressed: () {
               if (ctrl.text.trim().isNotEmpty) onAppeal?.call(ctrl.text.trim());
               Navigator.pop(ctx);

@@ -32,186 +32,227 @@ class _ExplorarExtrasState extends ConsumerState<ExplorarExtras> {
     final ranking = ref.watch(rankingViewModelProvider);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xxl, AppSpacing.sm, AppSpacing.xxl, AppSpacing.xxxl + AppSpacing.sm,
+      ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Divider(color: context.border),
-        const SizedBox(height: 24),
+        const Divider(),
+        const SizedBox(height: AppSpacing.xxl),
 
         // ── Radar teaser ─────────────────────────────────────────────────
-        GestureDetector(
-          onTap: () => _showBecomeYoerSheet(context, '¿Puedes resolver tareas cerca de ti?',
-              'El Radar muestra tareas urgentes y trabajos disponibles para YOERs. Crea tu cuenta YOER para verlas y postularte.'),
-          child: Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: context.card,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppTheme.warningOrange.withValues(alpha: 0.3)),
+        Card(
+          color: context.colors.tertiaryContainer.withValues(alpha: 0.4),
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.xlR,
+            side: BorderSide(color: context.colors.tertiary.withValues(alpha: 0.3)),
+          ),
+          child: InkWell(
+            borderRadius: AppRadius.xlR,
+            onTap: () => _showBecomeYoerSheet(context, '¿Puedes resolver tareas cerca de ti?',
+                'El Radar muestra tareas urgentes y trabajos disponibles para YOERs. Crea tu cuenta YOER para verlas y postularte.'),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Row(children: [
+                Container(
+                  width: 46, height: 46,
+                  decoration: BoxDecoration(color: context.cardInner, borderRadius: AppRadius.mdR),
+                  child: Icon(Icons.radar_rounded, color: context.colors.tertiary, size: 24),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('Tareas urgentes cerca de ti', style: context.textTheme.titleSmall),
+                    Text('Conviértete en YOER y ayuda a resolverlas', style: context.textTheme.bodySmall),
+                  ]),
+                ),
+                Icon(Icons.arrow_forward_ios_rounded, size: 14, color: context.textHint),
+              ]),
             ),
-            child: Row(children: [
-              Container(
-                width: 46, height: 46,
-                decoration: BoxDecoration(color: context.cardInner, borderRadius: BorderRadius.circular(12)),
-                child: const Icon(Icons.radar_rounded, color: AppTheme.warningOrange, size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('Tareas urgentes cerca de ti',
-                      style: TextStyle(color: context.textPrimary, fontSize: 13, fontWeight: FontWeight.w700)),
-                  Text('Conviértete en YOER y ayuda a resolverlas',
-                      style: TextStyle(color: context.textSecondary, fontSize: 11)),
-                ]),
-              ),
-              Icon(Icons.arrow_forward_ios_rounded, size: 14, color: context.textHint),
-            ]),
           ),
         ),
-        const SizedBox(height: 28),
+        const SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
 
         // ── En busca de tu talento ───────────────────────────────────────
         Text('EN BUSCA DE TU TALENTO',
             style: TextStyle(color: context.textHint, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
-        const SizedBox(height: 12),
-        GestureDetector(
-          onTap: () => _showTalentDialog(context),
-          child: Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              gradient: AppTheme.cardGradient(context.isDark),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: context.border, width: 0.5),
+        const SizedBox(height: AppSpacing.md),
+        Card(
+          child: InkWell(
+            borderRadius: AppRadius.xlR,
+            onTap: () => _showTalentDialog(context),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Row(children: [
+                Icon(Icons.auto_awesome_rounded, color: context.colors.primary, size: 26),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('¿No sabes qué se te da bien o quieres desarrollarlo?',
+                        style: context.textTheme.titleSmall),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text('Cuéntanos y te sugerimos cursos, voluntariados y actividades',
+                        style: context.textTheme.bodySmall),
+                  ]),
+                ),
+              ]),
             ),
-            child: Row(children: [
-              const Icon(Icons.auto_awesome_rounded, color: AppTheme.brandGreen, size: 26),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('¿No sabes qué se te da bien o quieres desarrollarlo?',
-                      style: TextStyle(color: context.textPrimary, fontSize: 13, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 4),
-                  Text('Cuéntanos y te sugerimos cursos, voluntariados y actividades',
-                      style: TextStyle(color: context.textSecondary, fontSize: 11)),
-                ]),
-              ),
-            ]),
           ),
         ),
-        const SizedBox(height: 28),
+        const SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
 
         // ── Eventos cercanos ─────────────────────────────────────────────
         Text('EVENTOS CERCA DE TI',
             style: TextStyle(color: context.textHint, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
-        const SizedBox(height: 12),
-        events.when(
-          data: (list) => list.isEmpty
-              ? Text('Sin eventos próximos por ahora', style: TextStyle(color: context.textSecondary, fontSize: 12))
-              : SizedBox(
-                  height: 130,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: list.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (_, i) {
-                      final e = list[i];
-                      return Container(
-                        width: 220,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: context.card,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: context.border, width: 0.5),
-                        ),
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(DateFormat('d MMM', 'es').format(e.startsAt),
-                              style: const TextStyle(color: AppTheme.brandGreen, fontSize: 11, fontWeight: FontWeight.w700)),
-                          const SizedBox(height: 6),
-                          Text(e.title, maxLines: 2, overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: context.textPrimary, fontSize: 13, fontWeight: FontWeight.w700)),
-                          const Spacer(),
-                          if (e.address != null)
-                            Row(children: [
-                              Icon(Icons.location_on_outlined, size: 12, color: context.textHint),
-                              const SizedBox(width: 4),
-                              Expanded(child: Text(e.address!, maxLines: 1, overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: context.textHint, fontSize: 10))),
-                            ]),
-                        ]),
-                      );
-                    },
+        const SizedBox(height: AppSpacing.md),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: events.when(
+            data: (list) => list.isEmpty
+                ? Text('Sin eventos próximos por ahora',
+                    key: const ValueKey('events-empty'), style: context.textTheme.bodySmall)
+                : SizedBox(
+                    key: const ValueKey('events-data'),
+                    height: 130,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: list.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.md),
+                      itemBuilder: (_, i) {
+                        final e = list[i];
+                        return Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppSpacing.md),
+                            child: SizedBox(
+                              width: 220,
+                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Text(
+                                  DateFormat('d MMM', 'es').format(e.startsAt),
+                                  style: TextStyle(
+                                    color: context.colors.primary, fontSize: 11, fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.xs),
+                                Text(e.title,
+                                    maxLines: 2, overflow: TextOverflow.ellipsis,
+                                    style: context.textTheme.titleSmall),
+                                const Spacer(),
+                                if (e.address != null)
+                                  Row(children: [
+                                    Icon(Icons.location_on_outlined, size: 12, color: context.textHint),
+                                    const SizedBox(width: AppSpacing.xs),
+                                    Expanded(
+                                      child: Text(e.address!,
+                                          maxLines: 1, overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(color: context.textHint, fontSize: 10)),
+                                    ),
+                                  ]),
+                              ]),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-          loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen)),
-          error: (_, __) => Text('No se pudieron cargar los eventos', style: TextStyle(color: context.textHint, fontSize: 12)),
+            loading: () => const Center(key: ValueKey('events-loading'), child: CircularProgressIndicator()),
+            error: (_, __) => Text('No se pudieron cargar los eventos',
+                key: const ValueKey('events-error'), style: context.textTheme.bodySmall),
+          ),
         ),
-        const SizedBox(height: 28),
+        const SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
 
         // ── Insignias recientes ──────────────────────────────────────────
         Text('LOGROS RECIENTES DE YOERS',
             style: TextStyle(color: context.textHint, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
-        const SizedBox(height: 12),
-        badgeFeed.when(
-          data: (list) => list.isEmpty
-              ? Text('Aún no hay logros para mostrar', style: TextStyle(color: context.textSecondary, fontSize: 12))
-              : Column(children: list.take(5).map((b) => Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: context.card,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: context.border, width: 0.5),
-                    ),
-                    child: Row(children: [
-                      UserAvatar(imageUrl: b.yoerImageUrl, initials: b.yoerName.isNotEmpty ? b.yoerName[0].toUpperCase() : '?', size: 34),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: RichText(
-                          text: TextSpan(style: TextStyle(fontSize: 12, color: context.textSecondary), children: [
-                            TextSpan(text: b.yoerName, style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
-                            const TextSpan(text: ' obtuvo la insignia '),
-                            TextSpan(text: b.badgeName, style: const TextStyle(color: AppTheme.brandGreen, fontWeight: FontWeight.w700)),
-                          ]),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(b.badgeIcon ?? '🏅', style: const TextStyle(fontSize: 18)),
-                    ]),
-                  )).toList()),
-          loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen)),
-          error: (_, __) => Text('No se pudieron cargar los logros', style: TextStyle(color: context.textHint, fontSize: 12)),
+        const SizedBox(height: AppSpacing.md),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: badgeFeed.when(
+            data: (list) => list.isEmpty
+                ? Text('Aún no hay logros para mostrar',
+                    key: const ValueKey('badges-empty'), style: context.textTheme.bodySmall)
+                : Column(
+                    key: const ValueKey('badges-data'),
+                    children: list.take(5).map((b) => Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(AppSpacing.md),
+                              child: Row(children: [
+                                UserAvatar(
+                                  imageUrl: b.yoerImageUrl,
+                                  initials: b.yoerName.isNotEmpty ? b.yoerName[0].toUpperCase() : '?',
+                                  size: 34,
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                Expanded(
+                                  child: RichText(
+                                    text: TextSpan(style: context.textTheme.bodySmall, children: [
+                                      TextSpan(
+                                        text: b.yoerName,
+                                        style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700),
+                                      ),
+                                      const TextSpan(text: ' obtuvo la insignia '),
+                                      TextSpan(
+                                        text: b.badgeName,
+                                        style: TextStyle(color: context.colors.primary, fontWeight: FontWeight.w700),
+                                      ),
+                                    ]),
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
+                                Text(b.badgeIcon ?? '🏅', style: const TextStyle(fontSize: 18)),
+                              ]),
+                            ),
+                          ),
+                        )).toList(),
+                  ),
+            loading: () => const Center(key: ValueKey('badges-loading'), child: CircularProgressIndicator()),
+            error: (_, __) => Text('No se pudieron cargar los logros',
+                key: const ValueKey('badges-error'), style: context.textTheme.bodySmall),
+          ),
         ),
-        const SizedBox(height: 28),
+        const SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
 
         // ── Ranking teaser ───────────────────────────────────────────────
         Row(children: [
-          Text('TOP YOERS', style: TextStyle(color: context.textHint, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
+          Text('TOP YOERS',
+              style: TextStyle(color: context.textHint, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
           const Spacer(),
-          GestureDetector(
-            onTap: () => context.push(AppRoutes.ranking),
-            child: const Text('Ver todo', style: TextStyle(color: AppTheme.brandGreen, fontSize: 12, fontWeight: FontWeight.w700)),
+          TextButton(
+            onPressed: () => context.push(AppRoutes.ranking),
+            child: const Text('Ver todo'),
           ),
         ]),
-        const SizedBox(height: 12),
-        if (ranking.isLoading)
-          const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen))
-        else if (ranking.entries.isEmpty)
-          Text('Sin datos suficientes todavía', style: TextStyle(color: context.textSecondary, fontSize: 12))
-        else
-          ...ranking.entries.take(3).map((e) => Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: context.card,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: context.border, width: 0.5),
-                ),
-                child: Row(children: [
-                  UserAvatar(imageUrl: e.profileImageUrl, initials: e.fullName.isNotEmpty ? e.fullName[0].toUpperCase() : '?', size: 32),
-                  const SizedBox(width: 10),
-                  Expanded(child: Text(e.fullName, style: TextStyle(color: context.textPrimary, fontSize: 13, fontWeight: FontWeight.w700))),
-                  RatingStars(rating: e.rating, size: 13),
-                ]),
-              )),
+        const SizedBox(height: AppSpacing.md),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: ranking.isLoading
+              ? const Center(key: ValueKey('ranking-loading'), child: CircularProgressIndicator())
+              : ranking.entries.isEmpty
+                  ? Text('Sin datos suficientes todavía',
+                      key: const ValueKey('ranking-empty'), style: context.textTheme.bodySmall)
+                  : Column(
+                      key: const ValueKey('ranking-data'),
+                      children: ranking.entries.take(3).map((e) => Padding(
+                            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                            child: Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(AppSpacing.md),
+                                child: Row(children: [
+                                  UserAvatar(
+                                    imageUrl: e.profileImageUrl,
+                                    initials: e.fullName.isNotEmpty ? e.fullName[0].toUpperCase() : '?',
+                                    size: 32,
+                                  ),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Expanded(child: Text(e.fullName, style: context.textTheme.titleSmall)),
+                                  RatingStars(rating: e.rating, size: 13),
+                                ]),
+                              ),
+                            ),
+                          )).toList(),
+                    ),
+        ),
       ]),
     );
   }
@@ -219,18 +260,16 @@ class _ExplorarExtrasState extends ConsumerState<ExplorarExtras> {
   void _showBecomeYoerSheet(BuildContext context, String title, String body) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: context.card,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xxl),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 10),
-          Text(body, style: TextStyle(color: context.textSecondary, fontSize: 13, height: 1.5)),
-          const SizedBox(height: 20),
+          Text(title, style: context.textTheme.titleLarge),
+          const SizedBox(height: AppSpacing.sm),
+          Text(body, style: context.textTheme.bodyMedium?.copyWith(height: 1.5)),
+          const SizedBox(height: AppSpacing.xl),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: () {
                 Navigator.pop(context);
                 context.push(AppRoutes.register);
@@ -250,19 +289,15 @@ class _ExplorarExtrasState extends ConsumerState<ExplorarExtras> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
-          backgroundColor: context.card,
-          title: Text('Cuéntanos de ti', style: TextStyle(color: context.textPrimary)),
+          title: const Text('Cuéntanos de ti'),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
             TextField(
               controller: likeCtrl,
-              style: TextStyle(color: context.textPrimary),
               decoration: const InputDecoration(labelText: '¿Qué te gusta hacer?'),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: AppSpacing.lg),
             DropdownButtonFormField<String>(
               initialValue: level,
-              dropdownColor: context.card,
-              style: TextStyle(color: context.textPrimary),
               decoration: const InputDecoration(labelText: 'Nivel'),
               items: const ['No sé nada', 'Básico', 'Medio', 'Avanzado']
                   .map((l) => DropdownMenuItem(value: l, child: Text(l)))
@@ -272,7 +307,7 @@ class _ExplorarExtrasState extends ConsumerState<ExplorarExtras> {
           ]),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cerrar')),
-            ElevatedButton(
+            FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
                 _showBecomeYoerSheet(context, '¡Vamos a desarrollarlo!',

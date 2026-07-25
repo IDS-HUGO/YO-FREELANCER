@@ -34,32 +34,32 @@ class _ClientBookingsScreenState extends ConsumerState<ClientBookingsScreen>
     final state = ref.watch(bookingViewModelProvider);
     return Scaffold(
       backgroundColor: context.bg,
+      appBar: AppBar(
+        title: const Text('Mis Reservas'),
+        bottom: TabBar(
+          controller: _tab,
+          tabs: const [
+            Tab(text: 'Próximas'),
+            Tab(text: 'Completadas'),
+            Tab(text: 'Canceladas'),
+          ],
+        ),
+      ),
       body: SafeArea(
-        child: Column(children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-            child: Text('Mis Reservas',
-                style: TextStyle(color: context.textPrimary, fontSize: 22, fontWeight: FontWeight.w800)),
-          ),
-          const SizedBox(height: 16),
-          TabBar(
-            controller: _tab,
-            indicatorColor: AppTheme.brandGreen,
-            labelColor: AppTheme.brandGreen,
-            unselectedLabelColor: context.textHint,
-            labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-            tabs: const [Tab(text: 'Próximas'), Tab(text: 'Completadas'), Tab(text: 'Canceladas')],
-          ),
-          Expanded(
-            child: state.isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen))
-                : TabBarView(controller: _tab, children: [
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: state.isLoading
+              ? const Center(key: ValueKey('loading'), child: CircularProgressIndicator())
+              : TabBarView(
+                  key: const ValueKey('tabs'),
+                  controller: _tab,
+                  children: [
                     _BookingList(bookings: state.upcomingBookings),
                     _BookingList(bookings: state.completedBookings),
                     _BookingList(bookings: state.cancelledBookings),
-                  ]),
-          ),
-        ]),
+                  ],
+                ),
+        ),
       ),
     );
   }
@@ -72,44 +72,68 @@ class _BookingList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (bookings.isEmpty) {
-      return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Icon(Icons.calendar_today_outlined, color: context.textHint, size: 48),
-        const SizedBox(height: 12),
-        Text('Sin reservas', style: TextStyle(color: context.textSecondary)),
-      ]));
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.calendar_today_outlined, color: context.colors.outline, size: 48),
+            const SizedBox(height: AppSpacing.md),
+            Text('Sin reservas', style: context.textTheme.bodyMedium),
+          ],
+        ),
+      );
     }
     return ListView.separated(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSpacing.xxl),
       itemCount: bookings.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
       itemBuilder: (ctx, i) {
         final b = bookings[i];
-        return GestureDetector(
-          onTap: () => context.push('/booking/${b.id}'),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: context.card,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: context.border, width: 0.5),
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () => context.push('/booking/${b.id}'),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Expanded(
+                      child: Text(
+                        b.serviceName,
+                        style: context.textTheme.titleSmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    BookingStatusChip(status: b.status.name),
+                  ]),
+                  const SizedBox(height: AppSpacing.md),
+                  Row(children: [
+                    UserAvatar(
+                      imageUrl: b.yoerImageUrl,
+                      initials: b.yoerName.isNotEmpty ? b.yoerName[0].toUpperCase() : '?',
+                      size: 28,
+                      heroTag: 'booking-avatar-${b.id}',
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        b.yoerName,
+                        style: context.textTheme.bodySmall,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      '\$${b.totalPrice.toStringAsFixed(0)}',
+                      style: context.textTheme.titleSmall?.copyWith(color: context.colors.primary),
+                    ),
+                  ]),
+                ],
+              ),
             ),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Expanded(child: Text(b.serviceName,
-                    style: TextStyle(color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w700),
-                    maxLines: 1, overflow: TextOverflow.ellipsis)),
-                BookingStatusChip(status: b.status.name),
-              ]),
-              const SizedBox(height: 8),
-              Row(children: [
-                Icon(Icons.person_outline_rounded, size: 14, color: context.textHint),
-                const SizedBox(width: 4),
-                Text(b.yoerName, style: TextStyle(color: context.textSecondary, fontSize: 12)),
-                const Spacer(),
-                Text('\$${b.totalPrice.toStringAsFixed(0)}',
-                    style: const TextStyle(color: AppTheme.brandGreen, fontSize: 14, fontWeight: FontWeight.w800)),
-              ]),
-            ]),
           ),
         );
       },

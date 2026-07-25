@@ -91,34 +91,31 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
     return Scaffold(
       backgroundColor: context.bg,
       appBar: AppBar(
-        backgroundColor: context.bg,
         leading: IconButton(
           onPressed: () => context.pop(),
-          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: context.textPrimary),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
         ),
-        title: Text('Nuevo Servicio',
-            style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
-        elevation: 0,
+        title: const Text('Nuevo Servicio'),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           children: [
             // ── Título ────────────────────────────────────────────────────
             _label('TÍTULO DEL SERVICIO'),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             TextFormField(
               controller: _titleCtrl,
               style: TextStyle(color: context.textPrimary),
               decoration: _deco('Ej: Desarrollo de App Android', Icons.title_rounded),
               validator: (v) => (v == null || v.isEmpty) ? 'Campo requerido' : null,
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg + 2),
 
             // ── Descripción ───────────────────────────────────────────────
             _label('DESCRIPCIÓN'),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             TextFormField(
               controller: _descCtrl,
               maxLines: 4,
@@ -126,73 +123,51 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
               decoration: _deco('Describe detalladamente tu servicio...', Icons.description_outlined),
               validator: (v) => (v == null || v.length < 20) ? 'Mínimo 20 caracteres' : null,
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg + 2),
 
             // ── Categoría ─────────────────────────────────────────────────
             _label('CATEGORÍA'),
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sm + 2),
             SizedBox(
               height: 40,
-              child: ListView(
+              child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                children: ServiceCategory.values.map((c) {
+                itemCount: ServiceCategory.values.length,
+                separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
+                itemBuilder: (_, i) {
+                  final c = ServiceCategory.values[i];
                   final sel = _category == c;
-                  return GestureDetector(
-                    onTap: () => setState(() => _category = c),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      margin: const EdgeInsets.only(right: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: sel ? AppTheme.brandGreen : context.card,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: sel ? AppTheme.brandGreen : context.border,
-                          width: 0.5,
-                        ),
-                      ),
-                      child: Text('${c.emoji} ${c.displayName}',
-                          style: TextStyle(
-                            color: sel ? Colors.white : context.textSecondary,
-                            fontSize: 12, fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
-                          )),
+                  return ChoiceChip(
+                    label: Text('${c.emoji} ${c.displayName}'),
+                    selected: sel,
+                    onSelected: (_) => setState(() => _category = c),
+                    selectedColor: context.colors.primary,
+                    labelStyle: TextStyle(
+                      color: sel ? Colors.white : context.textSecondary,
+                      fontSize: 12, fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
                     ),
                   );
-                }).toList(),
+                },
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg + 2),
 
             // ── Tipo de servicio ──────────────────────────────────────────
             _label('TIPO DE SERVICIO'),
-            const SizedBox(height: 10),
-            Row(children: ServiceType.values.map((t) {
-              final sel = _type == t;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _type = t),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      color: sel ? AppTheme.brandGreen.withValues(alpha: 0.15) : context.card,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: sel ? AppTheme.brandGreen : context.border,
-                        width: sel ? 1.5 : 0.5,
-                      ),
-                    ),
-                    child: Text(t.displayName, textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: sel ? AppTheme.brandGreen : context.textSecondary,
-                          fontSize: 12, fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
-                        )),
-                  ),
+            const SizedBox(height: AppSpacing.sm + 2),
+            Row(children: [
+              Expanded(
+                child: SegmentedButton<ServiceType>(
+                  segments: ServiceType.values
+                      .map((t) => ButtonSegment(value: t, label: Text(t.displayName)))
+                      .toList(),
+                  selected: {_type},
+                  onSelectionChanged: (s) => setState(() => _type = s.first),
+                  showSelectedIcon: false,
                 ),
-              );
-            }).toList()),
-            const SizedBox(height: 18),
+              ),
+            ]),
+            const SizedBox(height: AppSpacing.lg + 2),
 
             // ── Precio y tipo ─────────────────────────────────────────────
             Row(children: [
@@ -214,91 +189,74 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 _label('TIPO DE PRECIO'),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: context.card,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: context.border, width: 0.5),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<PriceType>(
-                      value: _priceType,
-                      isExpanded: true,
-                      dropdownColor: context.card,
-                      style: TextStyle(color: context.textPrimary, fontSize: 13),
-                      iconEnabledColor: context.textSecondary,
-                      items: PriceType.values.map((p) => DropdownMenuItem(
-                        value: p,
-                        child: Text(p.displayName),
-                      )).toList(),
-                      onChanged: (v) { if (v != null) setState(() => _priceType = v); },
-                    ),
-                  ),
+                const SizedBox(height: AppSpacing.sm),
+                DropdownButtonFormField<PriceType>(
+                  initialValue: _priceType,
+                  isExpanded: true,
+                  dropdownColor: context.card,
+                  style: TextStyle(color: context.textPrimary, fontSize: 13),
+                  items: PriceType.values.map((p) => DropdownMenuItem(
+                    value: p,
+                    child: Text(p.displayName),
+                  )).toList(),
+                  onChanged: (v) { if (v != null) setState(() => _priceType = v); },
                 ),
               ])),
             ]),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg + 2),
 
             // ── Ciudad ────────────────────────────────────────────────────
             _label('CIUDAD (OPCIONAL)'),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             TextFormField(
               controller: _cityCtrl,
               style: TextStyle(color: context.textPrimary),
               decoration: _deco('Ej: Ciudad de México', Icons.location_city_outlined),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg + 2),
 
             // ── Especialidades ────────────────────────────────────────────
             _label('ESPECIALIDADES (SEPARADAS POR COMA)'),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             TextFormField(
               controller: _specialtiesCtrl,
               style: TextStyle(color: context.textPrimary),
               decoration: _deco('Kotlin, Compose, Firebase', Icons.auto_awesome_outlined),
             ),
-            const SizedBox(height: 36),
+            const SizedBox(height: AppSpacing.xxxl + 4),
 
             // ── Botones ───────────────────────────────────────────────────
             SizedBox(
               width: double.infinity,
-              height: 54,
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: state.isLoading ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.brandGreen,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  elevation: 0,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: state.isLoading
+                      ? const SizedBox(key: ValueKey('loading'), width: 22, height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation(Colors.white)))
+                      : const Row(key: ValueKey('idle'), mainAxisAlignment: MainAxisAlignment.center, children: [
+                          Icon(Icons.publish_rounded),
+                          SizedBox(width: AppSpacing.sm),
+                          Text('Publicar Servicio'),
+                        ]),
                 ),
-                child: state.isLoading
-                    ? const SizedBox(width: 22, height: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation(Colors.white)))
-                    : const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        Icon(Icons.publish_rounded),
-                        SizedBox(width: 8),
-                        Text('Publicar Servicio', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                      ]),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             SizedBox(
               width: double.infinity,
-              height: 48,
               child: OutlinedButton(
                 onPressed: () => context.pop(),
                 style: OutlinedButton.styleFrom(
+                  foregroundColor: context.textSecondary,
                   side: BorderSide(color: context.border),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                child: Text('Cancelar',
-                    style: TextStyle(color: context.textSecondary, fontWeight: FontWeight.w600)),
+                child: const Text('Cancelar'),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xxxl),
           ],
         ),
       ),
@@ -306,24 +264,12 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
   }
 
   Widget _label(String text) => Text(text,
-      style: TextStyle(
-        color: context.textPrimary, fontSize: 11,
-        fontWeight: FontWeight.w700, letterSpacing: 1.2,
+      style: context.textTheme.labelSmall?.copyWith(
+        color: context.textPrimary, fontWeight: FontWeight.w700, letterSpacing: 1.2,
       ));
 
   InputDecoration _deco(String hint, IconData icon) => InputDecoration(
     hintText: hint,
-    hintStyle: TextStyle(color: context.textHint),
-    prefixIcon: Icon(icon, color: context.textSecondary, size: 18),
-    filled: true,
-    fillColor: context.card,
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: context.border, width: 0.5)),
-    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppTheme.brandGreen, width: 1.5)),
-    errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppTheme.alertRedLight, width: 1.5)),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    prefixIcon: Icon(icon, size: 18),
   );
 }

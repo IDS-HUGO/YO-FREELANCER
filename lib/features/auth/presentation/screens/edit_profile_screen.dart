@@ -92,88 +92,110 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       appBar: AppBar(title: const Text('Editar perfil')),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           child: Column(children: [
-            GestureDetector(
-              onTap: _pickImage,
+            Center(
               child: Stack(children: [
-                UserAvatar(
-                  imageUrl: _pendingImagePath ?? user?.profileImageUrl,
-                  initials: user?.initials ?? '?',
-                  size: 96,
+                Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: _pickImage,
+                    child: UserAvatar(
+                      imageUrl: _pendingImagePath ?? user?.profileImageUrl,
+                      initials: user?.initials ?? '?',
+                      size: 96,
+                    ),
+                  ),
                 ),
                 Positioned(
                   bottom: 0, right: 0,
                   child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(color: AppTheme.brandGreen, shape: BoxShape.circle),
+                    padding: const EdgeInsets.all(AppSpacing.xs + 2),
+                    decoration: BoxDecoration(color: context.colors.primary, shape: BoxShape.circle),
                     child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 16),
                   ),
                 ),
               ]),
             ),
-            const SizedBox(height: 28),
-            TextField(
-              controller: _nameCtrl,
-              style: TextStyle(color: context.textPrimary),
-              decoration: const InputDecoration(labelText: 'Nombre completo'),
+            const SizedBox(height: AppSpacing.xxl),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                child: Column(children: [
+                  TextField(
+                    controller: _nameCtrl,
+                    style: context.textTheme.bodyLarge,
+                    decoration: const InputDecoration(labelText: 'Nombre completo'),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  TextField(
+                    controller: _phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    style: context.textTheme.bodyLarge,
+                    decoration: const InputDecoration(labelText: 'Teléfono'),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  TextField(
+                    controller: _cityCtrl,
+                    style: context.textTheme.bodyLarge,
+                    decoration: const InputDecoration(labelText: 'Ciudad'),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _ageCtrl,
+                        keyboardType: TextInputType.number,
+                        style: context.textTheme.bodyLarge,
+                        decoration: const InputDecoration(labelText: 'Edad'),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.lg),
+                    Expanded(
+                      flex: 2,
+                      child: DropdownButtonFormField<String>(
+                        initialValue: _gender,
+                        style: context.textTheme.bodyLarge,
+                        decoration: const InputDecoration(labelText: 'Género'),
+                        items: _genderOptions
+                            .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                            .toList(),
+                        onChanged: (v) => setState(() => _gender = v),
+                      ),
+                    ),
+                  ]),
+                  const SizedBox(height: AppSpacing.lg),
+                  TextField(
+                    controller: _bioCtrl,
+                    maxLines: 4,
+                    style: context.textTheme.bodyLarge,
+                    decoration: const InputDecoration(
+                      labelText: 'Semblanza / biografía',
+                      hintText: 'Ej: Soy artista del tatuaje especialista en realismo...',
+                      alignLabelWithHint: true,
+                    ),
+                  ),
+                ]),
+              ),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _phoneCtrl,
-              keyboardType: TextInputType.phone,
-              style: TextStyle(color: context.textPrimary),
-              decoration: const InputDecoration(labelText: 'Teléfono'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _cityCtrl,
-              style: TextStyle(color: context.textPrimary),
-              decoration: const InputDecoration(labelText: 'Ciudad'),
-            ),
-            const SizedBox(height: 16),
-            Row(children: [
-              Expanded(
-                child: TextField(
-                  controller: _ageCtrl,
-                  keyboardType: TextInputType.number,
-                  style: TextStyle(color: context.textPrimary),
-                  decoration: const InputDecoration(labelText: 'Edad'),
+            const SizedBox(height: AppSpacing.xxxl),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _saving ? null : _save,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: _saving
+                      ? const SizedBox(
+                          key: ValueKey('loading'),
+                          width: 20, height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Text('Guardar cambios', key: ValueKey('label')),
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 2,
-                child: DropdownButtonFormField<String>(
-                  initialValue: _gender,
-                  dropdownColor: context.card,
-                  style: TextStyle(color: context.textPrimary),
-                  decoration: const InputDecoration(labelText: 'Género'),
-                  items: _genderOptions
-                      .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-                      .toList(),
-                  onChanged: (v) => setState(() => _gender = v),
-                ),
-              ),
-            ]),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _bioCtrl,
-              maxLines: 4,
-              style: TextStyle(color: context.textPrimary),
-              decoration: const InputDecoration(
-                labelText: 'Semblanza / biografía',
-                hintText: 'Ej: Soy artista del tatuaje especialista en realismo...',
-                alignLabelWithHint: true,
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: _saving ? null : _save,
-              child: _saving
-                  ? const SizedBox(width: 20, height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Guardar cambios'),
             ),
           ]),
         ),

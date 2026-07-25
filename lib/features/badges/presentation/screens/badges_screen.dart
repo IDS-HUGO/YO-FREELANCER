@@ -24,60 +24,78 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(badgeViewModelProvider);
+    final progress = state.catalog.isEmpty ? 0.0 : state.earned.length / state.catalog.length;
 
     return Scaffold(
       backgroundColor: context.bg,
       appBar: AppBar(title: const Text('Insignias')),
       body: SafeArea(
-        child: state.isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen))
-            : Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('${state.earned.length} de ${state.catalog.length} desbloqueadas',
-                      style: TextStyle(color: context.textSecondary, fontSize: 13)),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2, mainAxisSpacing: 14, crossAxisSpacing: 14, childAspectRatio: 1.0,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: state.isLoading
+              ? const Center(key: ValueKey('loading'), child: CircularProgressIndicator())
+              : Padding(
+                  key: const ValueKey('content'),
+                  padding: const EdgeInsets.all(AppSpacing.xl),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('${state.earned.length} de ${state.catalog.length} desbloqueadas',
+                        style: context.textTheme.bodyMedium),
+                    const SizedBox(height: AppSpacing.sm),
+                    ClipRRect(
+                      borderRadius: AppRadius.pillR,
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: progress),
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeOutCubic,
+                        builder: (_, value, __) => LinearProgressIndicator(
+                          value: value,
+                          minHeight: 6,
+                          backgroundColor: context.card,
+                        ),
                       ),
-                      itemCount: state.catalog.length,
-                      itemBuilder: (_, i) {
-                        final badge = state.catalog[i];
-                        final earned = state.isEarned(badge.code);
-                        return Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: earned ? context.cardInner : context.card,
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: earned ? AppTheme.brandGreen.withValues(alpha: 0.5) : context.border,
-                              width: earned ? 1 : 0.5,
-                            ),
-                          ),
-                          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            Opacity(
-                              opacity: earned ? 1 : 0.35,
-                              child: Text(badge.icon ?? '🏅', style: const TextStyle(fontSize: 36)),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(badge.name, textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: earned ? context.textPrimary : context.textHint,
-                                  fontSize: 12, fontWeight: FontWeight.w700,
-                                )),
-                            const SizedBox(height: 4),
-                            Text(badge.description ?? '', textAlign: TextAlign.center, maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(color: context.textHint, fontSize: 10)),
-                          ]),
-                        );
-                      },
                     ),
-                  ),
-                ]),
-              ),
+                    const SizedBox(height: AppSpacing.xl),
+                    Expanded(
+                      child: GridView.builder(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: AppSpacing.lg,
+                          crossAxisSpacing: AppSpacing.lg,
+                          childAspectRatio: 1.0,
+                        ),
+                        itemCount: state.catalog.length,
+                        itemBuilder: (_, i) {
+                          final badge = state.catalog[i];
+                          final earned = state.isEarned(badge.code);
+                          return Card(
+                            color: earned ? context.colors.primaryContainer : context.card,
+                            elevation: earned ? 2 : 1,
+                            child: Padding(
+                              padding: const EdgeInsets.all(AppSpacing.lg),
+                              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 300),
+                                  opacity: earned ? 1 : 0.35,
+                                  child: Text(badge.icon ?? '🏅', style: const TextStyle(fontSize: 36)),
+                                ),
+                                const SizedBox(height: AppSpacing.sm + 2),
+                                Text(badge.name, textAlign: TextAlign.center,
+                                    style: context.textTheme.titleSmall?.copyWith(
+                                      color: earned ? context.textPrimary : context.textHint,
+                                    )),
+                                const SizedBox(height: AppSpacing.xs),
+                                Text(badge.description ?? '', textAlign: TextAlign.center, maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: context.textTheme.bodySmall?.copyWith(color: context.textHint)),
+                              ]),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ]),
+                ),
+        ),
       ),
     );
   }

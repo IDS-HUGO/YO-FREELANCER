@@ -76,8 +76,8 @@ class _RadarScreenState extends ConsumerState<RadarScreen> with SingleTickerProv
         title: const Text('Radar'),
         bottom: TabBar(
           controller: _tab,
-          indicatorColor: AppTheme.brandGreen,
-          labelColor: AppTheme.brandGreen,
+          indicatorColor: context.colors.primary,
+          labelColor: context.colors.primary,
           unselectedLabelColor: context.textHint,
           labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
           tabs: const [Tab(text: 'Urgentes'), Tab(text: 'Tareas abiertas')],
@@ -87,12 +87,19 @@ class _RadarScreenState extends ConsumerState<RadarScreen> with SingleTickerProv
         ],
       ),
       body: SafeArea(
-        child: state.isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen))
-            : TabBarView(controller: _tab, children: [
-                _urgentList(state, user?.id),
-                _openTaskList(state, user?.id),
-              ]),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: state.isLoading
+              ? const Center(key: ValueKey('loading'), child: CircularProgressIndicator())
+              : TabBarView(
+                  key: const ValueKey('content'),
+                  controller: _tab,
+                  children: [
+                    _urgentList(state, user?.id),
+                    _openTaskList(state, user?.id),
+                  ],
+                ),
+        ),
       ),
     );
   }
@@ -102,55 +109,56 @@ class _RadarScreenState extends ConsumerState<RadarScreen> with SingleTickerProv
       return const _EmptyRadar(text: 'Sin tareas urgentes cerca de ti');
     }
     return ListView.separated(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       itemCount: state.urgentTasks.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
       itemBuilder: (_, i) {
         final t = state.urgentTasks[i];
         final applied = state.hasAppliedToUrgent(t.id);
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: context.card,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.warningOrange.withValues(alpha: 0.3), width: 0.5),
+        return Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.xlR,
+            side: BorderSide(color: AppTheme.warningOrange.withValues(alpha: 0.3), width: 0.5),
           ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              const Icon(Icons.flash_on_rounded, color: AppTheme.warningOrange, size: 18),
-              const SizedBox(width: 6),
-              Text('${t.category.emoji} ${t.category.displayName}',
-                  style: const TextStyle(color: AppTheme.warningOrange, fontSize: 11, fontWeight: FontWeight.w700)),
-              const Spacer(),
-              if (t.distanceKm != null)
-                Text('${t.distanceKm!.toStringAsFixed(1)} km',
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                const Icon(Icons.flash_on_rounded, color: AppTheme.warningOrange, size: 18),
+                const SizedBox(width: AppSpacing.xs),
+                Text('${t.category.emoji} ${t.category.displayName}',
+                    style: const TextStyle(color: AppTheme.warningOrange, fontSize: 11, fontWeight: FontWeight.w700)),
+                const Spacer(),
+                if (t.distanceKm != null)
+                  Text('${t.distanceKm!.toStringAsFixed(1)} km',
+                      style: TextStyle(color: context.textHint, fontSize: 11)),
+              ]),
+              const SizedBox(height: AppSpacing.md),
+              Text(t.title, style: context.textTheme.titleSmall),
+              const SizedBox(height: AppSpacing.sm),
+              Text(t.description, style: context.textTheme.bodySmall,
+                  maxLines: 2, overflow: TextOverflow.ellipsis),
+              const SizedBox(height: AppSpacing.md),
+              Row(children: [
+                if (t.maxPrice != null)
+                  Text('Hasta \$${t.maxPrice!.toStringAsFixed(0)}',
+                      style: const TextStyle(color: AppTheme.brandGreen, fontSize: 15, fontWeight: FontWeight.w800)),
+                const Spacer(),
+                Text('${t.applicantsCount} postulantes',
                     style: TextStyle(color: context.textHint, fontSize: 11)),
-            ]),
-            const SizedBox(height: 10),
-            Text(t.title, style: TextStyle(color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 6),
-            Text(t.description, style: TextStyle(color: context.textSecondary, fontSize: 12),
-                maxLines: 2, overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 12),
-            Row(children: [
-              if (t.maxPrice != null)
-                Text('Hasta \$${t.maxPrice!.toStringAsFixed(0)}',
-                    style: const TextStyle(color: AppTheme.brandGreen, fontSize: 15, fontWeight: FontWeight.w800)),
-              const Spacer(),
-              Text('${t.applicantsCount} postulantes',
-                  style: TextStyle(color: context.textHint, fontSize: 11)),
-            ]),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: applied || yoerId == null
-                    ? null
-                    : () => ref.read(radarViewModelProvider.notifier).applyToUrgent(t.id, yoerId),
-                child: Text(applied ? 'Ya te postulaste' : 'Postularme'),
+              ]),
+              const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: applied || yoerId == null
+                      ? null
+                      : () => ref.read(radarViewModelProvider.notifier).applyToUrgent(t.id, yoerId),
+                  child: Text(applied ? 'Ya te postulaste' : 'Postularme'),
+                ),
               ),
-            ),
-          ]),
+            ]),
+          ),
         );
       },
     );
@@ -161,53 +169,50 @@ class _RadarScreenState extends ConsumerState<RadarScreen> with SingleTickerProv
       return const _EmptyRadar(text: 'Sin tareas abiertas por el momento');
     }
     return ListView.separated(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       itemCount: state.openTaskRequests.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
       itemBuilder: (_, i) {
         final t = state.openTaskRequests[i];
         final applied = state.hasAppliedToTaskRequest(t.id);
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: context.card,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: context.border, width: 0.5),
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Text('${t.category.emoji} ${t.category.displayName}',
+                    style: const TextStyle(color: AppTheme.brandGreen, fontSize: 11, fontWeight: FontWeight.w700)),
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+                  decoration: BoxDecoration(color: context.cardInner, borderRadius: AppRadius.smR),
+                  child: Text(t.mode.displayName, style: TextStyle(color: context.textSecondary, fontSize: 10)),
+                ),
+              ]),
+              const SizedBox(height: AppSpacing.md),
+              Text(t.title, style: context.textTheme.titleSmall),
+              const SizedBox(height: AppSpacing.sm),
+              Text(t.description, style: context.textTheme.bodySmall,
+                  maxLines: 2, overflow: TextOverflow.ellipsis),
+              const SizedBox(height: AppSpacing.md),
+              Row(children: [
+                Text('\$${t.budget.toStringAsFixed(0)}',
+                    style: const TextStyle(color: AppTheme.brandGreen, fontSize: 15, fontWeight: FontWeight.w800)),
+                const Spacer(),
+                Text(t.serviceMode.displayName, style: TextStyle(color: context.textHint, fontSize: 11)),
+              ]),
+              const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: applied || yoerId == null
+                      ? null
+                      : () => ref.read(radarViewModelProvider.notifier).applyToTaskRequest(t.id, yoerId),
+                  child: Text(applied ? 'Ya te postulaste' : 'Postularme'),
+                ),
+              ),
+            ]),
           ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Text('${t.category.emoji} ${t.category.displayName}',
-                  style: const TextStyle(color: AppTheme.brandGreen, fontSize: 11, fontWeight: FontWeight.w700)),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(color: context.cardInner, borderRadius: BorderRadius.circular(8)),
-                child: Text(t.mode.displayName, style: TextStyle(color: context.textSecondary, fontSize: 10)),
-              ),
-            ]),
-            const SizedBox(height: 10),
-            Text(t.title, style: TextStyle(color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 6),
-            Text(t.description, style: TextStyle(color: context.textSecondary, fontSize: 12),
-                maxLines: 2, overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 12),
-            Row(children: [
-              Text('\$${t.budget.toStringAsFixed(0)}',
-                  style: const TextStyle(color: AppTheme.brandGreen, fontSize: 15, fontWeight: FontWeight.w800)),
-              const Spacer(),
-              Text(t.serviceMode.displayName, style: TextStyle(color: context.textHint, fontSize: 11)),
-            ]),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: applied || yoerId == null
-                    ? null
-                    : () => ref.read(radarViewModelProvider.notifier).applyToTaskRequest(t.id, yoerId),
-                child: Text(applied ? 'Ya te postulaste' : 'Postularme'),
-              ),
-            ),
-          ]),
         );
       },
     );
@@ -223,8 +228,8 @@ class _EmptyRadar extends StatelessWidget {
     return Center(
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(Icons.radar_rounded, color: context.textHint, size: 56),
-        const SizedBox(height: 12),
-        Text(text, style: TextStyle(color: context.textSecondary)),
+        const SizedBox(height: AppSpacing.md),
+        Text(text, style: context.textTheme.bodyMedium),
       ]),
     );
   }

@@ -39,74 +39,64 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
 
+    Widget body;
     if (_loading) {
-      return Scaffold(
-        backgroundColor: context.bg,
-        body: const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen)),
+      body = const Center(key: ValueKey('loading'), child: CircularProgressIndicator());
+    } else if (_booking == null) {
+      body = Center(
+        key: const ValueKey('empty'),
+        child: Text('Reserva no encontrada', style: context.textTheme.bodyMedium),
       );
-    }
+    } else {
+      final b          = _booking!;
+      final isYoer     = user?.id == b.yoerId;
+      final isClient   = user?.id == b.clientId;
+      final dateStr    = DateFormat('dd/MM/yyyy').format(b.scheduledDateTime);
+      final isPending   = b.status == BookingStatus.pendiente;
+      final isConfirmed = b.status == BookingStatus.confirmada;
 
-    if (_booking == null) {
-      return Scaffold(
-        backgroundColor: context.bg,
-        appBar: _appBar(context),
-        body: Center(child: Text('Reserva no encontrada',
-            style: TextStyle(color: context.textSecondary))),
-      );
-    }
-
-    final b        = _booking!;
-    final isYoer   = user?.id == b.yoerId;
-    final isClient = user?.id == b.clientId;
-    final dateStr  = DateFormat('dd/MM/yyyy').format(b.scheduledDateTime);
-    final isPending   = b.status == BookingStatus.pendiente;
-    final isConfirmed = b.status == BookingStatus.confirmada;
-
-    return Scaffold(
-      backgroundColor: context.bg,
-      appBar: _appBar(context),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+      body = SingleChildScrollView(
+        key: const ValueKey('content'),
+        padding: const EdgeInsets.all(AppSpacing.xxl),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           // Estado + servicio
           Row(children: [
             Expanded(child: Text(b.serviceName,
-                style: TextStyle(color: context.textPrimary, fontSize: 20, fontWeight: FontWeight.w800),
+                style: context.textTheme.headlineSmall,
                 maxLines: 2, overflow: TextOverflow.ellipsis)),
+            const SizedBox(width: AppSpacing.sm),
             BookingStatusChip(status: b.status.name),
           ]),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
 
           // Tarjeta de precio
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.brandGreen, AppTheme.brandGreenDark],
-                begin: Alignment.topLeft, end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(18),
+              gradient: AppTheme.greenGradient,
+              borderRadius: AppRadius.xlR,
             ),
             child: Row(children: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Total a pagar',
-                    style: TextStyle(color: Colors.white70, fontSize: 12)),
+                Text('Total a pagar',
+                    style: context.textTheme.bodySmall?.copyWith(color: Colors.white70)),
                 Text('\$${b.totalPrice.toStringAsFixed(2)} ${b.currency}',
-                    style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900)),
+                    style: context.textTheme.headlineMedium?.copyWith(
+                        color: Colors.white, fontWeight: FontWeight.w900)),
               ]),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: AppRadius.pillR,
                 ),
                 child: Text(b.paymentStatus == PaymentStatus.pagado ? 'PAGADO ✓' : 'PENDIENTE',
-                    style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+                    style: context.textTheme.labelSmall?.copyWith(color: Colors.white)),
               ),
             ]),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
 
           // Detalles
           _section('Detalles de la reserva', [
@@ -116,139 +106,146 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
             _row(Icons.location_on_outlined, 'Dirección', b.address),
             if (b.notes != null) _row(Icons.notes_rounded, 'Notas', b.notes!),
           ]),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.xl),
 
           // Partes involucradas
           _section('Personas', [
-            _personRow(isYoer ? 'Cliente' : 'YOER',
-                isYoer ? b.clientName : b.yoerName,
-                isYoer ? b.clientImageUrl : b.yoerImageUrl),
+            _personRow(
+              isYoer ? 'Cliente' : 'YOER',
+              isYoer ? b.clientName : b.yoerName,
+              isYoer ? b.clientImageUrl : b.yoerImageUrl,
+              isYoer ? null : 'booking-avatar-${b.id}',
+            ),
           ]),
-          const SizedBox(height: 28),
+          const SizedBox(height: AppSpacing.xxxl),
 
-          // Acciones según rol y estado
+          // Acciones según rol y estado: un botón primario claro por estado,
+          // con acciones secundarias/destructivas en Outlined.
           if (isYoer && isPending) ...[
             Row(children: [
-              Expanded(child: ElevatedButton(
+              Expanded(child: FilledButton(
                 onPressed: () => _action(() => ref.read(bookingViewModelProvider.notifier).confirmBooking(b.id)),
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.brandGreen, elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                 child: const Text('Aceptar'),
               )),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(child: OutlinedButton(
                 onPressed: () => _cancelDialog(context, b.id),
-                style: OutlinedButton.styleFrom(foregroundColor: AppTheme.alertRedLight,
-                    side: const BorderSide(color: AppTheme.alertRedLight),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: context.colors.error,
+                  side: BorderSide(color: context.colors.error),
+                ),
                 child: const Text('Rechazar'),
               )),
             ]),
           ],
 
           if (isYoer && isConfirmed) ...[
-            ElevatedButton(
+            FilledButton(
               onPressed: () => _action(() => ref.read(bookingViewModelProvider.notifier).startBooking(b.id)),
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.infoBlue,
-                  minimumSize: const Size(double.infinity, 50), elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              style: FilledButton.styleFrom(backgroundColor: AppTheme.infoBlue),
               child: const Text('Iniciar servicio'),
             ),
           ],
 
           if (isYoer && b.status == BookingStatus.enProgreso) ...[
-            ElevatedButton(
+            FilledButton(
               onPressed: () => _action(() => ref.read(bookingViewModelProvider.notifier).completeBooking(b.id)),
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.brandGreen,
-                  minimumSize: const Size(double.infinity, 50), elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
               child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 Icon(Icons.check_circle_outlined),
-                SizedBox(width: 8),
-                Text('Marcar como completado', style: TextStyle(fontWeight: FontWeight.w700)),
+                SizedBox(width: AppSpacing.sm),
+                Text('Marcar como completado'),
               ]),
             ),
           ],
 
           if (isClient && b.status == BookingStatus.completada &&
               b.paymentStatus == PaymentStatus.pendiente) ...[
-            ElevatedButton(
+            FilledButton(
               onPressed: () async {
                 await context.push('/payment/${b.id}');
                 _load();
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.brandGreen,
-                  minimumSize: const Size(double.infinity, 50), elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              child: const Text('Realizar pago', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+              child: const Text('Realizar pago'),
             ),
           ],
 
-          if ((isClient || isYoer) && (isPending || isConfirmed)) ...[
-            const SizedBox(height: 12),
+          // El botón genérico de cancelar solo se muestra cuando no hay ya
+          // una acción de rechazo equivalente arriba (YOER + pendiente).
+          if ((isClient || isYoer) && (isPending || isConfirmed) && !(isYoer && isPending)) ...[
+            const SizedBox(height: AppSpacing.md),
             OutlinedButton(
               onPressed: () => _cancelDialog(context, b.id),
-              style: OutlinedButton.styleFrom(foregroundColor: AppTheme.alertRedLight,
-                  side: const BorderSide(color: AppTheme.alertRedLight),
-                  minimumSize: const Size(double.infinity, 48),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: context.colors.error,
+                side: BorderSide(color: context.colors.error),
+              ),
               child: const Text('Cancelar reserva'),
             ),
           ],
-          const SizedBox(height: 40),
+          const SizedBox(height: AppSpacing.huge),
         ]),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: context.bg,
+      appBar: _appBar(context),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 250),
+        child: body,
       ),
     );
   }
 
   AppBar _appBar(BuildContext context) => AppBar(
-    backgroundColor: context.bg, elevation: 0,
     leading: IconButton(
       onPressed: () => context.pop(),
-      icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: context.textPrimary),
+      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
     ),
-    title: Text('Detalle de reserva',
-        style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
+    title: const Text('Detalle de reserva'),
   );
 
   Widget _section(String title, List<Widget> rows) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(title.toUpperCase(),
-          style: TextStyle(color: context.textHint, fontSize: 11,
-              fontWeight: FontWeight.w700, letterSpacing: 1.2)),
-      const SizedBox(height: 12),
-      Container(
-        decoration: BoxDecoration(
-          color: context.card,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: context.border, width: 0.5),
-        ),
+          style: context.textTheme.labelMedium?.copyWith(letterSpacing: 1.2)),
+      const SizedBox(height: AppSpacing.md),
+      Card(
+        clipBehavior: Clip.antiAlias,
+        margin: EdgeInsets.zero,
         child: Column(children: rows),
       ),
     ],
   );
 
   Widget _row(IconData icon, String label, String value) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
     child: Row(children: [
-      Icon(icon, color: context.textSecondary, size: 18),
-      const SizedBox(width: 12),
-      Text(label, style: TextStyle(color: context.textSecondary, fontSize: 13)),
+      Icon(icon, color: context.colors.onSurfaceVariant, size: 18),
+      const SizedBox(width: AppSpacing.md),
+      Text(label, style: context.textTheme.bodyMedium),
       const Spacer(),
-      Flexible(child: Text(value, style: TextStyle(color: context.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+      Flexible(child: Text(value,
+          style: context.textTheme.bodyMedium?.copyWith(
+              color: context.colors.onSurface, fontWeight: FontWeight.w600),
           textAlign: TextAlign.right, maxLines: 2, overflow: TextOverflow.ellipsis)),
     ]),
   );
 
-  Widget _personRow(String role, String name, String? imageUrl) => Padding(
-    padding: const EdgeInsets.all(16),
+  Widget _personRow(String role, String name, String? imageUrl, String? heroTag) => Padding(
+    padding: const EdgeInsets.all(AppSpacing.lg),
     child: Row(children: [
-      UserAvatar(imageUrl: imageUrl, initials: name.isNotEmpty ? name[0].toUpperCase() : '?', size: 44),
-      const SizedBox(width: 12),
+      UserAvatar(
+        imageUrl: imageUrl,
+        initials: name.isNotEmpty ? name[0].toUpperCase() : '?',
+        size: 44,
+        heroTag: heroTag,
+      ),
+      const SizedBox(width: AppSpacing.md),
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(role, style: TextStyle(color: context.textHint, fontSize: 11, letterSpacing: 0.5)),
-        Text(name, style: TextStyle(color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
+        Text(role, style: context.textTheme.labelSmall),
+        Text(name, style: context.textTheme.titleSmall),
       ]),
     ]),
   );
@@ -263,36 +260,29 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: context.card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Cancelar reserva', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text('¿Por qué deseas cancelar?', style: TextStyle(color: context.textSecondary)),
-          const SizedBox(height: 12),
+        title: const Text('Cancelar reserva'),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('¿Por qué deseas cancelar?', style: context.textTheme.bodyMedium),
+          const SizedBox(height: AppSpacing.md),
           TextField(
             controller: reasonCtrl,
-            style: TextStyle(color: context.textPrimary),
-            decoration: InputDecoration(
-              hintText: 'Motivo...',
-              hintStyle: TextStyle(color: context.textHint),
-              filled: true, fillColor: context.card,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-              contentPadding: const EdgeInsets.all(12),
-            ),
+            decoration: const InputDecoration(hintText: 'Motivo...'),
           ),
         ]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context),
-              child: Text('Atrás', style: TextStyle(color: context.textSecondary))),
-          ElevatedButton(
+              child: const Text('Atrás')),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: context.colors.error,
+              foregroundColor: context.colors.onError,
+            ),
             onPressed: () async {
               Navigator.pop(context);
               final ok = await ref.read(bookingViewModelProvider.notifier)
                   .cancelBooking(bookingId, reasonCtrl.text.isEmpty ? 'Sin motivo' : reasonCtrl.text);
               if (ok) _load();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.alertRed, elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
             child: const Text('Cancelar reserva'),
           ),
         ],

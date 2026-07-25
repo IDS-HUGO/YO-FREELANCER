@@ -53,32 +53,26 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         context: context,
         barrierDismissible: false,
         builder: (_) => AlertDialog(
-          backgroundColor: context.card,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(Icons.check_circle_rounded, color: AppTheme.brandGreen, size: 64),
-            const SizedBox(height: 16),
-            Text('¡Pago exitoso!',
-                style: TextStyle(color: context.textPrimary, fontSize: 20, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 8),
+            Icon(Icons.check_circle_rounded, color: context.colors.primary, size: 64),
+            const SizedBox(height: AppSpacing.lg),
+            Text('¡Pago exitoso!', style: context.textTheme.headlineSmall),
+            const SizedBox(height: AppSpacing.sm),
             Text('\$${_booking!.totalPrice.toStringAsFixed(2)} MXN',
-                style: const TextStyle(color: AppTheme.brandGreen, fontSize: 24, fontWeight: FontWeight.w900)),
-            const SizedBox(height: 8),
+                style: TextStyle(color: context.colors.primary, fontSize: 24, fontWeight: FontWeight.w900)),
+            const SizedBox(height: AppSpacing.sm),
             Text('Método: ${_selectedMethod!.displayName}',
                 style: TextStyle(color: context.textSecondary)),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                context.pop();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.brandGreen,
-                minimumSize: const Size(double.infinity, 48),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
+            const SizedBox(height: AppSpacing.xxl),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  context.pop();
+                },
+                child: const Text('Listo'),
               ),
-              child: const Text('Listo', style: TextStyle(fontWeight: FontWeight.w700)),
             ),
           ]),
         ),
@@ -100,115 +94,109 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     return Scaffold(
       backgroundColor: context.bg,
       appBar: AppBar(
-        backgroundColor: context.bg, elevation: 0,
         leading: IconButton(
           onPressed: () => context.pop(),
-          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: context.textPrimary),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
         ),
-        title: Text('Realizar pago',
-            style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
+        title: const Text('Realizar pago'),
       ),
       body: Column(children: [
         Expanded(child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             // Resumen
             if (_booking != null) ...[
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [context.card, context.cardInner],
-                    begin: Alignment.topLeft, end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: context.border, width: 0.5),
-                ),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('RESUMEN',
-                      style: TextStyle(color: context.textHint, fontSize: 11,
-                          fontWeight: FontWeight.w700, letterSpacing: 1.2)),
-                  const SizedBox(height: 12),
-                  Text(_booking!.serviceName,
-                      style: TextStyle(color: context.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 6),
-                  Text('YOER: ${_booking!.yoerName}',
-                      style: TextStyle(color: context.textSecondary, fontSize: 13)),
-                  Divider(color: context.border, height: 24),
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text('Total a pagar',
-                        style: TextStyle(color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
-                    Text('\$${_booking!.totalPrice.toStringAsFixed(2)} MXN',
-                        style: const TextStyle(color: AppTheme.brandGreen, fontSize: 20, fontWeight: FontWeight.w900)),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.xl),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('RESUMEN',
+                        style: TextStyle(color: context.textHint, fontSize: 11,
+                            fontWeight: FontWeight.w700, letterSpacing: 1.2)),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(_booking!.serviceName,
+                        style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: AppSpacing.xs + 2),
+                    Text('YOER: ${_booking!.yoerName}',
+                        style: TextStyle(color: context.textSecondary, fontSize: 13)),
+                    Divider(color: context.border, height: AppSpacing.xxl),
+                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      Text('Total a pagar',
+                          style: TextStyle(color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+                      Text('\$${_booking!.totalPrice.toStringAsFixed(2)} MXN',
+                          style: TextStyle(color: context.colors.primary, fontSize: 20, fontWeight: FontWeight.w900)),
+                    ]),
                   ]),
-                ]),
+                ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: AppSpacing.xxl + 4),
             ],
 
             // Métodos de pago
             Text('MÉTODO DE PAGO',
                 style: TextStyle(color: context.textHint, fontSize: 11,
                     fontWeight: FontWeight.w700, letterSpacing: 1.2)),
-            const SizedBox(height: 14),
+            const SizedBox(height: AppSpacing.md + 2),
             ...PaymentMethodType.values.map((m) => _MethodCard(
               method: m,
               isSelected: _selectedMethod == m,
               onTap: () => setState(() => _selectedMethod = m),
             )),
 
-            if (payState.error != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppTheme.alertRed.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.alertRed.withValues(alpha: 0.3)),
-                ),
-                child: Row(children: [
-                  const Icon(Icons.error_outline_rounded, color: AppTheme.alertRedLight, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(payState.error!,
-                      style: const TextStyle(color: AppTheme.alertRedLight, fontSize: 13))),
-                ]),
-              ),
-            ],
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: payState.error == null
+                  ? const SizedBox.shrink(key: ValueKey('no-error'))
+                  : Padding(
+                      key: const ValueKey('error'),
+                      padding: const EdgeInsets.only(top: AppSpacing.lg),
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.md + 2),
+                        decoration: BoxDecoration(
+                          color: context.colors.error.withValues(alpha: 0.15),
+                          borderRadius: AppRadius.mdR,
+                          border: Border.all(color: context.colors.error.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(children: [
+                          Icon(Icons.error_outline_rounded, color: context.colors.error, size: 18),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(child: Text(payState.error ?? '',
+                              style: TextStyle(color: context.colors.error, fontSize: 13))),
+                        ]),
+                      ),
+                    ),
+            ),
           ]),
         )),
 
         // Botón de pago
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           decoration: BoxDecoration(
             color: context.card,
             border: Border(top: BorderSide(color: context.border, width: 0.5)),
           ),
           child: SafeArea(
             child: SizedBox(
-              width: double.infinity, height: 54,
-              child: ElevatedButton(
+              width: double.infinity,
+              child: FilledButton(
                 onPressed: (_selectedMethod == null || payState.isLoading) ? null : _pay,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.brandGreen,
-                  disabledBackgroundColor: context.border,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  elevation: 0,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: payState.isLoading
+                      ? const SizedBox(key: ValueKey('loading'), width: 22, height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation(Colors.white)))
+                      : Row(key: const ValueKey('idle'), mainAxisAlignment: MainAxisAlignment.center, children: [
+                          const Icon(Icons.lock_rounded, size: 18),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text(
+                            _booking != null
+                                ? 'Pagar \$${_booking!.totalPrice.toStringAsFixed(2)}'
+                                : 'Pagar',
+                          ),
+                        ]),
                 ),
-                child: payState.isLoading
-                    ? const SizedBox(width: 22, height: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation(Colors.white)))
-                    : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        const Icon(Icons.lock_rounded, size: 18),
-                        const SizedBox(width: 8),
-                        Text(
-                          _booking != null
-                              ? 'Pagar \$${_booking!.totalPrice.toStringAsFixed(2)}'
-                              : 'Pagar',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                        ),
-                      ]),
               ),
             ),
           ),
@@ -227,35 +215,42 @@ class _MethodCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.brandGreen.withValues(alpha: 0.1) : context.card,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isSelected ? AppTheme.brandGreen : context.border,
-            width: isSelected ? 1.5 : 0.5,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm + 2),
+      child: Material(
+        color: isSelected ? context.colors.primary.withValues(alpha: 0.1) : context.card,
+        borderRadius: AppRadius.lgR,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppRadius.lgR,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.lgR,
+              border: Border.all(
+                color: isSelected ? context.colors.primary : context.border,
+                width: isSelected ? 1.5 : 0.5,
+              ),
+            ),
+            child: Row(children: [
+              Text(method.icon, style: const TextStyle(fontSize: 24)),
+              const SizedBox(width: AppSpacing.md + 2),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(method.displayName,
+                    style: TextStyle(
+                      color: isSelected ? context.textPrimary : context.textSecondary,
+                      fontSize: 14, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    )),
+                Text(_subtitle(method),
+                    style: TextStyle(color: context.textHint, fontSize: 11)),
+              ])),
+              if (isSelected)
+                Icon(Icons.check_circle_rounded, color: context.colors.primary, size: 22),
+            ]),
           ),
         ),
-        child: Row(children: [
-          Text(method.icon, style: const TextStyle(fontSize: 24)),
-          const SizedBox(width: 14),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(method.displayName,
-                style: TextStyle(
-                  color: isSelected ? context.textPrimary : context.textSecondary,
-                  fontSize: 14, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                )),
-            Text(_subtitle(method),
-                style: TextStyle(color: context.textHint, fontSize: 11)),
-          ])),
-          if (isSelected)
-            const Icon(Icons.check_circle_rounded, color: AppTheme.brandGreen, size: 22),
-        ]),
       ),
     );
   }

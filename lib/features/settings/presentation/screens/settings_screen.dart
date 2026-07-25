@@ -22,38 +22,61 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Ajustes')),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           children: [
             const _SectionLabel('Apariencia'),
-            _ThemeModeSelector(
-              current: themeMode,
-              onChanged: (m) => ref.read(themeModeControllerProvider.notifier).setMode(m),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: _ThemeModeSelector(
+                  current: themeMode,
+                  onChanged: (m) => ref.read(themeModeControllerProvider.notifier).setMode(m),
+                ),
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xxl),
 
             const _SectionLabel('Datos personales'),
-            _tile(context, Icons.person_outline_rounded, 'Editar perfil',
-                () => context.push(AppRoutes.editProfile)),
-            _tile(context, Icons.lock_outline_rounded, 'Usuario y contraseña',
-                () => _showChangePassword(context, ref)),
-            const SizedBox(height: 20),
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: Column(children: [
+                _tile(context, Icons.person_outline_rounded, 'Editar perfil',
+                    () => context.push(AppRoutes.editProfile)),
+                const Divider(height: 1, indent: AppSpacing.huge),
+                _tile(context, Icons.lock_outline_rounded, 'Usuario y contraseña',
+                    () => _showChangePassword(context, ref)),
+              ]),
+            ),
+            const SizedBox(height: AppSpacing.xxl),
 
             const _SectionLabel('Legal'),
-            _tile(context, Icons.privacy_tip_outlined, 'Política de privacidad',
-                () => _showStaticInfo(context, 'Política de privacidad', _privacyText)),
-            _tile(context, Icons.description_outlined, 'Condiciones de servicio',
-                () => _showStaticInfo(context, 'Condiciones de servicio', _termsText)),
-            const SizedBox(height: 20),
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: Column(children: [
+                _tile(context, Icons.privacy_tip_outlined, 'Política de privacidad',
+                    () => _showStaticInfo(context, 'Política de privacidad', _privacyText)),
+                const Divider(height: 1, indent: AppSpacing.huge),
+                _tile(context, Icons.description_outlined, 'Condiciones de servicio',
+                    () => _showStaticInfo(context, 'Condiciones de servicio', _termsText)),
+              ]),
+            ),
+            const SizedBox(height: AppSpacing.xxl),
 
             const _SectionLabel('Soporte'),
-            _tile(context, Icons.help_outline_rounded, 'Ayuda',
-                () => _showHelpDialog(context, ref, user?.id)),
-            const SizedBox(height: 20),
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: _tile(context, Icons.help_outline_rounded, 'Ayuda',
+                  () => _showHelpDialog(context, ref, user?.id)),
+            ),
+            const SizedBox(height: AppSpacing.xxl),
 
-            _tile(context, Icons.logout_rounded, 'Cerrar sesión', () async {
-              await ref.read(authViewModelProvider.notifier).logout();
-              if (context.mounted) context.go(AppRoutes.welcome);
-            }, color: AppTheme.alertRedLight),
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: _tile(context, Icons.logout_rounded, 'Cerrar sesión', () async {
+                await ref.read(authViewModelProvider.notifier).logout();
+                if (context.mounted) context.go(AppRoutes.welcome);
+              }, color: context.colors.error),
+            ),
           ],
         ),
       ),
@@ -61,23 +84,18 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _tile(BuildContext context, IconData icon, String label, VoidCallback onTap, {Color? color}) {
-    return GestureDetector(
+    return ListTile(
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 2),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: context.border, width: 0.5)),
-        ),
-        child: Row(children: [
-          Icon(icon, color: color ?? context.textSecondary, size: 20),
-          const SizedBox(width: 14),
-          Text(label, style: TextStyle(color: color ?? context.textPrimary, fontSize: 14)),
-          const Spacer(),
-          if (color == null)
-            Icon(Icons.arrow_forward_ios_rounded, size: 13, color: context.textHint),
-        ]),
+      leading: Icon(icon, color: color ?? context.textSecondary),
+      title: Text(
+        label,
+        style: color != null
+            ? context.textTheme.bodyLarge?.copyWith(color: color, fontWeight: FontWeight.w600)
+            : context.textTheme.bodyLarge,
       ),
+      trailing: color == null
+          ? Icon(Icons.arrow_forward_ios_rounded, size: 13, color: context.textHint)
+          : null,
     );
   }
 
@@ -86,17 +104,15 @@ class SettingsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: ctx.card,
-        title: Text('Nueva contraseña', style: TextStyle(color: ctx.textPrimary)),
+        title: const Text('Nueva contraseña'),
         content: TextField(
           controller: ctrl,
           obscureText: true,
-          style: TextStyle(color: ctx.textPrimary),
           decoration: const InputDecoration(hintText: 'Mínimo 6 caracteres'),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-          ElevatedButton(
+          FilledButton(
             onPressed: () async {
               final pass = ctrl.text.trim();
               Navigator.pop(ctx);
@@ -123,17 +139,15 @@ class SettingsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: ctx.card,
-        title: Text('¿En qué te ayudamos?', style: TextStyle(color: ctx.textPrimary)),
+        title: const Text('¿En qué te ayudamos?'),
         content: TextField(
           controller: ctrl,
           maxLines: 3,
-          style: TextStyle(color: ctx.textPrimary),
           decoration: const InputDecoration(hintText: 'Describe tu duda o problema...'),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-          ElevatedButton(
+          FilledButton(
             onPressed: userId == null
                 ? null
                 : () async {
@@ -152,19 +166,17 @@ class SettingsScreen extends ConsumerWidget {
   void _showStaticInfo(BuildContext context, String title, String body) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: context.card,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => DraggableScrollableSheet(
         initialChildSize: 0.7,
         maxChildSize: 0.9,
         expand: false,
         builder: (_, controller) => Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           child: ListView(controller: controller, children: [
-            Text(title, style: TextStyle(color: ctx.textPrimary, fontSize: 18, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 16),
-            Text(body, style: TextStyle(color: ctx.textSecondary, fontSize: 13, height: 1.6)),
+            Text(title, style: ctx.textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.lg),
+            Text(body, style: ctx.textTheme.bodyMedium?.copyWith(height: 1.6)),
           ]),
         ),
       ),
@@ -179,7 +191,7 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Text(text.toUpperCase(),
           style: TextStyle(color: context.textHint, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
     );
@@ -193,38 +205,28 @@ class _ThemeModeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const options = [
-      (ThemeMode.system, 'Sistema', Icons.brightness_auto_rounded),
-      (ThemeMode.light, 'Claro', Icons.light_mode_rounded),
-      (ThemeMode.dark, 'Oscuro', Icons.dark_mode_rounded),
-    ];
-    return Row(
-      children: options.map((o) {
-        final (mode, label, icon) = o;
-        final selected = current == mode;
-        return Expanded(
-          child: GestureDetector(
-            onTap: () => onChanged(mode),
-            child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: selected ? AppTheme.brandGreen : context.card,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: selected ? AppTheme.brandGreen : context.border),
-              ),
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                Icon(icon, size: 18, color: selected ? Colors.white : context.textSecondary),
-                const SizedBox(height: 4),
-                Text(label, style: TextStyle(
-                  fontSize: 11, fontWeight: FontWeight.w700,
-                  color: selected ? Colors.white : context.textSecondary,
-                )),
-              ]),
-            ),
-          ),
-        );
-      }).toList(),
+    return SegmentedButton<ThemeMode>(
+      expandedInsets: EdgeInsets.zero,
+      showSelectedIcon: false,
+      segments: const [
+        ButtonSegment(
+          value: ThemeMode.system,
+          label: Text('Sistema'),
+          icon: Icon(Icons.brightness_auto_rounded, size: 18),
+        ),
+        ButtonSegment(
+          value: ThemeMode.light,
+          label: Text('Claro'),
+          icon: Icon(Icons.light_mode_rounded, size: 18),
+        ),
+        ButtonSegment(
+          value: ThemeMode.dark,
+          label: Text('Oscuro'),
+          icon: Icon(Icons.dark_mode_rounded, size: 18),
+        ),
+      ],
+      selected: {current},
+      onSelectionChanged: (selection) => onChanged(selection.first),
     );
   }
 }

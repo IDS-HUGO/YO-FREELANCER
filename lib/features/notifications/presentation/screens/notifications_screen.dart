@@ -42,67 +42,84 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         ],
       ),
       body: SafeArea(
-        child: state.isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen))
-            : state.notifications.isEmpty
-                ? Center(
-                    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Icon(Icons.notifications_none_rounded, color: context.textHint, size: 56),
-                      const SizedBox(height: 12),
-                      Text('Sin notificaciones', style: TextStyle(color: context.textSecondary)),
-                    ]),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: state.notifications.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
-                    itemBuilder: (_, i) {
-                      final n = state.notifications[i];
-                      return GestureDetector(
-                        onTap: () {
-                          if (!n.isRead) {
-                            ref.read(notificationViewModelProvider.notifier).markAsRead(n.id);
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: n.isRead ? context.card : context.cardInner,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: n.isRead ? context.border : AppTheme.brandGreen.withValues(alpha: 0.4),
-                              width: n.isRead ? 0.5 : 1,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: state.isLoading
+              ? const Center(
+                  key: ValueKey('loading'),
+                  child: CircularProgressIndicator(),
+                )
+              : state.notifications.isEmpty
+                  ? Center(
+                      key: const ValueKey('empty'),
+                      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                        Icon(Icons.notifications_none_rounded, color: context.textHint, size: 56),
+                        const SizedBox(height: AppSpacing.md),
+                        Text('Sin notificaciones', style: context.textTheme.bodyMedium),
+                      ]),
+                    )
+                  : ListView.separated(
+                      key: const ValueKey('list'),
+                      padding: const EdgeInsets.all(AppSpacing.xl),
+                      itemCount: state.notifications.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                      itemBuilder: (_, i) {
+                        final n = state.notifications[i];
+                        return Card(
+                          shape: n.isRead
+                              ? null
+                              : RoundedRectangleBorder(
+                                  borderRadius: AppRadius.xlR,
+                                  side: BorderSide(color: context.colors.primary, width: 1),
+                                ),
+                          color: n.isRead ? null : context.colors.primaryContainer.withValues(alpha: 0.35),
+                          child: InkWell(
+                            borderRadius: AppRadius.xlR,
+                            onTap: () {
+                              if (!n.isRead) {
+                                ref.read(notificationViewModelProvider.notifier).markAsRead(n.id);
+                              }
+                            },
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.lg,
+                                vertical: AppSpacing.xs,
+                              ),
+                              leading: Text(n.type.icon, style: const TextStyle(fontSize: 22)),
+                              title: Text(n.title, style: context.textTheme.titleSmall),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (n.body != null && n.body!.isNotEmpty)
+                                    Text(
+                                      n.body!,
+                                      style: context.textTheme.bodySmall,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  const SizedBox(height: AppSpacing.xs),
+                                  Text(
+                                    timeago.format(n.createdAt, locale: 'es'),
+                                    style: TextStyle(color: context.textHint, fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                              trailing: n.isRead
+                                  ? null
+                                  : Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        color: context.colors.primary,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
                             ),
                           ),
-                          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text(n.type.icon, style: const TextStyle(fontSize: 22)),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(n.title,
-                                    style: TextStyle(color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
-                                if (n.body != null && n.body!.isNotEmpty) ...[
-                                  const SizedBox(height: 4),
-                                  Text(n.body!,
-                                      style: TextStyle(color: context.textSecondary, fontSize: 12),
-                                      maxLines: 2, overflow: TextOverflow.ellipsis),
-                                ],
-                                const SizedBox(height: 6),
-                                Text(timeago.format(n.createdAt, locale: 'es'),
-                                    style: TextStyle(color: context.textHint, fontSize: 11)),
-                              ]),
-                            ),
-                            if (!n.isRead)
-                              Container(
-                                width: 8, height: 8,
-                                margin: const EdgeInsets.only(top: 4),
-                                decoration: const BoxDecoration(color: AppTheme.brandGreen, shape: BoxShape.circle),
-                              ),
-                          ]),
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    ),
+        ),
       ),
     );
   }

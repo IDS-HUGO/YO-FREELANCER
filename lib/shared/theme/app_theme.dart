@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Sistema de diseño de YO FREE-LANCER
-/// Paleta verde oscura, inspirada en la estética original Android
+/// Paleta verde, generada desde un seed Material 3 y afinada a la
+/// identidad de marca original.
 class AppTheme {
   AppTheme._();
 
@@ -47,6 +48,9 @@ class AppTheme {
       displayMedium: base.displayMedium?.copyWith(
         color: primary, fontWeight: FontWeight.w700, letterSpacing: -0.5,
       ),
+      displaySmall: base.displaySmall?.copyWith(
+        color: primary, fontWeight: FontWeight.w700,
+      ),
       headlineLarge: base.headlineLarge?.copyWith(
         color: primary, fontWeight: FontWeight.w700,
       ),
@@ -87,8 +91,13 @@ class AppTheme {
   }
 
   // ── ColorScheme dark ─────────────────────────────────────────────────────
-  static const ColorScheme _darkScheme = ColorScheme(
+  // Generado desde el seed de marca (ColorScheme.fromSeed) y afinado con
+  // copyWith para conservar los tonos oscuros ya validados (sin negros
+  // lavados) y los roles semánticos custom (warning, info, alert).
+  static final ColorScheme _darkScheme = ColorScheme.fromSeed(
+    seedColor: brandGreen,
     brightness: Brightness.dark,
+  ).copyWith(
     primary: brandGreen,
     onPrimary: Colors.white,
     primaryContainer: cardInnerDark,
@@ -99,8 +108,12 @@ class AppTheme {
     onSecondaryContainer: textPrimaryDark,
     tertiary: warningOrange,
     onTertiary: Colors.black,
+    tertiaryContainer: const Color(0xFF4A3312),
+    onTertiaryContainer: const Color(0xFFFFDDA6),
     error: alertRedLight,
     onError: Colors.white,
+    errorContainer: const Color(0xFF4A1616),
+    onErrorContainer: const Color(0xFFFFB4AB),
     surface: surfaceDark,
     onSurface: textPrimaryDark,
     onSurfaceVariant: textSecondaryDark,
@@ -111,11 +124,18 @@ class AppTheme {
     inverseSurface: textPrimaryDark,
     onInverseSurface: bgDark,
     inversePrimary: brandGreenDark,
+    surfaceContainerLowest: bgDark,
+    surfaceContainerLow: surfaceDark,
+    surfaceContainer: cardDark,
+    surfaceContainerHigh: cardInnerDark,
+    surfaceContainerHighest: const Color(0xFF313B34),
   );
 
   // ── ColorScheme light ─────────────────────────────────────────────────────
-  static const ColorScheme _lightScheme = ColorScheme(
+  static final ColorScheme _lightScheme = ColorScheme.fromSeed(
+    seedColor: brandGreen,
     brightness: Brightness.light,
+  ).copyWith(
     primary: brandGreen,
     onPrimary: Colors.white,
     primaryContainer: brandGreenAccent,
@@ -126,19 +146,40 @@ class AppTheme {
     onSecondaryContainer: textPrimaryLight,
     tertiary: warningOrange,
     onTertiary: Colors.white,
+    tertiaryContainer: const Color(0xFFFFE4B8),
+    onTertiaryContainer: const Color(0xFF4A3312),
     error: alertRed,
     onError: Colors.white,
+    errorContainer: const Color(0xFFFFDAD6),
+    onErrorContainer: const Color(0xFF410002),
     surface: surfaceLight,
     onSurface: textPrimaryLight,
     onSurfaceVariant: textSecondaryLight,
-    outline: Color(0xFFCDD8CE),
-    outlineVariant: Color(0xFFE0EAE2),
-    shadow: Color(0x1A000000),
-    scrim: Color(0x80000000),
+    outline: const Color(0xFFCDD8CE),
+    outlineVariant: const Color(0xFFE0EAE2),
+    shadow: const Color(0x1A000000),
+    scrim: const Color(0x80000000),
     inverseSurface: surfaceDark,
     onInverseSurface: textPrimaryDark,
     inversePrimary: brandGreenLight,
+    surfaceContainerLowest: Colors.white,
+    surfaceContainerLow: bgLight,
+    surfaceContainer: cardLight,
+    surfaceContainerHigh: cardInnerLight,
+    surfaceContainerHighest: const Color(0xFFE3EFE5),
   );
+
+  // ── Shared button/shape helpers ──────────────────────────────────────────
+  static RoundedRectangleBorder get _buttonShape => RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      );
+
+  static TextStyle _buttonTextStyle({FontWeight weight = FontWeight.w700}) =>
+      GoogleFonts.spaceGrotesk(
+        fontSize: 15,
+        fontWeight: weight,
+        letterSpacing: 0.3,
+      );
 
   // ── Dark Theme ────────────────────────────────────────────────────────────
   static ThemeData get darkTheme {
@@ -147,11 +188,14 @@ class AppTheme {
       colorScheme: _darkScheme,
       textTheme: _buildTextTheme(textPrimaryDark, textSecondaryDark),
       scaffoldBackgroundColor: bgDark,
+      splashFactory: InkSparkle.splashFactory,
 
       appBarTheme: AppBarTheme(
         backgroundColor: bgDark,
         foregroundColor: textPrimaryDark,
         elevation: 0,
+        scrolledUnderElevation: 3,
+        surfaceTintColor: brandGreen,
         centerTitle: true,
         titleTextStyle: GoogleFonts.spaceGrotesk(
           color: textPrimaryDark,
@@ -165,9 +209,11 @@ class AppTheme {
 
       cardTheme: CardThemeData(
         color: cardDark,
-        elevation: 0,
+        elevation: 1,
+        shadowColor: Colors.black.withValues(alpha: 0.3),
+        surfaceTintColor: brandGreen,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           side: const BorderSide(color: borderDark, width: 0.5),
         ),
         margin: EdgeInsets.zero,
@@ -179,14 +225,16 @@ class AppTheme {
           foregroundColor: Colors.white,
           elevation: 0,
           minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: GoogleFonts.spaceGrotesk(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.3,
-          ),
+          shape: _buttonShape,
+          textStyle: _buttonTextStyle(),
+        ),
+      ),
+
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size.fromHeight(52),
+          shape: _buttonShape,
+          textStyle: _buttonTextStyle(),
         ),
       ),
 
@@ -195,22 +243,45 @@ class AppTheme {
           foregroundColor: brandGreen,
           side: const BorderSide(color: brandGreen, width: 1.5),
           minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: GoogleFonts.spaceGrotesk(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
+          shape: _buttonShape,
+          textStyle: _buttonTextStyle(weight: FontWeight.w600),
         ),
       ),
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: brandGreen,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
           textStyle: GoogleFonts.spaceGrotesk(
             fontSize: 14,
             fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: SegmentedButton.styleFrom(
+          backgroundColor: cardDark,
+          foregroundColor: textSecondaryDark,
+          selectedBackgroundColor: brandGreen,
+          selectedForegroundColor: Colors.white,
+          side: const BorderSide(color: borderDark, width: 0.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          textStyle: GoogleFonts.spaceGrotesk(
+            fontSize: 13, fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          foregroundColor: textPrimaryDark,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
         ),
       ),
@@ -223,19 +294,23 @@ class AppTheme {
           fontSize: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           borderSide: const BorderSide(color: borderDark, width: 0.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           borderSide: const BorderSide(color: brandGreen, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          borderSide: const BorderSide(color: alertRedLight, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           borderSide: const BorderSide(color: alertRedLight, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
@@ -246,17 +321,17 @@ class AppTheme {
         labelStyle: GoogleFonts.spaceGrotesk(color: textSecondaryDark),
       ),
 
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: bgDark,
-        selectedItemColor: brandGreen,
-        unselectedItemColor: textHintDark,
-        type: BottomNavigationBarType.fixed,
-        elevation: 0,
-      ),
-
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: surfaceDark,
-        indicatorColor: brandGreen.withValues(alpha: 0.2),
+        elevation: 3,
+        surfaceTintColor: brandGreen,
+        shadowColor: Colors.black.withValues(alpha: 0.3),
+        indicatorColor: brandGreen.withValues(alpha: 0.22),
+        indicatorShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+        ),
+        height: 68,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: brandGreen);
@@ -264,7 +339,7 @@ class AppTheme {
           return const IconThemeData(color: textHintDark);
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          final base = GoogleFonts.spaceGrotesk(fontSize: 10);
+          final base = GoogleFonts.spaceGrotesk(fontSize: 11);
           if (states.contains(WidgetState.selected)) {
             return base.copyWith(
               color: brandGreen, fontWeight: FontWeight.w700,
@@ -282,7 +357,7 @@ class AppTheme {
         ),
         side: const BorderSide(color: borderDark),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
       ),
 
@@ -292,13 +367,37 @@ class AppTheme {
         space: 0,
       ),
 
+      dialogTheme: DialogThemeData(
+        backgroundColor: cardDark,
+        surfaceTintColor: brandGreen,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
+        ),
+        titleTextStyle: GoogleFonts.spaceGrotesk(
+          color: textPrimaryDark, fontSize: 18, fontWeight: FontWeight.w700,
+        ),
+        contentTextStyle: GoogleFonts.spaceGrotesk(
+          color: textSecondaryDark, fontSize: 14,
+        ),
+      ),
+
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: surfaceDark,
+        surfaceTintColor: brandGreen,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xxl),
+          ),
+        ),
+      ),
+
       snackBarTheme: SnackBarThemeData(
         backgroundColor: cardDark,
         contentTextStyle: GoogleFonts.spaceGrotesk(
           color: textPrimaryDark, fontSize: 14,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         behavior: SnackBarBehavior.floating,
       ),
@@ -329,11 +428,14 @@ class AppTheme {
       colorScheme: _lightScheme,
       textTheme: _buildTextTheme(textPrimaryLight, textSecondaryLight),
       scaffoldBackgroundColor: bgLight,
+      splashFactory: InkSparkle.splashFactory,
 
       appBarTheme: AppBarTheme(
         backgroundColor: bgLight,
         foregroundColor: textPrimaryLight,
         elevation: 0,
+        scrolledUnderElevation: 3,
+        surfaceTintColor: brandGreen,
         centerTitle: true,
         titleTextStyle: GoogleFonts.spaceGrotesk(
           color: textPrimaryLight,
@@ -345,9 +447,11 @@ class AppTheme {
 
       cardTheme: CardThemeData(
         color: surfaceLight,
-        elevation: 0,
+        elevation: 1,
+        shadowColor: Colors.black.withValues(alpha: 0.08),
+        surfaceTintColor: brandGreen,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           side: const BorderSide(color: Color(0xFFE0EAE2), width: 0.5),
         ),
         margin: EdgeInsets.zero,
@@ -359,14 +463,16 @@ class AppTheme {
           foregroundColor: Colors.white,
           elevation: 0,
           minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: GoogleFonts.spaceGrotesk(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.3,
-          ),
+          shape: _buttonShape,
+          textStyle: _buttonTextStyle(),
+        ),
+      ),
+
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size.fromHeight(52),
+          shape: _buttonShape,
+          textStyle: _buttonTextStyle(),
         ),
       ),
 
@@ -375,22 +481,45 @@ class AppTheme {
           foregroundColor: brandGreenDark,
           side: const BorderSide(color: brandGreen, width: 1.5),
           minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: GoogleFonts.spaceGrotesk(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
+          shape: _buttonShape,
+          textStyle: _buttonTextStyle(weight: FontWeight.w600),
         ),
       ),
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: brandGreenDark,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
           textStyle: GoogleFonts.spaceGrotesk(
             fontSize: 14,
             fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: SegmentedButton.styleFrom(
+          backgroundColor: cardLight,
+          foregroundColor: textSecondaryLight,
+          selectedBackgroundColor: brandGreen,
+          selectedForegroundColor: Colors.white,
+          side: const BorderSide(color: Color(0xFFE0EAE2), width: 0.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          textStyle: GoogleFonts.spaceGrotesk(
+            fontSize: 13, fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          foregroundColor: textPrimaryLight,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
         ),
       ),
@@ -403,19 +532,23 @@ class AppTheme {
           fontSize: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           borderSide: const BorderSide(color: Color(0xFFCDD8CE), width: 0.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           borderSide: const BorderSide(color: brandGreen, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          borderSide: const BorderSide(color: alertRed, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           borderSide: const BorderSide(color: alertRed, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
@@ -426,17 +559,17 @@ class AppTheme {
         labelStyle: GoogleFonts.spaceGrotesk(color: textSecondaryLight),
       ),
 
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: surfaceLight,
-        selectedItemColor: brandGreen,
-        unselectedItemColor: textHintLight,
-        type: BottomNavigationBarType.fixed,
-        elevation: 0,
-      ),
-
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: surfaceLight,
-        indicatorColor: brandGreen.withValues(alpha: 0.15),
+        elevation: 3,
+        surfaceTintColor: brandGreen,
+        shadowColor: Colors.black.withValues(alpha: 0.08),
+        indicatorColor: brandGreen.withValues(alpha: 0.16),
+        indicatorShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+        ),
+        height: 68,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: brandGreenDark);
@@ -444,7 +577,7 @@ class AppTheme {
           return const IconThemeData(color: textHintLight);
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          final base = GoogleFonts.spaceGrotesk(fontSize: 10);
+          final base = GoogleFonts.spaceGrotesk(fontSize: 11);
           if (states.contains(WidgetState.selected)) {
             return base.copyWith(
               color: brandGreenDark, fontWeight: FontWeight.w700,
@@ -462,7 +595,7 @@ class AppTheme {
         ),
         side: const BorderSide(color: Color(0xFFE0EAE2)),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
       ),
 
@@ -472,13 +605,37 @@ class AppTheme {
         space: 0,
       ),
 
+      dialogTheme: DialogThemeData(
+        backgroundColor: surfaceLight,
+        surfaceTintColor: brandGreen,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
+        ),
+        titleTextStyle: GoogleFonts.spaceGrotesk(
+          color: textPrimaryLight, fontSize: 18, fontWeight: FontWeight.w700,
+        ),
+        contentTextStyle: GoogleFonts.spaceGrotesk(
+          color: textSecondaryLight, fontSize: 14,
+        ),
+      ),
+
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: surfaceLight,
+        surfaceTintColor: brandGreen,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xxl),
+          ),
+        ),
+      ),
+
       snackBarTheme: SnackBarThemeData(
         backgroundColor: textPrimaryLight,
         contentTextStyle: GoogleFonts.spaceGrotesk(
           color: Colors.white, fontSize: 14,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         behavior: SnackBarBehavior.floating,
       ),

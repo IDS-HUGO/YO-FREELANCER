@@ -59,7 +59,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     height: 100,
                     decoration: BoxDecoration(
                       color: context.card,
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: AppRadius.xxlR,
                       border: Border.all(color: context.border),
                     ),
                     child: const Center(
@@ -73,32 +73,21 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpacing.xl),
                   Text(
                     'YO FREE-LANCER',
-                    style: TextStyle(
-                      color: context.textPrimary,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 2,
-                    ),
+                    style: context.textTheme.headlineSmall?.copyWith(letterSpacing: 2),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppSpacing.xs + 2),
                   Text(
                     'Tu trabajo habla por ti',
-                    style: TextStyle(
-                      color: context.textSecondary,
-                      fontSize: 13,
-                    ),
+                    style: context.textTheme.bodyMedium,
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(height: AppSpacing.huge + AppSpacing.md),
                   const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(AppTheme.brandGreen),
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ],
               ),
@@ -152,7 +141,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       backgroundColor: context.bg,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl + AppSpacing.xs),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -163,43 +152,36 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 height: 160,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: context.card,
-                  border: Border.all(color: context.border, width: 1),
+                  gradient: AppTheme.greenGradient,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.brandGreen.withValues(alpha: 0.35),
+                      blurRadius: 32,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
                 ),
                 child: const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Ý',
-                        style: TextStyle(
-                          fontSize: 64,
-                          color: AppTheme.brandGreen,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'Ý',
+                    style: TextStyle(
+                      fontSize: 64,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 36),
+              const SizedBox(height: AppSpacing.xxxl + AppSpacing.xs),
               Text(
                 'YO FREE-LANCER',
-                style: TextStyle(
-                  color: context.textPrimary,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 2.5,
-                ),
+                style: context.textTheme.headlineMedium?.copyWith(letterSpacing: 2.5),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 'Conecta talento con oportunidades en México',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: context.textSecondary,
-                  fontSize: 14,
-                ),
+                style: context.textTheme.bodyMedium,
               ),
               const Spacer(),
 
@@ -214,52 +196,34 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   children: [
                     SizedBox(
                       width: double.infinity,
-                      height: 54,
-                      child: ElevatedButton(
+                      child: FilledButton(
                         onPressed: () => context.go(AppRoutes.login),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.brandGreen,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          'Iniciar Sesión',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                        ),
+                        child: const Text('Iniciar Sesión'),
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: AppSpacing.md + 2),
                     SizedBox(
                       width: double.infinity,
-                      height: 54,
                       child: OutlinedButton(
                         onPressed: () => context.go(AppRoutes.register),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.brandGreen,
-                          side: const BorderSide(color: AppTheme.brandGreen, width: 1.5),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
-                        ),
-                        child: const Text(
-                          'Crear Cuenta',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                        ),
+                        child: const Text('Crear Cuenta'),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    GestureDetector(
+                    const SizedBox(height: AppSpacing.xxl),
+                    InkWell(
+                      borderRadius: AppRadius.smR,
                       onTap: () => context.go(AppRoutes.clientHome),
-                      child: Text(
-                        'Explorar sin cuenta',
-                        style: TextStyle(
-                          color: context.textSecondary,
-                          fontSize: 14,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md, vertical: AppSpacing.sm,
+                        ),
+                        child: Text(
+                          'Explorar sin cuenta',
+                          style: context.textTheme.bodyMedium,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppSpacing.xl),
                   ],
                 ),
               ),

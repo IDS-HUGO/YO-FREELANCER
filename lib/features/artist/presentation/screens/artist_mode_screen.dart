@@ -67,116 +67,112 @@ class _ArtistModeScreenState extends ConsumerState<ArtistModeScreen> {
       }
     });
 
+    final isVerified = state.profile?.isVerified == true;
+    final isPending = state.profile?.verificationRequestedAt != null;
+
     return Scaffold(
       backgroundColor: context.bg,
       appBar: AppBar(title: const Text('Modo Artista / Talento')),
       body: SafeArea(
-        child: state.isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen))
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: state.profile?.isVerified == true
-                          ? AppTheme.brandGreen.withValues(alpha: 0.12)
-                          : context.card,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: state.profile?.isVerified == true ? AppTheme.brandGreen : context.border,
-                      ),
-                    ),
-                    child: Row(children: [
-                      Icon(
-                        state.profile?.isVerified == true ? Icons.verified_rounded : Icons.info_outline_rounded,
-                        color: state.profile?.isVerified == true ? AppTheme.brandGreen : context.textSecondary,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          state.profile?.isVerified == true
-                              ? 'Tu cuenta está verificada como Artista/Talento'
-                              : state.profile?.verificationRequestedAt != null
-                                  ? 'Tu verificación está en revisión'
-                                  : 'Activa el modo Artista/Talento para destacar tu perfil',
-                          style: TextStyle(color: context.textPrimary, fontSize: 12),
-                        ),
-                      ),
-                    ]),
-                  ),
-                  const SizedBox(height: 24),
-
-                  TextField(
-                    controller: _stageNameCtrl,
-                    style: TextStyle(color: context.textPrimary),
-                    decoration: const InputDecoration(labelText: 'Nombre artístico'),
-                  ),
-                  const SizedBox(height: 20),
-
-                  Text('¿Quién administra tu perfil?',
-                      style: TextStyle(color: context.textSecondary, fontSize: 12, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 10),
-                  Row(children: ManagerType.values.map((m) {
-                    final selected = _managerType == m;
-                    return Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _managerType = m),
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: selected ? AppTheme.brandGreen : context.card,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: selected ? AppTheme.brandGreen : context.border),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: state.isLoading
+              ? const Center(key: ValueKey('loading'), child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                  key: const ValueKey('content'),
+                  padding: const EdgeInsets.all(AppSpacing.xxl),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Card(
+                      color: isVerified ? context.colors.primaryContainer : context.card,
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: Row(children: [
+                          Icon(
+                            isVerified ? Icons.verified_rounded : Icons.info_outline_rounded,
+                            color: isVerified ? context.colors.primary : context.textSecondary,
                           ),
-                          child: Text(m.displayName, textAlign: TextAlign.center,
-                              style: TextStyle(color: selected ? Colors.white : context.textSecondary, fontSize: 12, fontWeight: FontWeight.w700)),
-                        ),
-                      ),
-                    );
-                  }).toList()),
-
-                  if (_managerType == ManagerType.managed) ...[
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _managerNameCtrl,
-                      style: TextStyle(color: context.textPrimary),
-                      decoration: const InputDecoration(labelText: 'Nombre del manager'),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _managerContactCtrl,
-                      style: TextStyle(color: context.textPrimary),
-                      decoration: const InputDecoration(labelText: 'Contacto del manager'),
-                    ),
-                  ],
-
-                  const SizedBox(height: 28),
-                  ElevatedButton(
-                    onPressed: user == null
-                        ? null
-                        : () => ref.read(artistViewModelProvider.notifier).save(
-                              user.id,
-                              stageName: _stageNameCtrl.text.trim().isEmpty ? null : _stageNameCtrl.text.trim(),
-                              managerType: _managerType,
-                              managerName: _managerNameCtrl.text.trim().isEmpty ? null : _managerNameCtrl.text.trim(),
-                              managerContact: _managerContactCtrl.text.trim().isEmpty ? null : _managerContactCtrl.text.trim(),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 250),
+                              child: Text(
+                                isVerified
+                                    ? 'Tu cuenta está verificada como Artista/Talento'
+                                    : isPending
+                                        ? 'Tu verificación está en revisión'
+                                        : 'Activa el modo Artista/Talento para destacar tu perfil',
+                                key: ValueKey('$isVerified-$isPending'),
+                                style: context.textTheme.bodyMedium?.copyWith(color: context.textPrimary),
+                              ),
                             ),
-                    child: const Text('Guardar'),
-                  ),
-                  const SizedBox(height: 12),
-                  if (state.profile?.isVerified != true)
-                    OutlinedButton(
-                      onPressed: user == null || state.profile?.verificationRequestedAt != null
-                          ? null
-                          : () => ref.read(artistViewModelProvider.notifier).requestVerification(user.id),
-                      child: Text(state.profile?.verificationRequestedAt != null
-                          ? 'Verificación en revisión'
-                          : 'Solicitar verificación'),
+                          ),
+                        ]),
+                      ),
                     ),
-                ]),
-              ),
+                    const SizedBox(height: AppSpacing.xxl),
+
+                    TextField(
+                      controller: _stageNameCtrl,
+                      decoration: const InputDecoration(labelText: 'Nombre artístico'),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+
+                    Text('¿Quién administra tu perfil?',
+                        style: context.textTheme.labelLarge?.copyWith(color: context.textSecondary)),
+                    const SizedBox(height: AppSpacing.sm + 2),
+                    SegmentedButton<ManagerType>(
+                      segments: ManagerType.values
+                          .map((m) => ButtonSegment(value: m, label: Text(m.displayName)))
+                          .toList(),
+                      selected: {_managerType},
+                      showSelectedIcon: false,
+                      onSelectionChanged: (selection) => setState(() => _managerType = selection.first),
+                    ),
+
+                    AnimatedCrossFade(
+                      duration: const Duration(milliseconds: 250),
+                      crossFadeState: _managerType == ManagerType.managed
+                          ? CrossFadeState.showFirst
+                          : CrossFadeState.showSecond,
+                      firstChild: Column(children: [
+                        const SizedBox(height: AppSpacing.xl),
+                        TextField(
+                          controller: _managerNameCtrl,
+                          decoration: const InputDecoration(labelText: 'Nombre del manager'),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        TextField(
+                          controller: _managerContactCtrl,
+                          decoration: const InputDecoration(labelText: 'Contacto del manager'),
+                        ),
+                      ]),
+                      secondChild: const SizedBox.shrink(),
+                    ),
+
+                    const SizedBox(height: AppSpacing.xxl),
+                    FilledButton(
+                      onPressed: user == null
+                          ? null
+                          : () => ref.read(artistViewModelProvider.notifier).save(
+                                user.id,
+                                stageName: _stageNameCtrl.text.trim().isEmpty ? null : _stageNameCtrl.text.trim(),
+                                managerType: _managerType,
+                                managerName: _managerNameCtrl.text.trim().isEmpty ? null : _managerNameCtrl.text.trim(),
+                                managerContact: _managerContactCtrl.text.trim().isEmpty ? null : _managerContactCtrl.text.trim(),
+                              ),
+                      child: const Text('Guardar'),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    if (!isVerified)
+                      OutlinedButton(
+                        onPressed: user == null || isPending
+                            ? null
+                            : () => ref.read(artistViewModelProvider.notifier).requestVerification(user.id),
+                        child: Text(isPending ? 'Verificación en revisión' : 'Solicitar verificación'),
+                      ),
+                  ]),
+                ),
+        ),
       ),
     );
   }

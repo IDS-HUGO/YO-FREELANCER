@@ -78,30 +78,34 @@ class _CreateTaskRequestScreenState extends ConsumerState<CreateTaskRequestScree
       appBar: AppBar(title: const Text('Crear tarea')),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('¿Cómo la necesitas?', style: TextStyle(color: context.textSecondary, fontSize: 12, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 10),
-            Row(children: [
-              Expanded(child: _modeChip(TaskMode.expres, 'Exprés (ahora)')),
-              const SizedBox(width: 10),
-              Expanded(child: _modeChip(TaskMode.agendado, 'Agendado')),
-            ]),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.md),
+            SegmentedButton<TaskMode>(
+              segments: const [
+                ButtonSegment(value: TaskMode.expres, label: Text('Exprés (ahora)'), icon: Icon(Icons.bolt_rounded)),
+                ButtonSegment(value: TaskMode.agendado, label: Text('Agendado'), icon: Icon(Icons.event_rounded)),
+              ],
+              selected: {_mode},
+              showSelectedIcon: false,
+              onSelectionChanged: (s) => setState(() => _mode = s.first),
+            ),
+            const SizedBox(height: AppSpacing.xxl),
 
             TextField(
               controller: _titleCtrl,
               style: TextStyle(color: context.textPrimary),
               decoration: const InputDecoration(labelText: 'Qué necesitas', hintText: 'Ej: Plomero para fuga de agua'),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             TextField(
               controller: _descCtrl,
               maxLines: 3,
               style: TextStyle(color: context.textPrimary),
               decoration: const InputDecoration(labelText: 'Descripción', alignLabelWithHint: true),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
 
             DropdownButtonFormField<ServiceCategory>(
               initialValue: _category,
@@ -113,28 +117,17 @@ class _CreateTaskRequestScreenState extends ConsumerState<CreateTaskRequestScree
                   .toList(),
               onChanged: (v) => setState(() => _category = v ?? _category),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
 
-            Row(children: TaskServiceMode.values.map((m) {
-              final selected = _serviceMode == m;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _serviceMode = m),
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: selected ? AppTheme.brandGreen : context.card,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: selected ? AppTheme.brandGreen : context.border),
-                    ),
-                    child: Text(m.displayName, textAlign: TextAlign.center,
-                        style: TextStyle(color: selected ? Colors.white : context.textSecondary, fontSize: 12)),
-                  ),
-                ),
-              );
-            }).toList()),
-            const SizedBox(height: 16),
+            SegmentedButton<TaskServiceMode>(
+              segments: TaskServiceMode.values
+                  .map((m) => ButtonSegment(value: m, label: Text(m.displayName)))
+                  .toList(),
+              selected: {_serviceMode},
+              showSelectedIcon: false,
+              onSelectionChanged: (s) => setState(() => _serviceMode = s.first),
+            ),
+            const SizedBox(height: AppSpacing.lg),
 
             Row(children: [
               Expanded(
@@ -145,7 +138,7 @@ class _CreateTaskRequestScreenState extends ConsumerState<CreateTaskRequestScree
                   decoration: const InputDecoration(labelText: 'Horas aprox.'),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: TextField(
                   controller: _budgetCtrl,
@@ -155,43 +148,29 @@ class _CreateTaskRequestScreenState extends ConsumerState<CreateTaskRequestScree
                 ),
               ),
             ]),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             TextField(
               controller: _addressCtrl,
               style: TextStyle(color: context.textPrimary),
               decoration: const InputDecoration(labelText: 'Domicilio (opcional)'),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xxxl),
 
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: _saving ? null : _submit,
-                child: _saving
-                    ? const SizedBox(width: 20, height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Publicar tarea'),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: _saving
+                      ? const SizedBox(key: ValueKey('saving'), width: 20, height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Text('Publicar tarea', key: ValueKey('idle')),
+                ),
               ),
             ),
           ]),
         ),
-      ),
-    );
-  }
-
-  Widget _modeChip(TaskMode mode, String label) {
-    final selected = _mode == mode;
-    return GestureDetector(
-      onTap: () => setState(() => _mode = mode),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: selected ? AppTheme.brandGreen : context.card,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: selected ? AppTheme.brandGreen : context.border),
-        ),
-        child: Text(label, textAlign: TextAlign.center,
-            style: TextStyle(color: selected ? Colors.white : context.textSecondary, fontWeight: FontWeight.w700, fontSize: 13)),
       ),
     );
   }

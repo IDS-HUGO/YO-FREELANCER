@@ -21,55 +21,34 @@ class MainScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: child,
-      bottomNavigationBar: _BottomNavBar(userType: userType),
+      bottomNavigationBar: _AppNavigationBar(userType: userType),
     );
   }
 }
 
-class _BottomNavBar extends StatelessWidget {
+/// Barra de navegación inferior Material 3 (`NavigationBar`), con estilo
+/// tomado de `navigationBarTheme` en [AppTheme].
+class _AppNavigationBar extends StatelessWidget {
   final UserType userType;
 
-  const _BottomNavBar({required this.userType});
+  const _AppNavigationBar({required this.userType});
 
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    final isDark = context.isDark;
-
-    final items = userType == UserType.yoer
-        ? _yoerItems
-        : _clientItems;
-
+    final items = userType == UserType.yoer ? _yoerItems : _clientItems;
     final currentIndex = _currentIndex(location, items);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.bgDark : AppTheme.surfaceLight,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? AppTheme.borderDark : const Color(0xFFE0EAE2),
-            width: 0.5,
+    return NavigationBar(
+      selectedIndex: currentIndex,
+      onDestinationSelected: (index) => context.go(items[index].route),
+      destinations: [
+        for (final item in items)
+          NavigationDestination(
+            icon: Icon(item.icon),
+            label: item.label,
           ),
-        ),
-      ),
-      child: SafeArea(
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            children: List.generate(items.length, (index) {
-              final item = items[index];
-              final isSelected = index == currentIndex;
-              return Expanded(
-                child: _NavItem(
-                  item: item,
-                  isSelected: isSelected,
-                  onTap: () => context.go(item.route),
-                ),
-              );
-            }),
-          ),
-        ),
-      ),
+      ],
     );
   }
 
@@ -101,59 +80,6 @@ class _NavItemData {
   final String label;
   final String route;
   const _NavItemData({required this.icon, required this.label, required this.route});
-}
-
-class _NavItem extends StatelessWidget {
-  final _NavItemData item;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _NavItem({
-    required this.item,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppTheme.brandGreen.withValues(alpha: 0.15)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Icon(
-                item.icon,
-                color: isSelected ? AppTheme.brandGreen : context.textHint,
-                size: 22,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              item.label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                color: isSelected ? AppTheme.brandGreen : context.textHint,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 // ── Widgets reutilizables compartidos ─────────────────────────────────────────
@@ -305,22 +231,26 @@ class RatingStars extends StatelessWidget {
   }
 }
 
-/// Avatar circular con fallback de iniciales
+/// Avatar circular con fallback de iniciales.
+/// Si se pasa [heroTag], la imagen participa en una transición [Hero]
+/// (útil para animar de una tarjeta de listado a su pantalla de detalle).
 class UserAvatar extends StatelessWidget {
   final String? imageUrl;
   final String initials;
   final double size;
+  final Object? heroTag;
 
   const UserAvatar({
     super.key,
     this.imageUrl,
     required this.initials,
     this.size = 44,
+    this.heroTag,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final avatar = Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
@@ -337,6 +267,9 @@ class UserAvatar extends StatelessWidget {
             )
           : _initials,
     );
+
+    if (heroTag == null) return avatar;
+    return Hero(tag: heroTag!, child: avatar);
   }
 
   Widget get _initials => Center(
@@ -384,15 +317,21 @@ class SectionCard extends StatelessWidget {
               ),
             ),
             if (action != null)
-              GestureDetector(
+              InkWell(
                 onTap: onAction,
-                child: Text(
-                  action!,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.brandGreen,
-                    letterSpacing: 0.3,
+                borderRadius: AppRadius.smR,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4, vertical: 2,
+                  ),
+                  child: Text(
+                    action!,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.brandGreen,
+                      letterSpacing: 0.3,
+                    ),
                   ),
                 ),
               ),
@@ -425,28 +364,33 @@ class NotificationBell extends ConsumerWidget {
           orElse: () => 0,
         );
 
-    return GestureDetector(
-      onTap: () => context.push(AppRoutes.notifications),
-      child: Container(
-        width: 42, height: 42,
-        decoration: BoxDecoration(
-          border: Border.all(color: context.border),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Stack(clipBehavior: Clip.none, children: [
-          Center(
-            child: Icon(Icons.notifications_outlined, size: size,
-                color: color ?? context.textSecondary),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: AppRadius.mdR,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => context.push(AppRoutes.notifications),
+        child: Container(
+          width: 42, height: 42,
+          decoration: BoxDecoration(
+            border: Border.all(color: context.border),
+            borderRadius: AppRadius.mdR,
           ),
-          if (unread > 0)
-            Positioned(
-              top: 4, right: 4,
-              child: Container(
-                width: 8, height: 8,
-                decoration: const BoxDecoration(color: AppTheme.alertRedLight, shape: BoxShape.circle),
-              ),
+          child: Stack(clipBehavior: Clip.none, children: [
+            Center(
+              child: Icon(Icons.notifications_outlined, size: size,
+                  color: color ?? context.textSecondary),
             ),
-        ]),
+            if (unread > 0)
+              Positioned(
+                top: 4, right: 4,
+                child: Container(
+                  width: 8, height: 8,
+                  decoration: const BoxDecoration(color: AppTheme.alertRedLight, shape: BoxShape.circle),
+                ),
+              ),
+          ]),
+        ),
       ),
     );
   }
@@ -459,7 +403,7 @@ void showAppSnackBar(BuildContext context, String message, {bool isError = false
       content: Text(message),
       backgroundColor: isError ? AppTheme.alertRed : AppTheme.brandGreenDark,
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.lgR),
       margin: const EdgeInsets.all(16),
     ),
   );

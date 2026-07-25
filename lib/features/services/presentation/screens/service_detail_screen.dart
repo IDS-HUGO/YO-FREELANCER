@@ -54,133 +54,127 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
                     child: Center(child: Text(service.category.emoji, style: const TextStyle(fontSize: 64))),
                   ),
           ),
-          leading: GestureDetector(
-            onTap: () => context.pop(),
-            child: Container(
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(10),
+          leading: Padding(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            child: Material(
+              color: Colors.black45,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: IconButton(
+                onPressed: () => context.pop(),
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 16),
               ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 16),
             ),
           ),
         ),
 
         SliverToBoxAdapter(child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             // Categoría
             Row(children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: AppTheme.brandGreen.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
+                  color: context.colors.primary.withValues(alpha: 0.15),
+                  borderRadius: AppRadius.pillR,
                 ),
                 child: Text('${service.category.emoji} ${service.category.displayName}',
-                    style: const TextStyle(color: AppTheme.brandGreen, fontSize: 11, fontWeight: FontWeight.w700)),
+                    style: context.textTheme.labelSmall?.copyWith(
+                        color: context.colors.primary, fontWeight: FontWeight.w700)),
               ),
               const Spacer(),
               if (service.isPromoted)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
                   decoration: BoxDecoration(
-                    color: AppTheme.warningOrange.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
+                    color: context.colors.tertiary.withValues(alpha: 0.15),
+                    borderRadius: AppRadius.pillR,
                   ),
-                  child: const Text('⭐ DESTACADO',
-                      style: TextStyle(color: AppTheme.warningOrange, fontSize: 11, fontWeight: FontWeight.w700)),
+                  child: Text('⭐ DESTACADO',
+                      style: context.textTheme.labelSmall?.copyWith(
+                          color: context.colors.tertiary, fontWeight: FontWeight.w700)),
                 ),
             ]),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
 
             Text(service.title,
-                style: TextStyle(color: context.textPrimary, fontSize: 22, fontWeight: FontWeight.w800, height: 1.2)),
-            const SizedBox(height: 16),
+                style: context.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800, height: 1.2)),
+            const SizedBox(height: AppSpacing.lg),
 
             // Precio + tipo
             Row(children: [
               Text(service.priceLabel,
-                  style: const TextStyle(color: AppTheme.brandGreen, fontSize: 28, fontWeight: FontWeight.w900)),
-              const SizedBox(width: 12),
+                  style: TextStyle(color: context.colors.primary, fontSize: 28, fontWeight: FontWeight.w900)),
+              const SizedBox(width: AppSpacing.md),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
                 decoration: BoxDecoration(
                   color: context.card,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadius.mdR,
                   border: Border.all(color: context.border, width: 0.5),
                 ),
                 child: Text(service.serviceType.displayName,
-                    style: TextStyle(color: context.textSecondary, fontSize: 12)),
+                    style: context.textTheme.labelMedium?.copyWith(color: context.textSecondary)),
               ),
             ]),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
 
             // Rating y YOER
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: context.card,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: context.border, width: 0.5),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Row(children: [
+                  UserAvatar(imageUrl: service.yoerImageUrl, initials: service.yoerName[0].toUpperCase(), size: 44),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(service.yoerName,
+                        style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                    Row(children: [
+                      RatingStars(rating: service.rating),
+                      const SizedBox(width: AppSpacing.xs + 2),
+                      Text('${service.totalReviews} reseñas',
+                          style: TextStyle(color: context.textHint, fontSize: 11)),
+                    ]),
+                  ])),
+                  Icon(Icons.arrow_forward_ios_rounded, size: 13, color: context.textHint),
+                ]),
               ),
-              child: Row(children: [
-                UserAvatar(imageUrl: service.yoerImageUrl, initials: service.yoerName[0].toUpperCase(), size: 44),
-                const SizedBox(width: 12),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(service.yoerName,
-                      style: TextStyle(color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
-                  Row(children: [
-                    RatingStars(rating: service.rating),
-                    const SizedBox(width: 6),
-                    Text('${service.totalReviews} reseñas',
-                        style: TextStyle(color: context.textHint, fontSize: 11)),
-                  ]),
-                ])),
-                Icon(Icons.arrow_forward_ios_rounded, size: 13, color: context.textHint),
-              ]),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xxl),
 
             Text('Descripción',
-                style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
+                style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: AppSpacing.sm),
             Text(service.description,
-                style: TextStyle(color: context.textSecondary, fontSize: 14, height: 1.6)),
+                style: context.textTheme.bodyMedium?.copyWith(height: 1.6)),
 
             if (service.specialties.isNotEmpty) ...[
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.xl),
               Text('Especialidades',
-                  style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 10),
-              Wrap(spacing: 8, runSpacing: 8,
-                  children: service.specialties.map((s) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: context.card,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: context.border, width: 0.5),
-                    ),
-                    child: Text(s, style: TextStyle(color: context.textSecondary, fontSize: 12)),
-                  )).toList()),
+                  style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: AppSpacing.sm + 2),
+              Wrap(spacing: AppSpacing.sm, runSpacing: AppSpacing.sm,
+                  children: service.specialties
+                      .map((s) => Chip(label: Text(s), visualDensity: VisualDensity.compact))
+                      .toList()),
             ],
 
             if (service.includedItems.isNotEmpty) ...[
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.xl),
               Text('¿Qué incluye?',
-                  style: TextStyle(color: context.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 10),
+                  style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: AppSpacing.sm + 2),
               ...service.includedItems.map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: Row(children: [
-                  const Icon(Icons.check_circle_rounded, color: AppTheme.brandGreen, size: 16),
-                  const SizedBox(width: 8),
-                  Text(item, style: TextStyle(color: context.textSecondary, fontSize: 13)),
+                  Icon(Icons.check_circle_rounded, color: context.colors.primary, size: 16),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(child: Text(item, style: context.textTheme.bodySmall)),
                 ]),
               )),
             ],
-            const SizedBox(height: 100),
+            const SizedBox(height: AppSpacing.huge + AppSpacing.xxxl + AppSpacing.xl),
           ]),
         )),
       ]),
@@ -188,16 +182,16 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
       // Botón de reservar (solo clientes)
       bottomNavigationBar: user?.isClient == true
           ? Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppSpacing.xl),
               decoration: BoxDecoration(
                 color: context.card,
                 border: Border(top: BorderSide(color: context.border, width: 0.5)),
               ),
               child: SafeArea(
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: () => _showBookingSheet(context, service.id, service.title,
                       service.yoerId, service.price, user!.id),
-                  child: const Text('Reservar Ahora', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  child: const Text('Reservar Ahora'),
                 ),
               ),
             )
@@ -274,70 +268,66 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xxl),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Text('Reservar servicio',
-                style: TextStyle(color: context.textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
+            Text('Reservar servicio', style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
             const Spacer(),
             IconButton(onPressed: () => Navigator.pop(context),
                 icon: Icon(Icons.close_rounded, color: context.textHint)),
           ]),
-          const SizedBox(height: 20),
-          Text(widget.serviceName, style: TextStyle(color: context.textSecondary)),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xl),
+          Text(widget.serviceName, style: context.textTheme.bodyMedium),
+          const SizedBox(height: AppSpacing.xs),
           Text('\$${widget.totalPrice.toStringAsFixed(0)} MXN',
-              style: const TextStyle(color: AppTheme.brandGreen, fontSize: 20, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 20),
-          GestureDetector(
-            onTap: () async {
-              final d = await showDatePicker(context: context,
-                  initialDate: DateTime.now().add(const Duration(days: 1)),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 90)));
-              if (d != null) setState(() => _date = d);
-            },
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: context.card,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: context.border, width: 0.5),
+              style: TextStyle(color: context.colors.primary, fontSize: 20, fontWeight: FontWeight.w800)),
+          const SizedBox(height: AppSpacing.xl),
+          Material(
+            color: context.card,
+            borderRadius: AppRadius.lgR,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              borderRadius: AppRadius.lgR,
+              onTap: () async {
+                final d = await showDatePicker(context: context,
+                    initialDate: DateTime.now().add(const Duration(days: 1)),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 90)));
+                if (d != null) setState(() => _date = d);
+              },
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.md + 2),
+                decoration: BoxDecoration(
+                  borderRadius: AppRadius.lgR,
+                  border: Border.all(color: context.border, width: 0.5),
+                ),
+                child: Row(children: [
+                  Icon(Icons.calendar_today_outlined, color: context.textSecondary, size: 18),
+                  const SizedBox(width: AppSpacing.sm + 2),
+                  Text(_date == null ? 'Seleccionar fecha' : '${_date!.day}/${_date!.month}/${_date!.year}',
+                      style: TextStyle(color: _date == null ? context.textHint : context.textPrimary)),
+                ]),
               ),
-              child: Row(children: [
-                Icon(Icons.calendar_today_outlined, color: context.textSecondary, size: 18),
-                const SizedBox(width: 10),
-                Text(_date == null ? 'Seleccionar fecha' : '${_date!.day}/${_date!.month}/${_date!.year}',
-                    style: TextStyle(color: _date == null ? context.textHint : context.textPrimary)),
-              ]),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           TextField(
             controller: _addressCtrl,
             style: TextStyle(color: context.textPrimary),
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'Dirección del servicio',
-              hintStyle: TextStyle(color: context.textHint),
-              prefixIcon: Icon(Icons.location_on_outlined, color: context.textSecondary, size: 18),
-              filled: true, fillColor: context.card,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: context.border, width: 0.5)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.brandGreen, width: 1.5)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              prefixIcon: Icon(Icons.location_on_outlined, size: 18),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.xl),
           SizedBox(
-            width: double.infinity, height: 50,
-            child: ElevatedButton(
+            width: double.infinity,
+            child: FilledButton(
               onPressed: _confirm,
-              child: const Text('Confirmar Reserva', style: TextStyle(fontWeight: FontWeight.w700)),
+              child: const Text('Confirmar Reserva'),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
         ]),
       ),
     );

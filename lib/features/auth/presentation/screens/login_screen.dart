@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../../shared/widgets/main_scaffold.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -30,33 +31,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: ctx.card,
-        title: Text('Recuperar contraseña', style: TextStyle(color: ctx.textPrimary)),
+        title: const Text('Recuperar contraseña'),
         content: TextField(
           controller: ctrl,
           keyboardType: TextInputType.emailAddress,
-          style: TextStyle(color: ctx.textPrimary),
           decoration: const InputDecoration(labelText: 'Tu email'),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-          ElevatedButton(
+          FilledButton(
             onPressed: () async {
               final email = ctrl.text.trim();
               Navigator.pop(ctx);
               if (email.isEmpty) return;
               final ok = await ref.read(authViewModelProvider.notifier).resetPasswordForEmail(email);
               if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(ok
-                      ? 'Te enviamos un correo para restablecer tu contraseña'
-                      : 'No se pudo enviar el correo, intenta de nuevo'),
-                  backgroundColor: ok ? AppTheme.brandGreenDark : AppTheme.alertRed,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  margin: const EdgeInsets.all(16),
-                ),
+              showAppSnackBar(
+                context,
+                ok
+                    ? 'Te enviamos un correo para restablecer tu contraseña'
+                    : 'No se pudo enviar el correo, intenta de nuevo',
+                isError: !ok,
               );
             },
             child: const Text('Enviar'),
@@ -74,15 +69,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
     if (!ok && mounted) {
       final err = ref.read(authViewModelProvider).error;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(err ?? 'Error al iniciar sesión'),
-          backgroundColor: AppTheme.alertRed,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+      showAppSnackBar(context, err ?? 'Error al iniciar sesión', isError: true);
     }
   }
 
@@ -93,65 +80,62 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: context.bg,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 IconButton(
                   onPressed: () => context.go(AppRoutes.welcome),
-                  icon: Container(
-                    width: 40, height: 40,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: context.border),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(Icons.arrow_back_ios_new_rounded,
-                        size: 16, color: context.textPrimary),
+                  style: IconButton.styleFrom(
+                    side: BorderSide(color: context.colors.outlineVariant),
                   ),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16),
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: AppSpacing.huge),
                 Text('Bienvenido\nde vuelta',
-                    style: TextStyle(
-                      color: context.textPrimary, fontSize: 34,
-                      fontWeight: FontWeight.w800, height: 1.2,
-                    )),
-                const SizedBox(height: 10),
+                    style: context.textTheme.displaySmall?.copyWith(height: 1.2)),
+                const SizedBox(height: AppSpacing.sm),
                 Text('Introduce tus datos para continuar',
-                    style: TextStyle(color: context.textSecondary, fontSize: 15)),
-                const SizedBox(height: 40),
+                    style: context.textTheme.bodyMedium),
+                const SizedBox(height: AppSpacing.xxxl),
 
                 // Email
                 _label('CORREO ELECTRÓNICO'),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 TextFormField(
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
-                  style: TextStyle(color: context.textPrimary),
-                  decoration: _inputDeco('tu@email.com', Icons.mail_outline_rounded),
+                  style: context.textTheme.bodyLarge,
+                  decoration: const InputDecoration(
+                    hintText: 'tu@email.com',
+                    prefixIcon: Icon(Icons.mail_outline_rounded, size: 18),
+                  ),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Ingresa tu correo';
                     if (!v.contains('@')) return 'Correo inválido';
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
 
                 // Password
                 _label('CONTRASEÑA'),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 TextFormField(
                   controller: _passwordCtrl,
                   obscureText: _obscure,
-                  style: TextStyle(color: context.textPrimary),
-                  decoration: _inputDeco('••••••••', Icons.lock_outline_rounded).copyWith(
+                  style: context.textTheme.bodyLarge,
+                  decoration: InputDecoration(
+                    hintText: '••••••••',
+                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18),
                     suffixIcon: IconButton(
                       onPressed: () => setState(() => _obscure = !_obscure),
                       icon: Icon(
                         _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: context.textSecondary, size: 20,
+                        size: 20,
                       ),
                     ),
                   ),
@@ -161,51 +145,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: AppSpacing.sm),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: _showForgotPasswordDialog,
-                    child: const Text('¿Olvidaste tu contraseña?',
-                        style: TextStyle(color: AppTheme.brandGreen, fontSize: 13)),
+                    child: const Text('¿Olvidaste tu contraseña?'),
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSpacing.xxxl),
 
                 // Botón
                 SizedBox(
-                  width: double.infinity, height: 54,
-                  child: ElevatedButton(
+                  width: double.infinity,
+                  child: FilledButton(
                     onPressed: state.isLoading ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.brandGreen,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      elevation: 0,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: state.isLoading
+                          ? const SizedBox(
+                              key: ValueKey('loading'),
+                              width: 22, height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                valueColor: AlwaysStoppedAnimation(Colors.white),
+                              ))
+                          : const Text('Iniciar Sesión', key: ValueKey('label')),
                     ),
-                    child: state.isLoading
-                        ? const SizedBox(
-                            width: 22, height: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation(Colors.white),
-                            ))
-                        : const Text('Iniciar Sesión',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: AppSpacing.xxl),
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text('¿No tienes cuenta? ',
-                      style: TextStyle(color: context.textSecondary)),
-                  GestureDetector(
+                  Text('¿No tienes cuenta? ', style: context.textTheme.bodyMedium),
+                  InkWell(
+                    borderRadius: AppRadius.smR,
                     onTap: () => context.go(AppRoutes.register),
-                    child: const Text('Regístrate',
-                        style: TextStyle(
-                          color: AppTheme.brandGreen, fontWeight: FontWeight.w700)),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xs / 2),
+                      child: Text('Regístrate',
+                          style: context.textTheme.labelLarge?.copyWith(color: context.colors.primary)),
+                    ),
                   ),
                 ]),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSpacing.xxxl),
               ],
             ),
           ),
@@ -215,33 +197,5 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Widget _label(String text) => Text(text,
-      style: TextStyle(
-        color: context.textPrimary, fontSize: 11,
-        fontWeight: FontWeight.w700, letterSpacing: 1.2,
-      ));
-
-  InputDecoration _inputDeco(String hint, IconData icon) => InputDecoration(
-    hintText: hint,
-    hintStyle: TextStyle(color: context.textHint),
-    prefixIcon: Icon(icon, color: context.textSecondary, size: 18),
-    filled: true,
-    fillColor: context.card,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide.none,
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: context.border, width: 0.5),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: AppTheme.brandGreen, width: 1.5),
-    ),
-    errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: AppTheme.alertRedLight, width: 1.5),
-    ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-  );
+      style: context.textTheme.labelLarge?.copyWith(letterSpacing: 1.2));
 }

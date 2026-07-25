@@ -57,8 +57,8 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> with SingleTickerPr
         title: const Text('Mi Agenda'),
         bottom: TabBar(
           controller: _tab,
-          indicatorColor: AppTheme.brandGreen,
-          labelColor: AppTheme.brandGreen,
+          indicatorColor: context.colors.primary,
+          labelColor: context.colors.primary,
           unselectedLabelColor: context.textHint,
           labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
           tabs: [
@@ -69,13 +69,20 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> with SingleTickerPr
         ),
       ),
       body: SafeArea(
-        child: state.isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppTheme.brandGreen))
-            : TabBarView(controller: _tab, children: [
-                _SolicitudesTab(bookings: solicitudes),
-                _AgendaTab(bookings: agenda),
-                _HistorialTab(completed: state.completedBookings, cancelled: state.cancelledBookings),
-              ]),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: state.isLoading
+              ? const Center(key: ValueKey('loading'), child: CircularProgressIndicator())
+              : TabBarView(
+                  key: const ValueKey('content'),
+                  controller: _tab,
+                  children: [
+                    _SolicitudesTab(bookings: solicitudes),
+                    _AgendaTab(bookings: agenda),
+                    _HistorialTab(completed: state.completedBookings, cancelled: state.cancelledBookings),
+                  ],
+                ),
+        ),
       ),
     );
   }
@@ -89,48 +96,45 @@ class _SolicitudesTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (bookings.isEmpty) return const _EmptyState(icon: Icons.inbox_outlined, text: 'Sin solicitudes pendientes');
     return ListView.separated(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       itemCount: bookings.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
       itemBuilder: (_, i) {
         final b = bookings[i];
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: context.card,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: context.border, width: 0.5),
-          ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(b.serviceName, style: TextStyle(color: context.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 4),
-            Text('Con ${b.clientName}', style: TextStyle(color: context.textSecondary, fontSize: 12)),
-            const SizedBox(height: 6),
-            Text('${DateFormat('EEEE d MMM', 'es').format(b.scheduledDateTime)} · ${b.scheduledTime}',
-                style: TextStyle(color: context.textHint, fontSize: 12)),
-            const SizedBox(height: 12),
-            Row(children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => ref.read(bookingViewModelProvider.notifier).cancelBooking(b.id, 'Rechazada por el YOER'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(40),
-                    foregroundColor: AppTheme.alertRedLight,
-                    side: const BorderSide(color: AppTheme.alertRedLight),
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(b.serviceName, style: context.textTheme.titleSmall),
+              const SizedBox(height: AppSpacing.xs),
+              Text('Con ${b.clientName}', style: context.textTheme.bodySmall),
+              const SizedBox(height: AppSpacing.sm),
+              Text('${DateFormat('EEEE d MMM', 'es').format(b.scheduledDateTime)} · ${b.scheduledTime}',
+                  style: TextStyle(color: context.textHint, fontSize: 12)),
+              const SizedBox(height: AppSpacing.md),
+              Row(children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => ref.read(bookingViewModelProvider.notifier).cancelBooking(b.id, 'Rechazada por el YOER'),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(40),
+                      foregroundColor: AppTheme.alertRedLight,
+                      side: const BorderSide(color: AppTheme.alertRedLight),
+                    ),
+                    child: const Text('Rechazar'),
                   ),
-                  child: const Text('Rechazar'),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => ref.read(bookingViewModelProvider.notifier).confirmBooking(b.id),
-                  style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(40)),
-                  child: const Text('Confirmar'),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => ref.read(bookingViewModelProvider.notifier).confirmBooking(b.id),
+                    style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(40)),
+                    child: const Text('Confirmar'),
+                  ),
                 ),
-              ),
+              ]),
             ]),
-          ]),
+          ),
         );
       },
     );
@@ -148,48 +152,44 @@ class _AgendaTab extends ConsumerWidget {
     final sorted = [...bookings]..sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
 
     return ListView.separated(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       itemCount: sorted.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
       itemBuilder: (_, i) {
         final b = sorted[i];
-        return GestureDetector(
-          onTap: () => context.push('/booking/${b.id}'),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: context.card,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: context.border, width: 0.5),
-            ),
-            child: Row(children: [
-              Container(
-                width: 56, height: 56,
-                decoration: BoxDecoration(color: context.cardInner, borderRadius: BorderRadius.circular(12)),
-                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text(DateFormat('d MMM', 'es').format(b.scheduledDateTime),
-                      style: TextStyle(color: context.textPrimary, fontSize: 12, fontWeight: FontWeight.w700)),
-                  Text(b.scheduledTime, style: TextStyle(color: context.textHint, fontSize: 10)),
-                ]),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(b.serviceName, style: TextStyle(color: context.textPrimary, fontSize: 13, fontWeight: FontWeight.w700),
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
-                  Text('Con ${b.clientName}', style: TextStyle(color: context.textSecondary, fontSize: 11)),
-                  const SizedBox(height: 6),
-                  BookingStatusChip(status: b.status.name),
-                ]),
-              ),
-              const SizedBox(width: 8),
-              Column(children: [
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () => context.push('/booking/${b.id}'),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Row(children: [
+                Container(
+                  width: 56, height: 56,
+                  decoration: BoxDecoration(color: context.cardInner, borderRadius: AppRadius.mdR),
+                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Text(DateFormat('d MMM', 'es').format(b.scheduledDateTime),
+                        style: TextStyle(color: context.textPrimary, fontSize: 12, fontWeight: FontWeight.w700)),
+                    Text(b.scheduledTime, style: TextStyle(color: context.textHint, fontSize: 10)),
+                  ]),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(b.serviceName, style: context.textTheme.titleSmall,
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text('Con ${b.clientName}', style: context.textTheme.bodySmall),
+                    const SizedBox(height: AppSpacing.sm),
+                    BookingStatusChip(status: b.status.name),
+                  ]),
+                ),
+                const SizedBox(width: AppSpacing.sm),
                 if (b.status == BookingStatus.confirmada)
                   _smallAction(context, ref, 'Iniciar', () => ref.read(bookingViewModelProvider.notifier).startBooking(b.id)),
                 if (b.status == BookingStatus.enProgreso)
                   _smallAction(context, ref, 'Completar', () => ref.read(bookingViewModelProvider.notifier).completeBooking(b.id)),
               ]),
-            ]),
+            ),
           ),
         );
       },
@@ -197,13 +197,15 @@ class _AgendaTab extends ConsumerWidget {
   }
 
   Widget _smallAction(BuildContext context, WidgetRef ref, String label, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(color: AppTheme.brandGreen, borderRadius: BorderRadius.circular(8)),
-        child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+    return FilledButton(
+      onPressed: onTap,
+      style: FilledButton.styleFrom(
+        minimumSize: Size.zero,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
       ),
+      child: Text(label),
     );
   }
 }
@@ -219,17 +221,17 @@ class _HistorialTab extends StatelessWidget {
       return const _EmptyState(icon: Icons.history_rounded, text: 'Sin historial todavía');
     }
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       children: [
         if (completed.isNotEmpty) ...[
           Text('COMPLETADAS', style: TextStyle(color: context.textHint, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.sm),
           ...completed.map((b) => _historyTile(context, b)),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.xl),
         ],
         if (cancelled.isNotEmpty) ...[
           Text('CANCELADAS / RECHAZADAS', style: TextStyle(color: context.textHint, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.sm),
           ...cancelled.map((b) => _historyTile(context, b)),
         ],
       ],
@@ -237,23 +239,22 @@ class _HistorialTab extends StatelessWidget {
   }
 
   Widget _historyTile(BuildContext context, BookingEntity b) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: context.card,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: context.border, width: 0.5),
-      ),
-      child: Row(children: [
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(b.serviceName, style: TextStyle(color: context.textPrimary, fontSize: 13, fontWeight: FontWeight.w700)),
-            Text('Con ${b.clientName}', style: TextStyle(color: context.textSecondary, fontSize: 11)),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Row(children: [
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(b.serviceName, style: context.textTheme.titleSmall),
+                Text('Con ${b.clientName}', style: context.textTheme.bodySmall),
+              ]),
+            ),
+            BookingStatusChip(status: b.status.name),
           ]),
         ),
-        BookingStatusChip(status: b.status.name),
-      ]),
+      ),
     );
   }
 }
@@ -268,8 +269,8 @@ class _EmptyState extends StatelessWidget {
     return Center(
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(icon, color: context.textHint, size: 48),
-        const SizedBox(height: 12),
-        Text(text, style: TextStyle(color: context.textSecondary)),
+        const SizedBox(height: AppSpacing.md),
+        Text(text, style: context.textTheme.bodyMedium),
       ]),
     );
   }
