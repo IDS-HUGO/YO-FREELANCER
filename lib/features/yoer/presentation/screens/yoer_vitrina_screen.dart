@@ -29,6 +29,13 @@ class _YoerVitrinaScreenState extends ConsumerState<YoerVitrinaScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(serviceViewModelProvider);
 
+    ref.listen(serviceViewModelProvider, (prev, next) {
+      if (next.error != null && next.error != prev?.error) {
+        showAppErrorDialog(context, message: next.error!);
+        ref.read(serviceViewModelProvider.notifier).clearMessages();
+      }
+    });
+
     return Scaffold(
       backgroundColor: context.bg,
       appBar: AppBar(

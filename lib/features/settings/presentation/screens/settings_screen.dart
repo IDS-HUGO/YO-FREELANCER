@@ -123,8 +123,12 @@ class SettingsScreen extends ConsumerWidget {
                 return;
               }
               final ok = await ref.read(authViewModelProvider.notifier).changePassword(pass);
-              if (context.mounted) {
-                showAppSnackBar(context, ok ? 'Contraseña actualizada' : 'No se pudo actualizar', isError: !ok);
+              if (!context.mounted) return;
+              if (ok) {
+                showAppSnackBar(context, 'Contraseña actualizada');
+              } else {
+                final err = ref.read(authViewModelProvider).error;
+                showAppErrorDialog(context, title: 'No se pudo actualizar la contraseña', message: err ?? 'Intenta de nuevo más tarde.');
               }
             },
             child: const Text('Guardar'),
@@ -152,9 +156,18 @@ class SettingsScreen extends ConsumerWidget {
                 ? null
                 : () async {
                     Navigator.pop(ctx);
-                    await ref.read(sanctionViewModelProvider.notifier)
+                    final ok = await ref.read(sanctionViewModelProvider.notifier)
                         .requestSupportCall(userId, 'Ayuda general', message: ctrl.text);
-                    if (context.mounted) showAppSnackBar(context, 'Enviamos tu solicitud a soporte');
+                    if (!context.mounted) return;
+                    if (ok) {
+                      showAppSnackBar(context, 'Enviamos tu solicitud a soporte');
+                    } else {
+                      showAppErrorDialog(
+                        context,
+                        title: 'No se pudo enviar tu solicitud',
+                        message: 'Intenta de nuevo más tarde.',
+                      );
+                    }
                   },
             child: const Text('Enviar'),
           ),

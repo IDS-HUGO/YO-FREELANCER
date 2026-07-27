@@ -252,7 +252,12 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
 
   Future<void> _action(Future<bool> Function() action) async {
     final ok = await action();
-    if (ok) _load();
+    if (ok) {
+      _load();
+    } else if (mounted) {
+      final err = ref.read(bookingViewModelProvider).error;
+      showAppErrorDialog(context, title: 'No se pudo completar la acción', message: err ?? 'Intenta de nuevo más tarde.');
+    }
   }
 
   void _cancelDialog(BuildContext context, String bookingId) {
@@ -281,7 +286,12 @@ class _BookingDetailScreenState extends ConsumerState<BookingDetailScreen> {
               Navigator.pop(context);
               final ok = await ref.read(bookingViewModelProvider.notifier)
                   .cancelBooking(bookingId, reasonCtrl.text.isEmpty ? 'Sin motivo' : reasonCtrl.text);
-              if (ok) _load();
+              if (ok) {
+                _load();
+              } else if (context.mounted) {
+                final err = ref.read(bookingViewModelProvider).error;
+                showAppErrorDialog(context, title: 'No se pudo cancelar la reserva', message: err ?? 'Intenta de nuevo más tarde.');
+              }
             },
             child: const Text('Cancelar reserva'),
           ),

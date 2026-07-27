@@ -25,6 +25,7 @@ class UserDto {
   final int completedJobs;
   final double weeklyBonus;
   final int? rankingPosition;
+  final String kycStatus;
   final String createdAt;
   final String updatedAt;
 
@@ -52,6 +53,7 @@ class UserDto {
     this.completedJobs = 0,
     this.weeklyBonus = 0.0,
     this.rankingPosition,
+    this.kycStatus = 'pending',
     required this.createdAt,
     required this.updatedAt,
   });
@@ -81,6 +83,7 @@ class UserDto {
       completedJobs: json['completed_jobs'] as int? ?? 0,
       weeklyBonus: (json['weekly_bonus'] as num?)?.toDouble() ?? 0.0,
       rankingPosition: json['ranking_position'] as int?,
+      kycStatus: json['kyc_status'] as String? ?? 'pending',
       createdAt: json['created_at'] as String? ?? DateTime.now().toIso8601String(),
       updatedAt: json['updated_at'] as String? ?? DateTime.now().toIso8601String(),
     );
@@ -110,6 +113,7 @@ class UserDto {
     'completed_jobs': completedJobs,
     'weekly_bonus': weeklyBonus,
     if (rankingPosition != null) 'ranking_position': rankingPosition,
+    'kyc_status': kycStatus,
     'created_at': createdAt,
     'updated_at': updatedAt,
   };
@@ -145,6 +149,10 @@ class UserDto {
       completedJobs: completedJobs,
       weeklyBonus: weeklyBonus,
       rankingPosition: rankingPosition,
+      kycStatus: KycStatus.values.firstWhere(
+        (e) => e.name == kycStatus,
+        orElse: () => KycStatus.pending,
+      ),
       createdAt: DateTime.parse(createdAt),
       updatedAt: DateTime.parse(updatedAt),
     );

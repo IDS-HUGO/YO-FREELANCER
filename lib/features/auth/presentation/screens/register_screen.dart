@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/main_scaffold.dart';
+import '../../../../shared/widgets/app_alert_dialog.dart';
 import '../../domain/entities/user_entity.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
@@ -39,7 +40,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
     if (!_formKey.currentState!.validate()) return;
-    final ok = await ref.read(authViewModelProvider.notifier).register(
+    await ref.read(authViewModelProvider.notifier).register(
       email: _emailCtrl.text.trim(),
       password: _passwordCtrl.text,
       username: _usernameCtrl.text.trim(),
@@ -47,15 +48,41 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       userType: _selectedType!,
       phoneNumber: _phoneCtrl.text.isEmpty ? null : _phoneCtrl.text.trim(),
     );
-    if (!ok && mounted) {
-      final err = ref.read(authViewModelProvider).error;
-      showAppSnackBar(context, err ?? 'Error al registrarse', isError: true);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(authViewModelProvider);
+
+    ref.listen<AuthState>(authViewModelProvider, (previous, next) {
+      if (!mounted) return;
+      if (next.error != null && next.error != previous?.error) {
+        AppAlertDialog.show(
+          context,
+          type: AlertType.error,
+          title: 'No se pudo crear la cuenta',
+          message: next.error!,
+        );
+        ref.read(authViewModelProvider.notifier).clearError();
+      }
+
+      if (next.successMessage != null && next.successMessage != previous?.successMessage) {
+        final isPendingConfirmation = !next.isAuthenticated;
+        AppAlertDialog.show(
+          context,
+          type: isPendingConfirmation ? AlertType.warning : AlertType.success,
+          title: isPendingConfirmation ? 'Confirmación Pendiente' : '¡Registro Exitoso!',
+          message: next.successMessage!,
+          actionLabel: isPendingConfirmation ? 'Entendido' : 'Ir a Inicio',
+          onAction: () {
+            ref.read(authViewModelProvider.notifier).clearSuccess();
+            if (isPendingConfirmation) {
+              context.go(AppRoutes.login);
+            }
+          },
+        );
+      }
+    });
     return Scaffold(
       backgroundColor: context.bg,
       body: SafeArea(

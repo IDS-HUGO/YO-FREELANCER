@@ -34,7 +34,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
         ref.read(walletViewModelProvider.notifier).clearMessages();
       }
       if (next.error != null && next.error != prev?.error) {
-        showAppSnackBar(context, next.error!, isError: true);
+        showAppErrorDialog(context, message: next.error!);
         ref.read(walletViewModelProvider.notifier).clearMessages();
       }
     });

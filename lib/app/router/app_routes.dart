@@ -35,4 +35,7 @@ abstract class AppRoutes {
   static const clientTasks    = '/client/tasks';
   static const volunteering   = '/volunteering';
   static const artistMode     = '/artist-mode';
+
+  // Verificación facial de identidad (Tarea 2, ver docs/KYC.md)
+  static const kyc            = '/kyc';
 }

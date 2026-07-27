@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../../shared/widgets/main_scaffold.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../bookings/data/datasources/booking_remote_datasource.dart';
 import '../../data/datasources/payment_remote_datasource.dart';
@@ -48,7 +49,15 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       description: 'Pago: ${_booking!.serviceName}',
     );
 
-    if (ok && mounted) {
+    if (!ok) {
+      if (mounted) {
+        final err = ref.read(paymentViewModelProvider).error;
+        await showAppErrorDialog(context, title: 'No se pudo procesar el pago', message: err ?? 'Intenta de nuevo más tarde.');
+      }
+      return;
+    }
+
+    if (mounted) {
       showDialog(
         context: context,
         barrierDismissible: false,

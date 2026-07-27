@@ -163,10 +163,72 @@ create table if not exists public.profiles (
   completed_jobs  integer default 0,
   weekly_bonus    double precision default 0.0,
   ranking_position integer,
+  -- Verificación facial de identidad (Tarea 2, ver docs/KYC.md). Aplica a
+  -- YOER y Cliente por igual. 'pending' hasta que se complete la
+  -- verificación; nunca se marca 'verified' por default.
+  kyc_status      text not null default 'pending'
+                    check (kyc_status in ('pending', 'verified', 'rejected', 'error')),
   -- Timestamps
   created_at      timestamptz default now(),
   updated_at      timestamptz default now()
 );
+
+-- Migración idempotente para bases ya creadas antes de introducir kyc_status.
+--
+-- Decisión de producto (ver docs/KYC.md §5, antes marcada como pendiente de
+-- confirmar): los usuarios que YA existían antes de esta migración quedan
+-- verificados automáticamente ("grandfathering") para no romper su acceso
+-- de un día para otro — no rompas funcionalidad existente. El gate de KYC
+-- solo aplica de verdad a cuentas creadas DESPUÉS de este despliegue.
+--
+-- El backfill (`update ... set kyc_status = 'verified'`) solo corre la
+-- primera vez que se agrega la columna (dentro del `if not exists`), nunca
+-- en ejecuciones posteriores del script — de lo contrario, re-ejecutar este
+-- schema volvería a marcar como 'verified' a cualquier usuario nuevo que
+-- siga legítimamente en 'pending' esperando verificar su identidad.
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'profiles' and column_name = 'kyc_status'
+  ) then
+    alter table public.profiles add column kyc_status text not null default 'pending';
+    update public.profiles set kyc_status = 'verified';
+  end if;
+end $$;
+
+alter table public.profiles
+  drop constraint if exists profiles_kyc_status_check;
+alter table public.profiles
+  add constraint profiles_kyc_status_check
+  check (kyc_status in ('pending', 'verified', 'rejected', 'error'));
+
+-- ──────────────────────────────────────────────────
+-- TABLA: kyc_verifications (auditoría no biométrica de Tarea 2)
+-- Solo guarda el resultado de la comparación (nunca las imágenes: el
+-- microservicio de verificación facial las procesa en memoria y las
+-- descarta de inmediato, ver kyc-service/README.md).
+-- ──────────────────────────────────────────────────
+create table if not exists public.kyc_verifications (
+  id           uuid default uuid_generate_v4() primary key,
+  user_id      uuid references public.profiles(id) on delete cascade not null,
+  request_id   text not null,
+  match        boolean not null,
+  similarity   double precision,
+  distance     double precision,
+  model        text,
+  threshold    double precision,
+  created_at   timestamptz default now()
+);
+
+alter table public.kyc_verifications enable row level security;
+
+drop policy if exists "Usuario ve sus propias verificaciones KYC" on public.kyc_verifications;
+create policy "Usuario ve sus propias verificaciones KYC" on public.kyc_verifications
+  for select using (auth.uid() = user_id);
+
+-- Sin policy de insert/update/delete para 'authenticated': solo el backend
+-- (service_role) escribe en esta tabla tras llamar al microservicio de KYC.
 
 -- RLS para profiles
 alter table public.profiles enable row level security;
@@ -193,11 +255,11 @@ begin
     new.email,
     coalesce(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1)),
     coalesce(new.raw_user_meta_data->>'full_name', 'Usuario'),
-    coalesce((new.raw_user_meta_data->>'user_type')::user_type, 'CLIENT')
+    coalesce((new.raw_user_meta_data->>'user_type')::public.user_type, 'CLIENT'::public.user_type)
   );
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
@@ -327,6 +389,16 @@ insert into public.categories (name, display_name, description) values
   ('TRANSPORTE',   'Transporte',     'Mudanza, mensajería, chofer'),
   ('OTROS',        'Otros',          'Servicios varios')
 on conflict (name) do nothing;
+
+-- Hardening (SECURITY_REPORT.md): esta tabla no tenía RLS habilitado, a
+-- diferencia de todas las demás tablas del schema. Solo lectura pública;
+-- la gestión de categorías queda reservada al service_role (sin policy de
+-- insert/update/delete para 'authenticated').
+alter table public.categories enable row level security;
+
+drop policy if exists "Lectura pública de categorías" on public.categories;
+create policy "Lectura pública de categorías" on public.categories
+  for select using (is_active = true);
 
 -- ──────────────────────────────────────────────────
 -- TABLA: services
@@ -826,7 +898,7 @@ begin
   on conflict (user_id) do nothing;
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 drop trigger if exists on_profile_created_wallet on public.profiles;
 create trigger on_profile_created_wallet
@@ -1414,17 +1486,62 @@ create policy "Usuario borra su foto de perfil" on storage.objects
   for delete to authenticated
   using (bucket_id = 'profile-images' and (storage.foldername(name))[1] = auth.uid()::text);
 
--- service-images / cover-images: cualquier usuario autenticado puede subir
--- (la app ya valida a nivel de UI que solo el YOER dueño gestione sus servicios).
+-- service-images: la ruta es "{service_id}/archivo.ext" (ver
+-- ServiceRemoteDataSource.uploadServiceImage). Hardening (SECURITY_REPORT.md):
+-- antes cualquier usuario autenticado podía escribir/borrar en cualquier ruta
+-- del bucket; ahora se exige que el service_id de la carpeta pertenezca al
+-- YOER autenticado.
 drop policy if exists "Autenticados suben imágenes de servicio/portada" on storage.objects;
-create policy "Autenticados suben imágenes de servicio/portada" on storage.objects
+drop policy if exists "Yoer sube imágenes de sus servicios" on storage.objects;
+create policy "Yoer sube imágenes de sus servicios" on storage.objects
   for insert to authenticated
-  with check (bucket_id in ('service-images', 'cover-images'));
+  with check (
+    bucket_id = 'service-images' and exists (
+      select 1 from public.services s
+      where s.id::text = (storage.foldername(name))[1] and s.yoer_id = auth.uid()
+    )
+  );
+
+drop policy if exists "Yoer actualiza imágenes de sus servicios" on storage.objects;
+create policy "Yoer actualiza imágenes de sus servicios" on storage.objects
+  for update to authenticated
+  using (
+    bucket_id = 'service-images' and exists (
+      select 1 from public.services s
+      where s.id::text = (storage.foldername(name))[1] and s.yoer_id = auth.uid()
+    )
+  );
 
 drop policy if exists "Autenticados gestionan imágenes de servicio/portada" on storage.objects;
-create policy "Autenticados gestionan imágenes de servicio/portada" on storage.objects
+drop policy if exists "Yoer borra imágenes de sus servicios" on storage.objects;
+create policy "Yoer borra imágenes de sus servicios" on storage.objects
   for delete to authenticated
-  using (bucket_id in ('service-images', 'cover-images'));
+  using (
+    bucket_id = 'service-images' and exists (
+      select 1 from public.services s
+      where s.id::text = (storage.foldername(name))[1] and s.yoer_id = auth.uid()
+    )
+  );
+
+-- cover-images: hoy no existe código en la app que suba a este bucket (bucket
+-- provisionado pero sin consumidor). Se define la misma convención que
+-- profile-images ({user_id}/archivo.ext) como el patrón a seguir cuando se
+-- implemente la subida de portada, para no dejar el bucket sin scoping por
+-- dueño mientras tanto.
+drop policy if exists "Usuario sube su portada" on storage.objects;
+create policy "Usuario sube su portada" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'cover-images' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "Usuario actualiza su portada" on storage.objects;
+create policy "Usuario actualiza su portada" on storage.objects
+  for update to authenticated
+  using (bucket_id = 'cover-images' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "Usuario borra su portada" on storage.objects;
+create policy "Usuario borra su portada" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'cover-images' and (storage.foldername(name))[1] = auth.uid()::text);
 
 -- ──────────────────────────────────────────────────
 -- REALTIME: habilitar para las tablas que lo necesitan
@@ -1452,3 +1569,43 @@ exception when duplicate_object then null; end $$;
 do $$ begin
   alter publication supabase_realtime add table public.wallet_transactions;
 exception when duplicate_object then null; end $$;
+
+
+
+-- 1. Actualizar la función del trigger de nuevos usuarios
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, username, full_name, user_type)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)),
+    COALESCE(NEW.raw_user_meta_data->>'full_name', 'Usuario'),
+    COALESCE((NEW.raw_user_meta_data->>'user_type')::public.user_type, 'CLIENT'::public.user_type)
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- Re-vincular el trigger
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- 2. Actualizar la función del trigger de creación de wallets
+CREATE OR REPLACE FUNCTION public.handle_new_wallet()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.wallet_accounts (user_id) VALUES (NEW.id)
+  ON CONFLICT (user_id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- Re-vincular el trigger de wallet
+DROP TRIGGER IF EXISTS on_profile_created_wallet ON public.profiles;
+CREATE TRIGGER on_profile_created_wallet
+  AFTER INSERT ON public.profiles
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_wallet();

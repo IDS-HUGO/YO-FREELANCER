@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../../shared/widgets/main_scaffold.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../viewmodels/service_viewmodel.dart';
 import '../../domain/entities/service_entity.dart';
@@ -63,24 +64,10 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
     final ok = await ref.read(serviceViewModelProvider.notifier).createService(service);
     if (ok && mounted) {
       context.pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('¡Servicio publicado!'),
-          backgroundColor: AppTheme.brandGreenDark,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+      showAppSnackBar(context, '¡Servicio publicado!');
     } else if (mounted) {
       final err = ref.read(serviceViewModelProvider).error;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(err ?? 'Error'), backgroundColor: AppTheme.alertRed,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+      showAppErrorDialog(context, title: 'No se pudo publicar el servicio', message: err ?? 'Intenta de nuevo más tarde.');
     }
   }
 

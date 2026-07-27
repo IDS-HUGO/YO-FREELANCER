@@ -11,9 +11,7 @@ class SupabaseConfig {
   // ────────────────────────────────────────────────────────────────────────
   // Reemplaza con tus credenciales reales de Supabase
   // ────────────────────────────────────────────────────────────────────────
-  static const String supabaseUrl = 'https://gnznfgjejqzhsfsuykkk.supabase.co/rest/v1/';
-  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imduem5mZ2planF6aHNmc3V5a2trIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MDc4OTAsImV4cCI6MjEwMDQ4Mzg5MH0.7cI4GPNmVpeRgnhqUK6VmqBMKxeS6YzwaexccUBgQu8';
-
+  
   // ── Nombres de tablas ────────────────────────────────────────────────────
   static const String usersTable       = 'users';
   static const String servicesTable    = 'services';
@@ -25,6 +23,7 @@ class SupabaseConfig {
   static const String urgentTasksTable = 'urgent_tasks';
   static const String sanctionsTable   = 'sanctions';
   static const String badgesTable      = 'badges';
+  static const String paymentCardsTable = 'payment_cards';
 
   // ── Tablas del roadmap v2 (ver supabase_migration_v2.sql) ─────────────────
   static const String notificationsTable          = 'notifications';

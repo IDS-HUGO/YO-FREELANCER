@@ -241,8 +241,7 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
 
   Future<void> _confirm() async {
     if (_date == null || _addressCtrl.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Completa todos los campos'), backgroundColor: AppTheme.warningOrange));
+      showAppSnackBar(context, 'Completa todos los campos', isError: true);
       return;
     }
     final ok = await ref.read(bookingViewModelProvider.notifier).createBooking(
@@ -258,8 +257,10 @@ class _BookingSheetState extends ConsumerState<_BookingSheet> {
     );
     if (ok && mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('¡Reserva creada!'), backgroundColor: AppTheme.brandGreenDark));
+      showAppSnackBar(context, '¡Reserva creada!');
+    } else if (mounted) {
+      final err = ref.read(bookingViewModelProvider).error;
+      showAppErrorDialog(context, title: 'No se pudo crear la reserva', message: err ?? 'Intenta de nuevo más tarde.');
     }
   }
 

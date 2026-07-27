@@ -9,12 +9,14 @@ class AuthState {
   final bool isLoading;
   final UserEntity? user;
   final String? error;
+  final String? successMessage;
   final bool isAuthenticated;
 
   const AuthState({
     this.isLoading = false,
     this.user,
     this.error,
+    this.successMessage,
     this.isAuthenticated = false,
   });
 
@@ -22,21 +24,24 @@ class AuthState {
     bool? isLoading,
     UserEntity? user,
     String? error,
+    String? successMessage,
     bool? isAuthenticated,
     bool clearError = false,
+    bool clearSuccess = false,
     bool clearUser = false,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
       user: clearUser ? null : (user ?? this.user),
       error: clearError ? null : (error ?? this.error),
+      successMessage: clearSuccess ? null : (successMessage ?? this.successMessage),
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
     );
   }
 
   @override
   String toString() =>
-      'AuthState(isLoading: $isLoading, user: ${user?.email}, error: $error, isAuthenticated: $isAuthenticated)';
+      'AuthState(isLoading: $isLoading, user: ${user?.email}, error: $error, successMessage: $successMessage, isAuthenticated: $isAuthenticated)';
 }
 
 // ── ViewModel ─────────────────────────────────────────────────────────────────
@@ -70,7 +75,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
     required UserType userType,
     String? phoneNumber,
   }) async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(isLoading: true, clearError: true, clearSuccess: true);
     try {
       final user = await _repository.signUp(
         email: email,
@@ -80,10 +85,14 @@ class AuthViewModel extends StateNotifier<AuthState> {
         userType: userType,
         phoneNumber: phoneNumber,
       );
+      final isAuthed = _repository.isAuthenticated;
       state = state.copyWith(
         isLoading: false,
-        user: user,
-        isAuthenticated: true,
+        user: isAuthed ? user : null,
+        isAuthenticated: isAuthed,
+        successMessage: isAuthed
+            ? '¡Registro exitoso! Bienvenido a YO FREE-LANCER.'
+            : '¡Registro exitoso! Por favor, verifica tu correo electrónico para activar tu cuenta.',
       );
       return true;
     } on Exception catch (e) {
@@ -100,7 +109,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
     required String email,
     required String password,
   }) async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(isLoading: true, clearError: true, clearSuccess: true);
     try {
       final user = await _repository.signIn(
         email: email,
@@ -110,6 +119,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
         isLoading: false,
         user: user,
         isAuthenticated: true,
+        successMessage: '¡Inicio de sesión exitoso! Bienvenido de vuelta.',
       );
       return true;
     } on Exception catch (e) {
@@ -123,16 +133,26 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
   // ── Logout ────────────────────────────────────────────────────────────────
   Future<void> logout() async {
-    await _repository.signOut();
+    // Limpia la sesión local aunque falle la llamada remota, para nunca
+    // dejar al usuario atorado en una pantalla protegida sin poder salir.
+    try {
+      await _repository.signOut();
+    } catch (_) {
+      // ignore
+    }
     state = const AuthState();
   }
 
   // ── Update Profile ────────────────────────────────────────────────────────
   Future<bool> updateProfile(UserEntity user) async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(isLoading: true, clearError: true, clearSuccess: true);
     try {
       final updated = await _repository.updateProfile(user);
-      state = state.copyWith(isLoading: false, user: updated);
+      state = state.copyWith(
+        isLoading: false,
+        user: updated,
+        successMessage: '¡Perfil actualizado con éxito!',
+      );
       return true;
     } on Exception catch (e) {
       state = state.copyWith(
@@ -154,10 +174,13 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
   // ── Cambiar contraseña ────────────────────────────────────────────────────
   Future<bool> changePassword(String newPassword) async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(isLoading: true, clearError: true, clearSuccess: true);
     try {
       await _repository.changePassword(newPassword);
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(
+        isLoading: false,
+        successMessage: 'Contraseña actualizada con éxito.',
+      );
       return true;
     } on Exception catch (e) {
       state = state.copyWith(isLoading: false, error: _parseError(e.toString()));
@@ -167,16 +190,29 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
   // ── Recuperar contraseña olvidada ─────────────────────────────────────────
   Future<bool> resetPasswordForEmail(String email) async {
+    state = state.copyWith(isLoading: true, clearError: true, clearSuccess: true);
     try {
       await _repository.resetPasswordForEmail(email);
+      state = state.copyWith(
+        isLoading: false,
+        successMessage: 'Te hemos enviado un correo para restablecer tu contraseña.',
+      );
       return true;
-    } on Exception {
+    } on Exception catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _parseError(e.toString()),
+      );
       return false;
     }
   }
 
   void clearError() {
     state = state.copyWith(clearError: true);
+  }
+
+  void clearSuccess() {
+    state = state.copyWith(clearSuccess: true);
   }
 
   String _parseError(String raw) {

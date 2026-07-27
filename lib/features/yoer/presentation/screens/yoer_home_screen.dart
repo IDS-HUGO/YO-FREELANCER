@@ -269,9 +269,13 @@ class _YoerHomeScreenState extends ConsumerState<YoerHomeScreen> {
                     decoration: BoxDecoration(color: _statusColor(s), shape: BoxShape.circle)),
                 title: Text(s.displayName),
                 trailing: user.status == s ? const Icon(Icons.check_rounded, color: AppTheme.brandGreen) : null,
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  ref.read(authViewModelProvider.notifier).updateProfile(user.copyWith(status: s));
+                  final ok = await ref.read(authViewModelProvider.notifier).updateProfile(user.copyWith(status: s));
+                  if (!ok && context.mounted) {
+                    final err = ref.read(authViewModelProvider).error;
+                    showAppErrorDialog(context, title: 'No se pudo actualizar tu disponibilidad', message: err ?? 'Intenta de nuevo más tarde.');
+                  }
                 },
               );
             }),

@@ -65,7 +65,7 @@ class _RadarScreenState extends ConsumerState<RadarScreen> with SingleTickerProv
         ref.read(radarViewModelProvider.notifier).clearMessages();
       }
       if (next.error != null && next.error != prev?.error) {
-        showAppSnackBar(context, next.error!, isError: true);
+        showAppErrorDialog(context, message: next.error!);
         ref.read(radarViewModelProvider.notifier).clearMessages();
       }
     });

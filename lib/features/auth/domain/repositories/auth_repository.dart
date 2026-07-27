@@ -36,10 +36,10 @@ abstract class AuthRepository {
 }
 
 // ─── Implementación con Supabase ──────────────────────────────────────────────
-class AuthRepositoryImpl implements AuthRepository {
+class SupabaseAuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
 
-  AuthRepositoryImpl(this._remoteDataSource);
+  SupabaseAuthRepositoryImpl(this._remoteDataSource);
 
   @override
   Future<UserEntity> signUp({

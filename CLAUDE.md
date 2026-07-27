@@ -68,3 +68,9 @@ Riverpod `StateNotifier`/`StateNotifierProvider` per feature, not `riverpod_gene
 
 - Committed working tree changes may include edits to `lib/app/config/supabase_config.dart` — be careful not to accidentally revert someone's in-progress credential/config change when editing nearby files.
 - `build/`, `.dart_tool/`, `android/.gradle`, `android/.kotlin` are generated Flutter/Gradle output present in the working tree; don't hand-edit anything under them.
+
+# Reglas para Claude CLI
+
+- NUNCA ejecutes comandos de terminal que requieran entrada interactiva manual.
+- Usa siempre banderas de auto-confirmación en comandos de consola (ejemplo: `-y`, `--force`, `--no-interactive`).
+- Realiza la edición y creación de archivos directamente sin solicitar confirmación en el prompt.

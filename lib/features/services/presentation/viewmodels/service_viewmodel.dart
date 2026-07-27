@@ -1,8 +1,8 @@
 // lib/features/services/presentation/viewmodels/service_viewmodel.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/service_entity.dart';
-import '../../data/datasources/service_remote_datasource.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../domain/repositories/service_repository.dart';
+import '../../../../app/di/injection.dart';
 
 // ── Estado ────────────────────────────────────────────────────────────────────
 class ServiceState {
@@ -54,7 +54,7 @@ class ServiceState {
 
 // ── ViewModel ─────────────────────────────────────────────────────────────────
 class ServiceViewModel extends StateNotifier<ServiceState> {
-  final ServiceRemoteDataSource _dataSource;
+  final ServiceRepository _dataSource;
 
   ServiceViewModel(this._dataSource) : super(const ServiceState()) {
     getAllServices();
@@ -207,11 +207,11 @@ class ServiceViewModel extends StateNotifier<ServiceState> {
 }
 
 // ── Providers ─────────────────────────────────────────────────────────────────
-final serviceDataSourceProvider = Provider<ServiceRemoteDataSource>((ref) {
-  return ServiceRemoteDataSource(Supabase.instance.client);
+final serviceRepositoryProvider = Provider<ServiceRepository>((ref) {
+  return getIt<ServiceRepository>();
 });
 
 final serviceViewModelProvider =
     StateNotifierProvider<ServiceViewModel, ServiceState>((ref) {
-  return ServiceViewModel(ref.read(serviceDataSourceProvider));
+  return ServiceViewModel(ref.read(serviceRepositoryProvider));
 });

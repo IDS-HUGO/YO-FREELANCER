@@ -215,7 +215,7 @@ class PaymentRemoteDataSource {
   // ── Tarjetas ───────────────────────────────────────────────────────────────
   Future<List<PaymentCardEntity>> getCardsByUser(String userId) async {
     final data = await _client
-        .from('payment_cards')
+        .from(SupabaseConfig.paymentCardsTable)
         .select()
         .eq('user_id', userId)
         .order('is_default', ascending: false);
@@ -236,12 +236,12 @@ class PaymentRemoteDataSource {
   }) async {
     if (isDefault) {
       await _client
-          .from('payment_cards')
+          .from(SupabaseConfig.paymentCardsTable)
           .update({'is_default': false})
           .eq('user_id', userId);
     }
 
-    final data = await _client.from('payment_cards').insert({
+    final data = await _client.from(SupabaseConfig.paymentCardsTable).insert({
       'user_id': userId,
       'card_number': cardNumber,
       'card_holder_name': cardHolderName,
@@ -255,16 +255,16 @@ class PaymentRemoteDataSource {
   }
 
   Future<void> deleteCard(String cardId) async {
-    await _client.from('payment_cards').delete().eq('id', cardId);
+    await _client.from(SupabaseConfig.paymentCardsTable).delete().eq('id', cardId);
   }
 
   Future<void> setDefaultCard(String userId, String cardId) async {
     await _client
-        .from('payment_cards')
+        .from(SupabaseConfig.paymentCardsTable)
         .update({'is_default': false})
         .eq('user_id', userId);
     await _client
-        .from('payment_cards')
+        .from(SupabaseConfig.paymentCardsTable)
         .update({'is_default': true})
         .eq('id', cardId);
   }

@@ -36,6 +36,28 @@ flutter run
 
 ---
 
+## 🔀🪪 Proyectos relacionados (backend propio + verificación facial)
+
+Estos dos servicios son **proyectos separados, en sus propios repos Git** — no viven dentro de este repo, se despliegan por su cuenta:
+
+- **`yofreelancer-backend`** — backend Node/Express + Prisma/Postgres, standalone, con su propia autenticación. Alternativa a Supabase para auth/perfil/"proyectos" (servicios), elegida en tiempo de build (ver `docs/BACKEND_CONFIG.md`). Ver el `README.md` de ese repo para levantarlo.
+- **`yofreelancer-kyc-service`** — microservicio Python (FastAPI + DeepFace) que compara la selfie con la identificación oficial en el registro (ver `docs/KYC.md`). La app lo llama directo, nunca a través del backend Node. Ver el `README.md` de ese repo para levantarlo.
+
+El registro de usuarios queda gateado por KYC (`docs/KYC.md`) sin importar qué backend esté activo — `yofreelancer-kyc-service` debe estar corriendo para poder completar el registro.
+
+```bash
+# Modo Supabase (default) + KYC
+flutter run --dart-define=KYC_SERVICE_URL=http://localhost:8000
+
+# Modo backend propio + KYC
+flutter run \
+  --dart-define=BACKEND_MODE=own_backend \
+  --dart-define=NODE_BACKEND_URL=http://localhost:4000 \
+  --dart-define=KYC_SERVICE_URL=http://localhost:8000
+```
+
+---
+
 ## 📁 Estructura del proyecto
 
 ```
@@ -132,6 +154,7 @@ Supabase maneja auth con PKCE flow. Al registrarse:
 | `sanctions` | Sanciones |
 | `urgent_tasks` | Tareas urgentes |
 | `categories` | Catálogo de categorías |
+| `kyc_verifications` | Auditoría (no biométrica) de verificaciones faciales |
 
 ---
 
@@ -215,6 +238,15 @@ O crear uno manualmente en Supabase → Authentication → Users.
 - [ ] Tareas urgentes con radar
 - [ ] Sistema de reseñas completo
 - [ ] Panel de ganancias con gráficas (fl_chart)
+
+---
+
+## 📚 Documentación adicional
+
+- `AUDIT.md` — auditoría de arquitectura y riesgos previa a las Tareas 1-3
+- `SECURITY_REPORT.md` — hardening de seguridad: qué se corrigió y qué queda pendiente
+- `docs/BACKEND_CONFIG.md` — cómo elegir Supabase o backend propio, y por qué es un switch manual sin failover automático
+- `docs/KYC.md` — diseño y limitaciones de la verificación facial
 
 ---
 

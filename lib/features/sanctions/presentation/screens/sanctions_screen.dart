@@ -33,7 +33,7 @@ class _SanctionsScreenState extends ConsumerState<SanctionsScreen> {
         ref.read(sanctionViewModelProvider.notifier).clearMessages();
       }
       if (next.error != null && next.error != prev?.error) {
-        showAppSnackBar(context, next.error!, isError: true);
+        showAppErrorDialog(context, message: next.error!);
         ref.read(sanctionViewModelProvider.notifier).clearMessages();
       }
     });

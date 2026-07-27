@@ -79,7 +79,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       showAppSnackBar(context, 'Perfil actualizado');
       Navigator.of(context).pop();
     } else {
-      showAppSnackBar(context, 'No se pudo actualizar el perfil', isError: true);
+      final err = ref.read(authViewModelProvider).error;
+      showAppErrorDialog(context, title: 'No se pudo actualizar el perfil', message: err ?? 'Intenta de nuevo más tarde.');
     }
   }
 

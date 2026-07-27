@@ -2,6 +2,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
 import '../../../../shared/dto/service_dto.dart';
+import '../../../../shared/utils/file_upload_validator.dart';
 import '../../domain/entities/service_entity.dart';
 import 'dart:io';
 
@@ -77,11 +78,18 @@ class ServiceRemoteDataSource {
 
   // ── Búsqueda full-text ────────────────────────────────────────────────────
   Future<List<ServiceEntity>> searchServices(String query) async {
+    // Hardening (SECURITY_REPORT.md): `query` llega directo del usuario y se
+    // interpola en la sintaxis de filtros de PostgREST (`.or(...)`), donde
+    // `,`, `(`, `)` y `.` tienen significado especial (separan condiciones o
+    // agrupan). Sin sanear, un usuario podría inyectar condiciones de filtro
+    // adicionales. Se eliminan esos caracteres: no son necesarios para una
+    // búsqueda de texto normal.
+    final sanitized = query.replaceAll(RegExp(r'[,()."*]'), '');
     final data = await _client
         .from(SupabaseConfig.servicesTable)
         .select('*, profiles(full_name, profile_image_url, rating)')
         .eq('is_active', true)
-        .or('title.ilike.%$query%,description.ilike.%$query%')
+        .or('title.ilike.%$sanitized%,description.ilike.%$sanitized%')
         .order('rating', ascending: false)
         .limit(30);
 
@@ -176,6 +184,7 @@ class ServiceRemoteDataSource {
   // ── Subir imagen de servicio ──────────────────────────────────────────────
   Future<String> uploadServiceImage(String serviceId, String filePath) async {
     final file = File(filePath);
+    await FileUploadValidator.validateImageFile(file);
     final ext = filePath.split('.').last;
     final path = '$serviceId/${DateTime.now().millisecondsSinceEpoch}.$ext';
 

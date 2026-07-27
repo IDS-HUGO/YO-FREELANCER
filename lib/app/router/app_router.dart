@@ -23,6 +23,7 @@ import '../../features/client/presentation/screens/client_home_screen.dart';
 import '../../features/client/presentation/screens/client_bookings_screen.dart';
 import '../../features/client/presentation/screens/client_profile_screen.dart';
 import '../../features/auth/presentation/screens/edit_profile_screen.dart';
+import '../../features/auth/presentation/screens/kyc_consent_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/sanctions/presentation/screens/sanctions_screen.dart';
@@ -86,9 +87,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         AppRoutes.splash,
       ];
 
-      // ── Cargando: mantener en splash ──────────────────────────────────────
-      if (isLoading) {
-        return loc == AppRoutes.splash ? null : AppRoutes.splash;
+      // ── Cargando: mantener en splash si ya está ahí
+      if (isLoading && loc == AppRoutes.splash) {
+        return null;
       }
 
       // ── No autenticado ────────────────────────────────────────────────────
@@ -107,8 +108,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       // ── Autenticado ───────────────────────────────────────────────────────
 
-      // Si está en una ruta de auth o en splash → mandar al home correcto
-      if (publicRoutes.contains(loc)) {
+      // Verificación facial de identidad (Tarea 2, ver docs/KYC.md): aplica
+      // a YOER y Cliente por igual. Mientras no esté 'verified', se fuerza
+      // /kyc — salvo que ya esté ahí, para no crear un loop de redirect.
+      if (user != null && !user.kycStatus.isVerified) {
+        return loc == AppRoutes.kyc ? null : AppRoutes.kyc;
+      }
+
+      // Si está en una ruta de auth, en splash, o ya verificó KYC y sigue en
+      // /kyc → mandar al home correcto
+      if (publicRoutes.contains(loc) || loc == AppRoutes.kyc) {
         return user?.isYoer == true ? AppRoutes.yoerHome : AppRoutes.clientHome;
       }
 
@@ -140,6 +149,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.register,
         pageBuilder: (_, state) => _slidePage(const RegisterScreen(), state),
+      ),
+      GoRoute(
+        path: AppRoutes.kyc,
+        pageBuilder: (_, state) => _slidePage(const KycConsentScreen(), state),
       ),
 
       // ── YOER shell ───────────────────────────────────────────────────────

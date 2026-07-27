@@ -6,6 +6,7 @@ import '../../features/auth/domain/entities/user_entity.dart';
 import '../../features/notifications/presentation/viewmodels/notification_viewmodel.dart';
 import '../../app/router/app_routes.dart';
 import '../theme/app_theme.dart';
+import 'app_alert_dialog.dart';
 
 class MainScaffold extends StatelessWidget {
   final UserType userType;
@@ -406,5 +407,21 @@ void showAppSnackBar(BuildContext context, String message, {bool isError = false
       shape: RoundedRectangleBorder(borderRadius: AppRadius.lgR),
       margin: const EdgeInsets.all(16),
     ),
+  );
+}
+
+/// Modal de error reutilizable — usar en cualquier acción que falle
+/// (llamadas a Supabase, subida de archivos, etc.) para dar feedback
+/// claro en vez de fallar en silencio.
+Future<void> showAppErrorDialog(
+  BuildContext context, {
+  String title = 'Ocurrió un error',
+  required String message,
+}) {
+  return AppAlertDialog.show(
+    context,
+    type: AlertType.error,
+    title: title,
+    message: message,
   );
 }

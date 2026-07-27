@@ -67,7 +67,8 @@ class _CreateTaskRequestScreenState extends ConsumerState<CreateTaskRequestScree
       showAppSnackBar(context, '¡Tarea publicada! Los YOERs cercanos podrán postularse.');
       Navigator.of(context).pop();
     } else {
-      showAppSnackBar(context, 'No se pudo publicar la tarea', isError: true);
+      final err = ref.read(clientTasksViewModelProvider).error;
+      showAppErrorDialog(context, title: 'No se pudo publicar la tarea', message: err ?? 'Intenta de nuevo más tarde.');
     }
   }
 

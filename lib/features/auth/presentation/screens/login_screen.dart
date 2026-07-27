@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
-import '../../../../shared/widgets/main_scaffold.dart';
+import '../../../../shared/widgets/app_alert_dialog.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -44,15 +44,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               final email = ctrl.text.trim();
               Navigator.pop(ctx);
               if (email.isEmpty) return;
-              final ok = await ref.read(authViewModelProvider.notifier).resetPasswordForEmail(email);
-              if (!mounted) return;
-              showAppSnackBar(
-                context,
-                ok
-                    ? 'Te enviamos un correo para restablecer tu contraseña'
-                    : 'No se pudo enviar el correo, intenta de nuevo',
-                isError: !ok,
-              );
+              await ref.read(authViewModelProvider.notifier).resetPasswordForEmail(email);
             },
             child: const Text('Enviar'),
           ),
@@ -63,19 +55,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    final ok = await ref.read(authViewModelProvider.notifier).login(
+    await ref.read(authViewModelProvider.notifier).login(
       email: _emailCtrl.text.trim(),
       password: _passwordCtrl.text,
     );
-    if (!ok && mounted) {
-      final err = ref.read(authViewModelProvider).error;
-      showAppSnackBar(context, err ?? 'Error al iniciar sesión', isError: true);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(authViewModelProvider);
+
+    ref.listen<AuthState>(authViewModelProvider, (previous, next) {
+      if (!mounted) return;
+      if (next.error != null && next.error != previous?.error) {
+        AppAlertDialog.show(
+          context,
+          type: AlertType.error,
+          title: 'No se pudo iniciar sesión',
+          message: next.error!,
+        );
+        ref.read(authViewModelProvider.notifier).clearError();
+      }
+
+      if (next.successMessage != null && next.successMessage != previous?.successMessage) {
+        final isInfo = next.successMessage!.contains('correo') || next.successMessage!.contains('enviado');
+        AppAlertDialog.show(
+          context,
+          type: isInfo ? AlertType.info : AlertType.success,
+          title: isInfo ? 'Restablecer contraseña' : '¡Bienvenido!',
+          message: next.successMessage!,
+        );
+        ref.read(authViewModelProvider.notifier).clearSuccess();
+      }
+    });
     return Scaffold(
       backgroundColor: context.bg,
       body: SafeArea(

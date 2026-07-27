@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
 import '../../../../shared/dto/user_dto.dart';
+import '../../../../shared/utils/file_upload_validator.dart';
 import '../../domain/entities/user_entity.dart';
 
 class AuthRemoteDataSource {
@@ -10,7 +11,6 @@ class AuthRemoteDataSource {
 
   AuthRemoteDataSource(this._client);
 
-  // ── Sign Up ───────────────────────────────────────────────────────────────
   Future<UserEntity> signUp({
     required String email,
     required String password,
@@ -34,10 +34,39 @@ class AuthRemoteDataSource {
       throw Exception('Error al crear la cuenta. Verifica los datos.');
     }
 
-    // El trigger en Supabase crea el perfil automáticamente.
-    // Esperamos un momento y lo recuperamos.
-    await Future.delayed(const Duration(milliseconds: 500));
-    return _fetchProfile(response.user!.id);
+    // Si la sesión es nula, significa que la confirmación de correo está activa
+    // y el usuario no ha iniciado sesión todavía.
+    if (response.session == null) {
+      try {
+        // Intentar obtener el perfil por si acaso
+        return await _fetchProfile(response.user!.id);
+      } catch (_) {
+        // Si no se puede, devolvemos un UserEntity básico/provisional
+        return UserEntity(
+          id: response.user!.id,
+          email: email,
+          username: username,
+          fullName: fullName,
+          userType: userType,
+          status: UserStatus.noDisponible,
+          phoneNumber: phoneNumber,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+      }
+    }
+
+    // Si hay sesión (confirmación desactivada), reintentamos por condiciones de carrera del trigger
+    Exception? lastError;
+    for (int i = 0; i < 3; i++) {
+      try {
+        return await _fetchProfile(response.user!.id);
+      } catch (e) {
+        lastError = Exception(e.toString());
+        await Future.delayed(Duration(milliseconds: 300 * (i + 1)));
+      }
+    }
+    throw lastError ?? Exception('No se pudo cargar tu perfil.');
   }
 
   // ── Sign In ───────────────────────────────────────────────────────────────
@@ -96,6 +125,7 @@ class AuthRemoteDataSource {
       'city': user.city,
       'state': user.state,
       'country': user.country,
+      'kyc_status': user.kycStatus.name,
       'updated_at': DateTime.now().toIso8601String(),
     }..removeWhere((k, v) => v == null);
 
@@ -125,6 +155,7 @@ class AuthRemoteDataSource {
     if (user == null) return null;
 
     final file = File(filePath);
+    await FileUploadValidator.validateImageFile(file);
     final ext = filePath.split('.').last;
     final path = '${user.id}/profile.$ext';
 

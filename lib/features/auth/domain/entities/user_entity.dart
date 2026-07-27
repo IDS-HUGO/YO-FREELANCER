@@ -3,6 +3,23 @@
 enum UserType { yoer, client }
 enum UserStatus { disponible, ocupado, noDisponible, warned }
 
+/// Estado de la verificación facial de identidad (Tarea 2, ver docs/KYC.md).
+/// Aplica tanto a YOER como a Cliente.
+enum KycStatus { pending, verified, rejected, error }
+
+extension KycStatusExt on KycStatus {
+  String get name {
+    switch (this) {
+      case KycStatus.pending: return 'pending';
+      case KycStatus.verified: return 'verified';
+      case KycStatus.rejected: return 'rejected';
+      case KycStatus.error: return 'error';
+    }
+  }
+
+  bool get isVerified => this == KycStatus.verified;
+}
+
 extension UserTypeExt on UserType {
   String get name => this == UserType.yoer ? 'YOER' : 'CLIENT';
   bool get isYoer => this == UserType.yoer;
@@ -53,6 +70,7 @@ class UserEntity {
   final int completedJobs;
   final double weeklyBonus;
   final int? rankingPosition;
+  final KycStatus kycStatus;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -80,6 +98,7 @@ class UserEntity {
     this.completedJobs = 0,
     this.weeklyBonus = 0.0,
     this.rankingPosition,
+    this.kycStatus = KycStatus.pending,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -122,6 +141,7 @@ class UserEntity {
     int? completedJobs,
     double? weeklyBonus,
     int? rankingPosition,
+    KycStatus? kycStatus,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -149,6 +169,7 @@ class UserEntity {
       completedJobs: completedJobs ?? this.completedJobs,
       weeklyBonus: weeklyBonus ?? this.weeklyBonus,
       rankingPosition: rankingPosition ?? this.rankingPosition,
+      kycStatus: kycStatus ?? this.kycStatus,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

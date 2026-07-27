@@ -33,7 +33,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
         ref.read(paymentViewModelProvider.notifier).clearMessages();
       }
       if (next.error != null && next.error != prev?.error) {
-        showAppSnackBar(context, next.error!, isError: true);
+        showAppErrorDialog(context, message: next.error!);
         ref.read(paymentViewModelProvider.notifier).clearMessages();
       }
     });
