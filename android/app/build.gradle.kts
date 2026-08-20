@@ -46,6 +46,11 @@ flutter {
     source = "../.."
 }
 
+configurations.all {
+    exclude(group = "com.stripe", module = "stripe-android-issuing-push-provisioning")
+    exclude(group = "com.google.android.gms", module = "play-services-tapandpay")
+}
+
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

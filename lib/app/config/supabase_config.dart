@@ -2,16 +2,20 @@
 
 /// Configuración de Supabase para YO FREE-LANCER
 ///
-/// 🔧 SETUP: Crea un proyecto en https://supabase.com y rellena estos valores.
-///
-/// En Supabase Dashboard → Project Settings → API:
-///   - Project URL  → [SUPABASE_URL]
-///   - anon public  → [SUPABASE_ANON_KEY]
+/// URL y anon key se leen de --dart-define en tiempo de build:
+///   flutter build apk --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...
 class SupabaseConfig {
-  // ────────────────────────────────────────────────────────────────────────
-  // Reemplaza con tus credenciales reales de Supabase
-  // ────────────────────────────────────────────────────────────────────────
-  
+  // ── Credenciales del proyecto (Supabase Dashboard → Project Settings → API) ──
+  static const String supabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: 'https://gnznfgjejqzhsfsuykkk.supabase.co',
+  );
+
+  static const String supabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: '',
+  );
+
   // ── Nombres de tablas ────────────────────────────────────────────────────
   static const String usersTable       = 'users';
   static const String servicesTable    = 'services';

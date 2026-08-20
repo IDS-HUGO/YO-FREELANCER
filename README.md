@@ -7,20 +7,25 @@ Plataforma freelance para México. Flutter + Supabase + MVVM + Riverpod.
 ## 🚀 Setup en 5 pasos
 
 ### 1. Crear proyecto en Supabase
+
 1. Ve a [supabase.com](https://supabase.com) → New project
 2. Copia tu **Project URL** y **anon key** (Settings → API)
 
 ### 2. Ejecutar el schema SQL
+
 1. En Supabase → **SQL Editor → New Query**
 2. Pega el contenido de `supabase_schema.sql` y ejecuta
 
 ### 3. Crear Storage Buckets
+
 En Supabase → **Storage → New Bucket**, crea estos 3 (marca como Public):
+
 - `profile-images`
 - `service-images`
 - `cover-images`
 
 ### 4. Configurar credenciales
+
 Edita `lib/app/config/supabase_config.dart`:
 
 ```dart
@@ -29,6 +34,7 @@ static const String supabaseAnonKey = 'TU_ANON_KEY_AQUI';
 ```
 
 ### 5. Instalar y correr
+
 ```bash
 flutter pub get
 flutter run
@@ -123,6 +129,7 @@ Supabase (PostgreSQL + Auth + Storage + Realtime)
 ```
 
 **Patrones usados:**
+
 - **MVVM** — ViewModel separa lógica de UI
 - **Repository pattern** — abstracción de fuente de datos
 - **DTO pattern** — mapeo JSON ↔ Domain Entity
@@ -133,6 +140,7 @@ Supabase (PostgreSQL + Auth + Storage + Realtime)
 ## 🔑 Autenticación
 
 Supabase maneja auth con PKCE flow. Al registrarse:
+
 1. Supabase crea el usuario en `auth.users`
 2. Un trigger SQL crea automáticamente el perfil en `public.profiles`
 3. El token se almacena de forma segura en `flutter_secure_storage`
@@ -141,20 +149,20 @@ Supabase maneja auth con PKCE flow. Al registrarse:
 
 ## 📊 Base de datos (tablas principales)
 
-| Tabla | Descripción |
-|-------|-------------|
-| `profiles` | Usuarios (extiende auth.users) |
-| `freelancer_profiles` | Datos extra de YOERs |
-| `services` | Servicios publicados |
-| `bookings` | Reservas con Realtime |
-| `payments` | Historial de pagos |
-| `payment_cards` | Tarjetas guardadas |
-| `reviews` | Reseñas con trigger de rating |
-| `badges` | Insignias de YOERs |
-| `sanctions` | Sanciones |
-| `urgent_tasks` | Tareas urgentes |
-| `categories` | Catálogo de categorías |
-| `kyc_verifications` | Auditoría (no biométrica) de verificaciones faciales |
+| Tabla                   | Descripción                                           |
+| ----------------------- | ------------------------------------------------------ |
+| `profiles`            | Usuarios (extiende auth.users)                         |
+| `freelancer_profiles` | Datos extra de YOERs                                   |
+| `services`            | Servicios publicados                                   |
+| `bookings`            | Reservas con Realtime                                  |
+| `payments`            | Historial de pagos                                     |
+| `payment_cards`       | Tarjetas guardadas                                     |
+| `reviews`             | Reseñas con trigger de rating                         |
+| `badges`              | Insignias de YOERs                                     |
+| `sanctions`           | Sanciones                                              |
+| `urgent_tasks`        | Tareas urgentes                                        |
+| `categories`          | Catálogo de categorías                               |
+| `kyc_verifications`   | Auditoría (no biométrica) de verificaciones faciales |
 
 ---
 
@@ -162,14 +170,14 @@ Supabase maneja auth con PKCE flow. Al registrarse:
 
 El app usa **Material Design 3** con paleta personalizada:
 
-| Color | Uso |
-|-------|-----|
+| Color       | Uso                    |
+| ----------- | ---------------------- |
 | `#32B354` | Brand green (primario) |
-| `#121513` | Background dark |
-| `#1E231F` | Surface dark |
-| `#27302A` | Card dark |
-| `#E9F2EB` | Texto primario dark |
-| `#8EA990` | Texto secundario dark |
+| `#121513` | Background dark        |
+| `#1E231F` | Surface dark           |
+| `#27302A` | Card dark              |
+| `#E9F2EB` | Texto primario dark    |
+| `#8EA990` | Texto secundario dark  |
 
 Tipografía: **Space Grotesk** (Google Fonts)
 
@@ -177,18 +185,18 @@ Tipografía: **Space Grotesk** (Google Fonts)
 
 ## 🔌 Dependencias clave
 
-| Package | Uso |
-|---------|-----|
-| `supabase_flutter` | Backend completo |
-| `flutter_riverpod` | State management MVVM |
-| `go_router` | Navegación declarativa |
-| `get_it` | Inyección de dependencias |
-| `google_fonts` | Space Grotesk |
-| `cached_network_image` | Caché de imágenes |
-| `image_picker` | Selección de fotos |
-| `geolocator` | Ubicación |
-| `intl` | Formato de fechas |
-| `uuid` | Generación de IDs |
+| Package                  | Uso                        |
+| ------------------------ | -------------------------- |
+| `supabase_flutter`     | Backend completo           |
+| `flutter_riverpod`     | State management MVVM      |
+| `go_router`            | Navegación declarativa    |
+| `get_it`               | Inyección de dependencias |
+| `google_fonts`         | Space Grotesk              |
+| `cached_network_image` | Caché de imágenes        |
+| `image_picker`         | Selección de fotos        |
+| `geolocator`           | Ubicación                 |
+| `intl`                 | Formato de fechas          |
+| `uuid`                 | Generación de IDs         |
 
 ---
 
@@ -209,6 +217,7 @@ O crear uno manualmente en Supabase → Authentication → Users.
 ## ⚙️ Permisos requeridos
 
 ### Android (`android/app/src/main/AndroidManifest.xml`)
+
 ```xml
 <uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.CAMERA" />
@@ -217,6 +226,7 @@ O crear uno manualmente en Supabase → Authentication → Users.
 ```
 
 ### iOS (`ios/Runner/Info.plist`)
+
 ```xml
 <key>NSCameraUsageDescription</key>
 <string>Para subir foto de perfil</string>

@@ -15,8 +15,8 @@ class KycConfig {
   /// sobreescribe con:
   ///   flutter run --dart-define=KYC_SERVICE_URL=https://tu-kyc.example.com
   static const String baseUrl = String.fromEnvironment(
-    'KYC_SERVICE_URL',
-    defaultValue: 'http://localhost:8000',
+  'KYC_SERVICE_URL',
+  defaultValue: 'http://localhost:8000',
   );
 
   static const String verifyPath = '/verify';
