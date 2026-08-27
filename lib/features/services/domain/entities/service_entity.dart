@@ -1,5 +1,3 @@
-// lib/features/services/domain/entities/service_entity.dart
-
 enum ServiceCategory {
   construccion, limpieza, reparacion, educacion,
   arte, musica, deportes, tecnologia, salud,

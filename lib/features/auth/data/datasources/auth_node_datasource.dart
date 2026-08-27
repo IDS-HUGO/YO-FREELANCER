@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../../app/config/backend_config.dart';
 import '../../../../shared/dto/user_dto.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../../../core/utils/crypto_utils.dart';
 
 /// Cliente HTTP hacia el backend propio (Node/Express), usado cuando la app
 /// se compila en modo `BackendMode.ownBackend` (ver
@@ -65,8 +66,8 @@ class AuthNodeDataSource {
       'password': password,
       'username': username,
       'full_name': fullName,
-      'user_type': userType.name,
-      if (phoneNumber != null) 'phone_number': phoneNumber,
+      'user_type': userType == UserType.yoer ? 'YOER' : 'CLIENT',
+      if (phoneNumber != null) 'phone_number': CryptoUtils.encrypt(phoneNumber),
     });
 
     final data = response.data as Map<String, dynamic>;
@@ -117,7 +118,8 @@ class AuthNodeDataSource {
         'full_name': user.fullName,
         'username': user.username,
         'status': user.status.name,
-        if (user.phoneNumber != null) 'phone_number': user.phoneNumber,
+        'user_type': user.userType == UserType.yoer ? 'YOER' : 'CLIENT',
+        if (user.phoneNumber != null) 'phone_number': CryptoUtils.encrypt(user.phoneNumber!),
         if (user.profileImageUrl != null) 'profile_image_url': user.profileImageUrl,
         if (user.coverImageUrl != null) 'cover_image_url': user.coverImageUrl,
         if (user.age != null) 'age': user.age,

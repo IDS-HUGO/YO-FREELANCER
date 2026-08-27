@@ -1,4 +1,3 @@
-// lib/features/services/data/datasources/service_remote_datasource.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
 import '../../../../shared/dto/service_dto.dart';
@@ -11,7 +10,6 @@ class ServiceRemoteDataSource {
 
   ServiceRemoteDataSource(this._client);
 
-  // ── Obtener todos los servicios activos ───────────────────────────────────
   Future<List<ServiceEntity>> getAllServices({
     int limit = 20,
     int offset = 0,
@@ -29,7 +27,6 @@ class ServiceRemoteDataSource {
         .toList();
   }
 
-  // ── Servicios de un YOER ──────────────────────────────────────────────────
   Future<List<ServiceEntity>> getServicesByYoer(String yoerId) async {
     final data = await _client
         .from(SupabaseConfig.servicesTable)
@@ -42,7 +39,6 @@ class ServiceRemoteDataSource {
         .toList();
   }
 
-  // ── Servicio por ID ───────────────────────────────────────────────────────
   Future<ServiceEntity> getServiceById(String id) async {
     final data = await _client
         .from(SupabaseConfig.servicesTable)
@@ -58,7 +54,6 @@ class ServiceRemoteDataSource {
     return ServiceDto.fromJson(data).toEntity();
   }
 
-  // ── Servicios por categoría ───────────────────────────────────────────────
   Future<List<ServiceEntity>> getServicesByCategory(
     ServiceCategory category, {
     int limit = 20,
@@ -76,7 +71,6 @@ class ServiceRemoteDataSource {
         .toList();
   }
 
-  // ── Búsqueda full-text ────────────────────────────────────────────────────
   Future<List<ServiceEntity>> searchServices(String query) async {
     // Hardening (SECURITY_REPORT.md): `query` llega directo del usuario y se
     // interpola en la sintaxis de filtros de PostgREST (`.or(...)`), donde
@@ -98,7 +92,6 @@ class ServiceRemoteDataSource {
         .toList();
   }
 
-  // ── Crear servicio ────────────────────────────────────────────────────────
   Future<ServiceEntity> createService(ServiceEntity service) async {
     final dto = ServiceDto(
       id: '',
@@ -132,7 +125,6 @@ class ServiceRemoteDataSource {
     return ServiceDto.fromJson(data).toEntity();
   }
 
-  // ── Actualizar servicio ───────────────────────────────────────────────────
   Future<ServiceEntity> updateService(String id, ServiceEntity service) async {
     final updates = {
       'title': service.title,
@@ -158,7 +150,6 @@ class ServiceRemoteDataSource {
     return ServiceDto.fromJson(data).toEntity();
   }
 
-  // ── Eliminar servicio ─────────────────────────────────────────────────────
   Future<void> deleteService(String id) async {
     await _client
         .from(SupabaseConfig.servicesTable)
@@ -166,7 +157,6 @@ class ServiceRemoteDataSource {
         .eq('id', id);
   }
 
-  // ── Toggle activo/inactivo ────────────────────────────────────────────────
   Future<ServiceEntity> toggleServiceStatus(String id, bool isActive) async {
     final data = await _client
         .from(SupabaseConfig.servicesTable)
@@ -181,7 +171,6 @@ class ServiceRemoteDataSource {
     return ServiceDto.fromJson(data).toEntity();
   }
 
-  // ── Subir imagen de servicio ──────────────────────────────────────────────
   Future<String> uploadServiceImage(String serviceId, String filePath) async {
     final file = File(filePath);
     await FileUploadValidator.validateImageFile(file);

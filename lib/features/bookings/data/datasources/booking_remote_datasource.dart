@@ -1,4 +1,3 @@
-// lib/features/bookings/data/datasources/booking_remote_datasource.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
@@ -259,7 +258,6 @@ class BookingRemoteDataSource {
     return _fromRow(data);
   }
 
-  // ── Realtime stream de reservas ───────────────────────────────────────────
   Stream<List<BookingEntity>> watchBookingsByUser(String userId) {
     return _client
         .from(SupabaseConfig.bookingsTable)
@@ -275,9 +273,7 @@ class BookingRemoteDataSource {
       BookingEntity.fromJson(row as Map<String, dynamic>);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // BOOKING VIEWMODEL
-// lib/features/bookings/presentation/viewmodels/booking_viewmodel.dart
 // (incluido aquí por organización)
 
 class BookingState {

@@ -1,4 +1,3 @@
-// lib/features/notifications/data/datasources/notification_remote_datasource.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
@@ -132,7 +131,6 @@ class NotificationRemoteDataSource {
   }
 }
 
-// ── ViewModel ─────────────────────────────────────────────────────────────────
 class NotificationState {
   final bool isLoading;
   final List<NotificationEntity> notifications;

@@ -1,11 +1,8 @@
-// lib/app/config/supabase_config.dart
-
 /// Configuración de Supabase para YO FREE-LANCER
 ///
 /// URL y anon key se leen de --dart-define en tiempo de build:
 ///   flutter build apk --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...
 class SupabaseConfig {
-  // ── Credenciales del proyecto (Supabase Dashboard → Project Settings → API) ──
   static const String supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
     defaultValue: 'https://gnznfgjejqzhsfsuykkk.supabase.co',
@@ -16,7 +13,6 @@ class SupabaseConfig {
     defaultValue: '',
   );
 
-  // ── Nombres de tablas ────────────────────────────────────────────────────
   static const String usersTable       = 'users';
   static const String servicesTable    = 'services';
   static const String bookingsTable    = 'bookings';
@@ -29,7 +25,6 @@ class SupabaseConfig {
   static const String badgesTable      = 'badges';
   static const String paymentCardsTable = 'payment_cards';
 
-  // ── Tablas del roadmap v2 (ver supabase_migration_v2.sql) ─────────────────
   static const String notificationsTable          = 'notifications';
   static const String taskRequestsTable           = 'task_requests';
   static const String taskApplicationsTable       = 'task_applications';
@@ -43,16 +38,13 @@ class SupabaseConfig {
   static const String communityEventsTable        = 'community_events';
   static const String artistProfilesTable         = 'artist_profiles';
 
-  // ── Storage buckets ──────────────────────────────────────────────────────
   static const String profileImagesBucket  = 'profile-images';
   static const String serviceImagesBucket  = 'service-images';
   static const String coverImagesBucket    = 'cover-images';
 
-  // ── Edge Functions ────────────────────────────────────────────────────────
   static const String createCheckoutFn = 'create-checkout-session';
   static const String sendNotificationFn = 'send-notification';
 
-  // ── Realtime channels ─────────────────────────────────────────────────────
   static const String bookingsChannel  = 'bookings-channel';
   static const String messagesChannel  = 'messages-channel';
 }

@@ -1,5 +1,3 @@
-// lib/features/auth/domain/entities/user_entity.dart
-
 enum UserType { yoer, client }
 enum UserStatus { disponible, ocupado, noDisponible, warned }
 

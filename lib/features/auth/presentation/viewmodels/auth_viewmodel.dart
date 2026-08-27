@@ -163,6 +163,19 @@ class AuthViewModel extends StateNotifier<AuthState> {
     }
   }
 
+  // ── Switch User Type (Giro de cuenta) ──────────────────────────────────────
+  Future<bool> switchUserType() async {
+    final currentUser = state.user;
+    if (currentUser == null) return false;
+    final nextType = currentUser.userType == UserType.yoer ? UserType.client : UserType.yoer;
+    final updated = currentUser.copyWith(
+      userType: nextType,
+      // Al girar la cuenta, podemos inicializar el status según corresponda
+      status: nextType == UserType.yoer ? UserStatus.disponible : UserStatus.noDisponible,
+    );
+    return updateProfile(updated);
+  }
+
   // ── Upload Image ──────────────────────────────────────────────────────────
   Future<String?> uploadProfileImage(String filePath) async {
     try {

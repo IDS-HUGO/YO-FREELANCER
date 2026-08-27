@@ -1,4 +1,3 @@
-// lib/features/payments/data/datasources/payment_remote_datasource.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
@@ -212,7 +211,6 @@ class PaymentRemoteDataSource {
         .toList();
   }
 
-  // ── Tarjetas ───────────────────────────────────────────────────────────────
   Future<List<PaymentCardEntity>> getCardsByUser(String userId) async {
     final data = await _client
         .from(SupabaseConfig.paymentCardsTable)
@@ -270,7 +268,6 @@ class PaymentRemoteDataSource {
   }
 }
 
-// ── Payment ViewModel ─────────────────────────────────────────────────────────
 class PaymentState {
   final bool isLoading;
   final List<PaymentEntity> payments;

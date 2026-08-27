@@ -1,4 +1,3 @@
-// lib/features/payments/presentation/screens/payment_methods_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/theme/app_theme.dart';

@@ -5,6 +5,7 @@ import '../../../../app/config/supabase_config.dart';
 import '../../../../shared/dto/user_dto.dart';
 import '../../../../shared/utils/file_upload_validator.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../../../core/utils/crypto_utils.dart';
 
 class AuthRemoteDataSource {
   final SupabaseClient _client;
@@ -25,8 +26,8 @@ class AuthRemoteDataSource {
       data: {
         'username': username,
         'full_name': fullName,
-        'user_type': userType.name,
-        if (phoneNumber != null) 'phone_number': phoneNumber,
+        'user_type': userType == UserType.yoer ? 'YOER' : 'CLIENT',
+        if (phoneNumber != null) 'phone_number': CryptoUtils.encrypt(phoneNumber),
       },
     );
 
@@ -113,7 +114,8 @@ class AuthRemoteDataSource {
       'full_name': user.fullName,
       'username': user.username,
       'status': user.status.name,
-      'phone_number': user.phoneNumber,
+      'user_type': user.userType == UserType.yoer ? 'YOER' : 'CLIENT',
+      'phone_number': user.phoneNumber != null ? CryptoUtils.encrypt(user.phoneNumber!) : null,
       'profile_image_url': user.profileImageUrl,
       'cover_image_url': user.coverImageUrl,
       'age': user.age,

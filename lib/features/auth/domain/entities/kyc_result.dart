@@ -1,4 +1,3 @@
-// lib/features/auth/domain/entities/kyc_result.dart
 import 'user_entity.dart';
 
 /// Resultado de un intento de verificación facial (ver kyc-service/README.md).

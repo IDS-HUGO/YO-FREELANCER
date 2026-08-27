@@ -1,10 +1,11 @@
-// lib/features/yoer/presentation/screens/yoer_profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/main_scaffold.dart';
+import '../../../../shared/widgets/app_alert_dialog.dart';
+import '../../../../core/utils/crypto_utils.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 
@@ -19,7 +20,6 @@ class YoerProfileScreen extends ConsumerWidget {
       backgroundColor: context.bg,
       body: CustomScrollView(
         slivers: [
-          // ── Portada con degradado de marca ─────────────────────────────
           SliverAppBar(
             pinned: true,
             expandedHeight: 160,
@@ -88,8 +88,35 @@ class YoerProfileScreen extends ConsumerWidget {
                   // Localización
                   if (user?.city != null)
                     _infoRow(context, Icons.location_on_outlined, '${user?.city}, ${user?.country}'),
-                  if (user?.phoneNumber != null)
-                    _infoRow(context, Icons.phone_outlined, user!.phoneNumber!),
+                  if (user?.phoneNumber != null) ...[
+                    _infoRow(context, Icons.phone_outlined, CryptoUtils.maskPhoneNumber(user!.phoneNumber!)),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: context.colors.primaryContainer.withValues(alpha: 0.1),
+                          borderRadius: AppRadius.mdR,
+                          border: Border.all(color: context.colors.primary.withValues(alpha: 0.2)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.security_rounded, color: context.colors.primary, size: 16),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: Text(
+                                'Número encriptado y oculto. Por tu seguridad, los contratos se realizan exclusivamente dentro de la aplicación.',
+                                style: context.textTheme.bodySmall?.copyWith(
+                                  color: context.colors.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                   _infoRow(context, Icons.mail_outline_rounded, user?.email ?? ''),
 
                   const SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
@@ -117,6 +144,12 @@ class YoerProfileScreen extends ConsumerWidget {
                       () => context.push(AppRoutes.sanctions)),
                   _actionTile(context, Icons.security_outlined, 'Seguridad, privacidad y ayuda',
                       () => context.push(AppRoutes.settings)),
+                  _actionTile(
+                    context,
+                    Icons.swap_horiz_rounded,
+                    'Cambiar a modo Cliente',
+                    () => _showSwitchDialog(context, ref, UserType.client),
+                  ),
                   const SizedBox(height: AppSpacing.sm),
                   _actionTile(context, Icons.logout_rounded, 'Cerrar sesión', () async {
                     await ref.read(authViewModelProvider.notifier).logout();
@@ -128,6 +161,29 @@ class YoerProfileScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showSwitchDialog(BuildContext context, WidgetRef ref, UserType targetType) {
+    AppAlertDialog.show(
+      context,
+      type: AlertType.info,
+      title: '¿Girar cuenta a Cliente?',
+      message: 'Cambiarás al panel de cliente para buscar y contratar servicios. Podrás regresar al modo proveedor (YOER) cuando lo desees.',
+      actionLabel: 'Girar Cuenta',
+      onAction: () async {
+        final ok = await ref.read(authViewModelProvider.notifier).switchUserType();
+        if (ok && context.mounted) {
+          showAppSnackBar(context, '¡Modo de cuenta cambiado a Cliente!');
+        } else if (context.mounted) {
+          final err = ref.read(authViewModelProvider).error;
+          showAppErrorDialog(
+            context,
+            title: 'Error al girar cuenta',
+            message: err ?? 'No se pudo cambiar el modo de cuenta. Intenta de nuevo.',
+          );
+        }
+      },
     );
   }
 

@@ -1,4 +1,3 @@
-// lib/features/artist/data/datasources/artist_remote_datasource.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
@@ -86,7 +85,6 @@ class ArtistRemoteDataSource {
   }
 }
 
-// ── ViewModel ─────────────────────────────────────────────────────────────────
 class ArtistState {
   final bool isLoading;
   final ArtistProfileEntity? profile;

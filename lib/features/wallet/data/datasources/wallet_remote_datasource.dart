@@ -1,4 +1,3 @@
-// lib/features/wallet/data/datasources/wallet_remote_datasource.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
@@ -161,7 +160,6 @@ class WalletRemoteDataSource {
   }
 }
 
-// ── ViewModel ─────────────────────────────────────────────────────────────────
 class WalletState {
   final bool isLoading;
   final WalletAccountEntity? account;

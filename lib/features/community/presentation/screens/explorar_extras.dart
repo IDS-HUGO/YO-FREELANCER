@@ -1,4 +1,3 @@
-// lib/features/community/presentation/screens/explorar_extras.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -39,7 +38,6 @@ class _ExplorarExtrasState extends ConsumerState<ExplorarExtras> {
         const Divider(),
         const SizedBox(height: AppSpacing.xxl),
 
-        // ── Radar teaser ─────────────────────────────────────────────────
         Card(
           color: context.colors.tertiaryContainer.withValues(alpha: 0.4),
           shape: RoundedRectangleBorder(
@@ -72,7 +70,6 @@ class _ExplorarExtrasState extends ConsumerState<ExplorarExtras> {
         ),
         const SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
 
-        // ── En busca de tu talento ───────────────────────────────────────
         Text('EN BUSCA DE TU TALENTO',
             style: TextStyle(color: context.textHint, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
         const SizedBox(height: AppSpacing.md),
@@ -100,7 +97,6 @@ class _ExplorarExtrasState extends ConsumerState<ExplorarExtras> {
         ),
         const SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
 
-        // ── Eventos cercanos ─────────────────────────────────────────────
         Text('EVENTOS CERCA DE TI',
             style: TextStyle(color: context.textHint, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
         const SizedBox(height: AppSpacing.md),
@@ -160,7 +156,6 @@ class _ExplorarExtrasState extends ConsumerState<ExplorarExtras> {
         ),
         const SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
 
-        // ── Insignias recientes ──────────────────────────────────────────
         Text('LOGROS RECIENTES DE YOERS',
             style: TextStyle(color: context.textHint, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
         const SizedBox(height: AppSpacing.md),
@@ -213,7 +208,6 @@ class _ExplorarExtrasState extends ConsumerState<ExplorarExtras> {
         ),
         const SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
 
-        // ── Ranking teaser ───────────────────────────────────────────────
         Row(children: [
           Text('TOP YOERS',
               style: TextStyle(color: context.textHint, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),

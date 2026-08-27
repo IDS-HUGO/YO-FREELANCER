@@ -1,4 +1,3 @@
-// lib/shared/widgets/app_alert_dialog.dart
 import 'package:flutter/material.dart';
 import '../../shared/theme/app_theme.dart';
 

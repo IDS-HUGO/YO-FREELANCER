@@ -1,4 +1,3 @@
-// lib/features/auth/presentation/screens/splash_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -99,9 +98,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // WELCOME SCREEN
-// lib/features/auth/presentation/screens/welcome_screen.dart
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});

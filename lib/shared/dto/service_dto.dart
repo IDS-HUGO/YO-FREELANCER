@@ -1,4 +1,3 @@
-// lib/shared/dto/service_dto.dart
 import '../../features/services/domain/entities/service_entity.dart';
 
 class ServiceDto {
@@ -158,9 +157,6 @@ class ServiceDto {
   }
 }
 
-// ─── Booking DTO ─────────────────────────────────────────────────────────────
-// lib/shared/dto/booking_dto.dart (se incluye en mismo archivo por brevedad)
-
 class BookingDto {
   final String id;
   final String serviceId;
@@ -257,7 +253,6 @@ class BookingDto {
   };
 }
 
-// ─── Payment DTO ──────────────────────────────────────────────────────────────
 class PaymentDto {
   final String id;
   final String bookingId;

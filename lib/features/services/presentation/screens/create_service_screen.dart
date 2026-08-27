@@ -1,4 +1,3 @@
-// lib/features/services/presentation/screens/create_service_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -89,7 +88,6 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.xxl),
           children: [
-            // ── Título ────────────────────────────────────────────────────
             _label('TÍTULO DEL SERVICIO'),
             const SizedBox(height: AppSpacing.sm),
             TextFormField(
@@ -100,7 +98,6 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
             ),
             const SizedBox(height: AppSpacing.lg + 2),
 
-            // ── Descripción ───────────────────────────────────────────────
             _label('DESCRIPCIÓN'),
             const SizedBox(height: AppSpacing.sm),
             TextFormField(
@@ -112,7 +109,6 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
             ),
             const SizedBox(height: AppSpacing.lg + 2),
 
-            // ── Categoría ─────────────────────────────────────────────────
             _label('CATEGORÍA'),
             const SizedBox(height: AppSpacing.sm + 2),
             SizedBox(
@@ -139,7 +135,6 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
             ),
             const SizedBox(height: AppSpacing.lg + 2),
 
-            // ── Tipo de servicio ──────────────────────────────────────────
             _label('TIPO DE SERVICIO'),
             const SizedBox(height: AppSpacing.sm + 2),
             Row(children: [
@@ -156,7 +151,6 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
             ]),
             const SizedBox(height: AppSpacing.lg + 2),
 
-            // ── Precio y tipo ─────────────────────────────────────────────
             Row(children: [
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 _label('PRECIO (MXN)'),
@@ -192,7 +186,6 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
             ]),
             const SizedBox(height: AppSpacing.lg + 2),
 
-            // ── Ciudad ────────────────────────────────────────────────────
             _label('CIUDAD (OPCIONAL)'),
             const SizedBox(height: AppSpacing.sm),
             TextFormField(
@@ -202,7 +195,6 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
             ),
             const SizedBox(height: AppSpacing.lg + 2),
 
-            // ── Especialidades ────────────────────────────────────────────
             _label('ESPECIALIDADES (SEPARADAS POR COMA)'),
             const SizedBox(height: AppSpacing.sm),
             TextFormField(
@@ -212,7 +204,6 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
             ),
             const SizedBox(height: AppSpacing.xxxl + 4),
 
-            // ── Botones ───────────────────────────────────────────────────
             SizedBox(
               width: double.infinity,
               child: FilledButton(

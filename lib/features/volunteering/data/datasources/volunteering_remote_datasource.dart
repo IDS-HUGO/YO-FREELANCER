@@ -1,4 +1,3 @@
-// lib/features/volunteering/data/datasources/volunteering_remote_datasource.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
@@ -104,7 +103,6 @@ class VolunteeringRemoteDataSource {
   }
 }
 
-// ── ViewModel ─────────────────────────────────────────────────────────────────
 class VolunteeringState {
   final bool isLoading;
   final List<VolunteeringEventEntity> events;

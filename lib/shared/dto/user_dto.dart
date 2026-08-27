@@ -1,5 +1,5 @@
-// lib/shared/dto/user_dto.dart
 import '../../features/auth/domain/entities/user_entity.dart';
+import '../../core/utils/crypto_utils.dart';
 
 class UserDto {
   final String id;
@@ -66,7 +66,9 @@ class UserDto {
       fullName: json['full_name'] as String,
       userType: json['user_type'] as String? ?? 'CLIENT',
       status: json['status'] as String? ?? 'NO_DISPONIBLE',
-      phoneNumber: json['phone_number'] as String?,
+      phoneNumber: json['phone_number'] != null
+          ? CryptoUtils.decrypt(json['phone_number'] as String)
+          : null,
       profileImageUrl: json['profile_image_url'] as String?,
       coverImageUrl: json['cover_image_url'] as String?,
       age: json['age'] as int?,

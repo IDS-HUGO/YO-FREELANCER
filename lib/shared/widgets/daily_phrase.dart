@@ -1,4 +1,3 @@
-// lib/shared/widgets/daily_phrase.dart
 //
 // Lema/saludo rotativo para YOERs, distinto según la hora del día y el día
 // del año (docs/YOER.docx pide 365 lemas distintos; en vez de mantener 365

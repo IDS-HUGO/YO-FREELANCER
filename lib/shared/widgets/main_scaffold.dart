@@ -1,4 +1,3 @@
-// lib/shared/widgets/main_scaffold.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -82,8 +81,6 @@ class _NavItemData {
   final String route;
   const _NavItemData({required this.icon, required this.label, required this.route});
 }
-
-// ── Widgets reutilizables compartidos ─────────────────────────────────────────
 
 /// Chip de estado de reserva
 class BookingStatusChip extends StatelessWidget {

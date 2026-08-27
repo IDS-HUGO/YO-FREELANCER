@@ -1,5 +1,3 @@
-// lib/app/config/backend_config.dart
-
 /// Configuración del backend propio (Node/Express), usado cuando
 /// `BackendModeConfig.current == BackendMode.ownBackend` (ver
 /// `lib/app/config/backend_mode.dart` y docs/BACKEND_CONFIG.md).

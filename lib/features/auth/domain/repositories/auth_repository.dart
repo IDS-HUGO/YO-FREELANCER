@@ -1,4 +1,3 @@
-// lib/features/auth/domain/repositories/auth_repository.dart
 import '../entities/user_entity.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 
@@ -35,7 +34,6 @@ abstract class AuthRepository {
   String? get currentUserId;
 }
 
-// ─── Implementación con Supabase ──────────────────────────────────────────────
 class SupabaseAuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
 

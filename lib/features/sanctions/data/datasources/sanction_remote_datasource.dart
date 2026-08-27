@@ -1,4 +1,3 @@
-// lib/features/sanctions/data/datasources/sanction_remote_datasource.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
@@ -149,7 +148,6 @@ class SanctionRemoteDataSource {
   }
 }
 
-// ── ViewModel ─────────────────────────────────────────────────────────────────
 class SanctionState {
   final bool isLoading;
   final List<SanctionEntity> sanctions;

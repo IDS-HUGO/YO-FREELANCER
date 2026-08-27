@@ -1,10 +1,8 @@
-// lib/features/services/presentation/viewmodels/service_viewmodel.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/service_entity.dart';
 import '../../domain/repositories/service_repository.dart';
 import '../../../../app/di/injection.dart';
 
-// ── Estado ────────────────────────────────────────────────────────────────────
 class ServiceState {
   final bool isLoading;
   final List<ServiceEntity> services;
@@ -52,7 +50,6 @@ class ServiceState {
   }
 }
 
-// ── ViewModel ─────────────────────────────────────────────────────────────────
 class ServiceViewModel extends StateNotifier<ServiceState> {
   final ServiceRepository _dataSource;
 
@@ -206,7 +203,6 @@ class ServiceViewModel extends StateNotifier<ServiceState> {
   }
 }
 
-// ── Providers ─────────────────────────────────────────────────────────────────
 final serviceRepositoryProvider = Provider<ServiceRepository>((ref) {
   return getIt<ServiceRepository>();
 });

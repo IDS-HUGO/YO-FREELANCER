@@ -1,4 +1,3 @@
-// lib/features/ranking/data/datasources/ranking_remote_datasource.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../services/domain/entities/service_entity.dart' show ServiceCategory;
@@ -70,7 +69,6 @@ class RankingRemoteDataSource {
   }
 }
 
-// ── ViewModel ─────────────────────────────────────────────────────────────────
 class RankingState {
   final bool isLoading;
   final List<RankingEntryEntity> entries;

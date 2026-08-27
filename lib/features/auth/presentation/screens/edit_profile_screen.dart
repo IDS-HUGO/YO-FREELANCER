@@ -1,4 +1,3 @@
-// lib/features/auth/presentation/screens/edit_profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';

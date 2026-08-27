@@ -1,5 +1,3 @@
-// lib/app/router/app_routes.dart
-
 abstract class AppRoutes {
   static const splash         = '/splash';
   static const welcome        = '/welcome';

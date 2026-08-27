@@ -1,4 +1,3 @@
-// lib/shared/theme/app_theme.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -8,13 +7,11 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   AppTheme._();
 
-  // ── Brand Colors ─────────────────────────────────────────────────────────
   static const Color brandGreen        = Color(0xFF32B354);
   static const Color brandGreenLight   = Color(0xFF4CAF50);
   static const Color brandGreenDark    = Color(0xFF1E7A33);
   static const Color brandGreenAccent  = Color(0xFFC8E6C9);
 
-  // ── Dark palette ──────────────────────────────────────────────────────────
   static const Color bgDark            = Color(0xFF121513);
   static const Color surfaceDark       = Color(0xFF1E231F);
   static const Color cardDark          = Color(0xFF27302A);
@@ -28,7 +25,6 @@ class AppTheme {
   static const Color warningOrange     = Color(0xFFFF9800);
   static const Color infoBlue          = Color(0xFF2196F3);
 
-  // ── Light palette ─────────────────────────────────────────────────────────
   static const Color bgLight           = Color(0xFFF5F7F5);
   static const Color surfaceLight      = Color(0xFFFFFFFF);
   static const Color cardLight         = Color(0xFFF0F5F1);
@@ -38,7 +34,6 @@ class AppTheme {
   static const Color textSecondaryLight= Color(0xFF4A6450);
   static const Color textHintLight     = Color(0xFF93A899);
 
-  // ── Typography ───────────────────────────────────────────────────────────
   static TextTheme _buildTextTheme(Color primary, Color secondary) {
     final base = GoogleFonts.spaceGroteskTextTheme();
     return base.copyWith(
@@ -90,7 +85,6 @@ class AppTheme {
     );
   }
 
-  // ── ColorScheme dark ─────────────────────────────────────────────────────
   // Generado desde el seed de marca (ColorScheme.fromSeed) y afinado con
   // copyWith para conservar los tonos oscuros ya validados (sin negros
   // lavados) y los roles semánticos custom (warning, info, alert).
@@ -131,7 +125,6 @@ class AppTheme {
     surfaceContainerHighest: const Color(0xFF313B34),
   );
 
-  // ── ColorScheme light ─────────────────────────────────────────────────────
   static final ColorScheme _lightScheme = ColorScheme.fromSeed(
     seedColor: brandGreen,
     brightness: Brightness.light,
@@ -169,7 +162,6 @@ class AppTheme {
     surfaceContainerHighest: const Color(0xFFE3EFE5),
   );
 
-  // ── Shared button/shape helpers ──────────────────────────────────────────
   static RoundedRectangleBorder get _buttonShape => RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.lg),
       );
@@ -181,7 +173,6 @@ class AppTheme {
         letterSpacing: 0.3,
       );
 
-  // ── Dark Theme ────────────────────────────────────────────────────────────
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
@@ -421,7 +412,6 @@ class AppTheme {
     );
   }
 
-  // ── Light Theme ───────────────────────────────────────────────────────────
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
@@ -659,7 +649,6 @@ class AppTheme {
     );
   }
 
-  // ── Gradientes reutilizables ──────────────────────────────────────────────
   static const LinearGradient greenGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,

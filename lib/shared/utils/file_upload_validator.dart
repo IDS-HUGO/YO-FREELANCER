@@ -1,4 +1,3 @@
-// lib/shared/utils/file_upload_validator.dart
 import 'dart:io';
 import 'dart:typed_data';
 

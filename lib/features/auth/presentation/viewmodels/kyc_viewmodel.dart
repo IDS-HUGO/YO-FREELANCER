@@ -1,11 +1,9 @@
-// lib/features/auth/presentation/viewmodels/kyc_viewmodel.dart
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/di/injection.dart';
 import '../../domain/entities/kyc_result.dart';
 import '../../domain/repositories/kyc_repository.dart';
 
-// ── Estado ────────────────────────────────────────────────────────────────────
 class KycState {
   final bool isSubmitting;
   final KycResult? result;
@@ -20,7 +18,6 @@ class KycState {
   }
 }
 
-// ── ViewModel ─────────────────────────────────────────────────────────────────
 /// Orquesta el paso de verificación facial del registro (Tarea 2, ver
 /// docs/KYC.md). No tiene modo de respaldo: si el microservicio no responde,
 /// [KycRepository.verifyIdentity] ya devuelve un [KycResult] en estado
@@ -47,7 +44,6 @@ class KycViewModel extends StateNotifier<KycState> {
   void reset() => state = const KycState();
 }
 
-// ── Providers ─────────────────────────────────────────────────────────────────
 final kycRepositoryProvider = Provider<KycRepository>((ref) {
   return getIt<KycRepository>();
 });

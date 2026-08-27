@@ -1,4 +1,3 @@
-// lib/features/tasks/data/datasources/task_remote_datasource.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
 import '../../../services/domain/entities/service_entity.dart' show ServiceCategory;
@@ -287,7 +286,6 @@ class TaskRemoteDataSource {
     yoer_profile:profiles!task_applications_yoer_id_fkey(full_name, profile_image_url, rating)
   ''';
 
-  // ── Urgent tasks (Radar) ──────────────────────────────────────────────────
   Future<List<UrgentTaskEntity>> getNearbyUrgentTasks({double? lat, double? lng, double radiusKm = 50}) async {
     if (lat != null && lng != null) {
       final ranked = await _client.rpc('get_nearby_urgent_tasks', params: {
@@ -321,7 +319,6 @@ class TaskRemoteDataSource {
     return (data as List).map((e) => UrgentTaskEntity.fromJson(e as Map<String, dynamic>)).toList();
   }
 
-  // ── Task requests (Expres / Agendado del cliente) ─────────────────────────
   Future<TaskRequestEntity> createTaskRequest({
     required String clientId,
     required String title,
@@ -390,7 +387,6 @@ class TaskRemoteDataSource {
         .eq('id', id);
   }
 
-  // ── Postulaciones (applications) ──────────────────────────────────────────
   Future<void> applyToTaskRequest(String taskRequestId, String yoerId, {String? proposal, double? proposedPrice}) async {
     await _client.from(SupabaseConfig.taskApplicationsTable).insert({
       'target_type': 'TASK_REQUEST',

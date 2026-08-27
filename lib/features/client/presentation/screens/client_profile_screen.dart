@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/main_scaffold.dart';
+import '../../../../shared/widgets/app_alert_dialog.dart';
+import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 
 class ClientProfileScreen extends ConsumerWidget {
@@ -63,6 +65,13 @@ class ClientProfileScreen extends ConsumerWidget {
                     const Divider(height: 1),
                     _tile(context, Icons.help_outline_rounded, 'Ayuda y ajustes',
                         () => context.push(AppRoutes.settings)),
+                    const Divider(height: 1),
+                    _tile(
+                      context,
+                      Icons.swap_horiz_rounded,
+                      'Cambiar a modo Proveedor (YOER)',
+                      () => _showSwitchDialog(context, ref, UserType.yoer),
+                    ),
                   ],
                 ),
               ),
@@ -78,6 +87,29 @@ class ClientProfileScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showSwitchDialog(BuildContext context, WidgetRef ref, UserType targetType) {
+    AppAlertDialog.show(
+      context,
+      type: AlertType.info,
+      title: '¿Girar cuenta a YOER?',
+      message: 'Cambiarás al panel de proveedor (YOER) para ofrecer tus servicios. Podrás regresar al modo cliente cuando lo desees.',
+      actionLabel: 'Girar Cuenta',
+      onAction: () async {
+        final ok = await ref.read(authViewModelProvider.notifier).switchUserType();
+        if (ok && context.mounted) {
+          showAppSnackBar(context, '¡Modo de cuenta cambiado a YOER!');
+        } else if (context.mounted) {
+          final err = ref.read(authViewModelProvider).error;
+          showAppErrorDialog(
+            context,
+            title: 'Error al girar cuenta',
+            message: err ?? 'No se pudo cambiar el modo de cuenta. Intenta de nuevo.',
+          );
+        }
+      },
     );
   }
 

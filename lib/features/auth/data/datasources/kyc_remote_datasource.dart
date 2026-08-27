@@ -1,4 +1,4 @@
-// lib/features/auth/data/datasources/kyc_remote_datasource.dart
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:dio/dio.dart';
 import '../../../../app/config/kyc_config.dart';
@@ -50,18 +50,59 @@ class KycRemoteDataSource {
         requestId: requestId ?? '',
         similarity: similarity ?? 0.0,
       );
-    } on DioException catch (e) {
+    } on DioException catch (e, stackTrace) {
       // Cualquier error de red, timeout, o respuesta de error del servicio
       // (4xx/5xx) se trata como "no verificado", nunca como verificado.
+      developer.log(
+        'KYC remote datasource DioException',
+        error: e,
+        stackTrace: stackTrace,
+        name: 'KycRemoteDataSource',
+      );
+      
       final statusCode = e.response?.statusCode;
-      if (statusCode == 422) {
-        final data = e.response?.data;
-        final message = data is Map<String, dynamic> ? data['message'] as String? : null;
-        return KycResult.rejected(message: message);
+      
+      // Intentamos extraer el mensaje de error del servidor si existe
+      String? serverMessage;
+      if (e.response?.data is Map<String, dynamic>) {
+        serverMessage = e.response?.data['message'] as String?;
       }
-      return KycResult.error();
-    } catch (_) {
-      return KycResult.error();
+
+      if (statusCode == 422) {
+        return KycResult.rejected(message: serverMessage);
+      }
+
+      // Detalle del tipo de excepción para diagnóstico rápido en pantalla
+      String detail;
+      if (e.type == DioExceptionType.connectionTimeout) {
+        detail = 'Tiempo de espera de conexión agotado (timeout de conexión).';
+      } else if (e.type == DioExceptionType.sendTimeout) {
+        detail = 'Tiempo de espera de envío agotado (timeout de subida).';
+      } else if (e.type == DioExceptionType.receiveTimeout) {
+        detail = 'Tiempo de espera de respuesta agotado (el servidor tardó demasiado en responder).';
+      } else if (e.type == DioExceptionType.badResponse) {
+        detail = 'Servidor respondió con código $statusCode: ${serverMessage ?? e.message}';
+      } else if (e.type == DioExceptionType.badCertificate) {
+        detail = 'Certificado SSL no válido o no confiable.';
+      } else if (e.type == DioExceptionType.connectionError) {
+        detail = 'Error de conexión de red. Verifica tu internet o la dirección del servidor.';
+      } else {
+        detail = 'Error de tipo ${e.type.name}: ${e.message ?? e.toString()}';
+      }
+
+      return KycResult.error(
+        'Error de conexión con el servidor.\n'
+        'URL: ${KycConfig.baseUrl}\n'
+        'Detalle: $detail'
+      );
+    } catch (e, stackTrace) {
+      developer.log(
+        'KYC remote datasource unexpected exception',
+        error: e,
+        stackTrace: stackTrace,
+        name: 'KycRemoteDataSource',
+      );
+      return KycResult.error('Error inesperado en la app: $e');
     }
   }
 }

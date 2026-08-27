@@ -1,5 +1,3 @@
-// lib/app/config/backend_mode.dart
-
 /// Fuente de datos que usa la app para auth/perfil/"proyectos" (servicios).
 ///
 /// Se elige por configuración de build, **nunca en runtime**: no hay
