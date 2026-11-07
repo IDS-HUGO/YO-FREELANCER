@@ -1,24 +1,40 @@
 LICENCIA DE SOFTWARE PRIVADO Y PROPIETARIO — TODOS LOS DERECHOS RESERVADOS
 ===========================================================================
+Copyright (C) 2026 Hugo Francisco Luis (IDS-HUGO) <hugofranciscoluis@gmail.com>.
+Todos los derechos reservados. / All rights reserved.
 
-Este documento constituye un acuerdo legal de licencia entre el titular de los derechos de autor (en adelante, el "Licenciante") y cualquier persona que acceda, use, compile o ejecute este software (en adelante, el "Usuario").
+Este documento constituye un acuerdo legal de licencia entre el titular de los derechos de autor, Hugo Francisco Luis (en adelante, el "Licenciante" o "Titular") y cualquier persona física o moral que acceda, visualice, clone, descargue, use, compile o ejecute este software (en adelante, el "Usuario").
 
-1. PROPIEDAD INTELECTUAL Y RESERVA DE DERECHOS
-----------------------------------------------
-Todo el código fuente, archivos de configuración, recursos de diseño, documentación, bases de datos y propiedad intelectual contenida en este repositorio (en adelante, el "Software") son propiedad exclusiva del Licenciante. Todos los derechos que no se otorguen expresamente en esta licencia están estrictamente reservados por el Licenciante.
+1. PROPIEDAD INTELECTUAL Y RESERVA TOTAL DE DERECHOS
+---------------------------------------------------
+Todo el código fuente en Dart/Flutter, archivos de configuración, recursos de diseño, manuales, documentación, arquitectura de módulos y propiedad intelectual contenida en este repositorio (en adelante, el "Software YoFreelancer App") son propiedad exclusiva del Licenciante.
 
-2. PROHIBICIÓN ABSOLUTA DE COPIA, REPLICACIÓN Y ROBO
-----------------------------------------------------
-Queda terminantemente prohibido a cualquier persona o entidad, sin la autorización previa por escrito del Licenciante:
-a) Copiar, duplicar, clonar, replicar o reproducir el Software, ya sea en su totalidad o en cualquiera de sus partes.
-b) Distribuir, sublicenciar, alquilar, vender, ceder o transferir el Software o cualquier porción del mismo a terceros.
+Este software está protegido de conformidad con:
+a) La Ley Federal del Derecho de Autor (LFDA) de los Estados Unidos Mexicanos (Artículos 13 fracc. XI, 101 al 114).
+b) El Código Penal Federal de México (Artículos 424, 424 bis, 424 ter).
+c) El Convenio de Berna para la Protección de las Obras Literarias y Artísticas.
+d) El Tratado de la OMPI sobre Derecho de Autor (WCT).
+e) El Tratado entre México, Estados Unidos y Canadá (T-MEC / USMCA, Cap. 20).
+
+Todos los derechos que no se otorguen de forma expresa y por escrito en esta licencia están estrictamente reservados por el Licenciante.
+
+2. PROHIBICIÓN ABSOLUTA DE COPIA, REPLICACIÓN Y CLONACIÓN
+--------------------------------------------------------
+Queda terminantemente prohibido a cualquier persona o entidad, sin la autorización previa, expresa y por escrito del Licenciante:
+a) Copiar, duplicar, clonar, replicar, bifurcar (fork) o reproducir el Software, ya sea en su totalidad o en cualquiera de sus partes.
+b) Distribuir, sublicenciar, alquilar, vender, ceder o transferir el Software o cualquier porción del mismo a terceros, ya sea en forma de código fuente o binario compilado (.apk, .aab, paquetes web, etc.).
 c) Modificar, adaptar, traducir, realizar ingeniería inversa, descompilar, desensamblar o intentar derivar el código fuente del Software.
-d) Utilizar el Software para crear un producto de software de la competencia o similar, o utilizar las ideas, la estructura y el flujo de la plataforma para fines comerciales no autorizados.
+d) Utilizar el Software, su diseño visual (UI/UX, paleta de colores y componentes), su flujo de trabajo o sus algoritmos para crear un producto de software de la competencia o similar.
+e) Utilizar las marcas, logotipos o imagotipos de YoFreelancer y Yoer sin consentimiento escrito.
 
-3. SANCIONES Y CONSECUENCIAS LEGALES
+3. CONFIDENCIALIDAD Y SECRETO INDUSTRIAL
+----------------------------------------
+El código fuente y la arquitectura de este Software constituyen secretos industriales y comerciales del Licenciante de conformidad con la Ley Federal de Protección a la Propiedad Industrial. Cualquier acceso no autorizado, revelación o uso indebido será sancionado conforme a derecho.
+
+4. SANCIONES Y CONSECUENCIAS LEGALES
 ------------------------------------
-Cualquier violación a los términos de esta licencia constituirá una infracción a los derechos de propiedad intelectual del Licenciante. El Licenciante se reserva el derecho de ejercer todas las acciones legales, civiles, administrativas y penales pertinentes contra los infractores de conformidad con la legislación aplicable en los Estados Unidos Mexicanos y los tratados internacionales en materia de propiedad intelectual.
+Cualquier violación a los términos de esta licencia facultará al Licenciante a ejercer de inmediato todas las acciones legales, civiles, administrativas y penales pertinentes contra los infractores, incluyendo el reclamo de medidas cautelares de cese y embargo, indemnización integral por daños y perjuicios morales y patrimoniales (no menor al 40% del valor comercial conforme al artículo 216 bis de la LFDA) y penas de prisión conforme al Código Penal Federal.
 
-4. SIN GARANTÍAS Y LÍMITE DE RESPONSABILIDAD
+5. SIN GARANTÍAS Y LÍMITE DE RESPONSABILIDAD
 --------------------------------------------
-Este Software se proporciona "tal cual", sin garantía de ningún tipo, expresa o implícita, incluyendo, pero sin limitarse a, las garantías de comerciabilidad, adecuación para un propósito particular y no infracción. En ningún caso los autores o titulares de los derechos de autor serán responsables de ninguna reclamación, daños u otras responsabilidades, ya sea en una acción de contrato, agravio o de otro modo, que surja de, fuera de o en conexión con el Software o el uso u otros tratos en el Software.
+Este Software se proporciona "tal cual", sin garantía de ningún tipo, expresa o implícita. En ningún caso los autores o titulares de los derechos de autor serán responsables de ninguna reclamación, daños u otras responsabilidades que surjan del uso del Software.

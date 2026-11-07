@@ -1,3 +1,9 @@
+// ============================================================================
+// YO-FREELANCER APP
+// Copyright (C) 2026 Hugo Francisco Luis (IDS-HUGO) <hugofranciscoluis@gmail.com>.
+// Todos los derechos reservados. Software propietario y confidencial.
+// Prohibida su copia, clonación o ingeniería inversa sin autorización escrita.
+// ============================================================================
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
