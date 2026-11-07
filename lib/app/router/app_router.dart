@@ -31,6 +31,7 @@ import '../../features/badges/presentation/screens/badges_screen.dart';
 import '../../features/ranking/presentation/screens/ranking_screen.dart';
 import '../../features/volunteering/presentation/screens/volunteering_screen.dart';
 import '../../features/artist/presentation/screens/artist_mode_screen.dart';
+import '../../features/legal/presentation/screens/legal_terms_screen.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/widgets/main_scaffold.dart';
 import 'app_routes.dart';
@@ -276,6 +277,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.artistMode,
         builder: (_, __) => const ArtistModeScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.legalTerms,
+        builder: (_, __) => const LegalTermsScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

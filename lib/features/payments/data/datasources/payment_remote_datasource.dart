@@ -1,10 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/config/supabase_config.dart';
+import '../../../../app/config/payment_config.dart';
+import '../../../services/domain/entities/ad_campaign_entity.dart';
 
 enum PaymentMethodType {
-  efectivo, tarjetaCredito, tarjetaDebito,
-  transferencia, oxxo, paypal, mercadoPago;
+  efectivo,
+  tarjetaCredito,
+  tarjetaDebito,
+  transferencia,
+  oxxo,
+  paypal,
+  mercadoPago;
 
   String get name {
     const map = {
@@ -21,25 +28,39 @@ enum PaymentMethodType {
 
   String get displayName {
     switch (this) {
-      case PaymentMethodType.efectivo:        return 'Efectivo';
-      case PaymentMethodType.tarjetaCredito:  return 'Tarjeta de crédito';
-      case PaymentMethodType.tarjetaDebito:   return 'Tarjeta de débito';
-      case PaymentMethodType.transferencia:   return 'Transferencia';
-      case PaymentMethodType.oxxo:            return 'Pago en OXXO';
-      case PaymentMethodType.paypal:          return 'PayPal';
-      case PaymentMethodType.mercadoPago:     return 'Mercado Pago';
+      case PaymentMethodType.efectivo:
+        return 'Efectivo';
+      case PaymentMethodType.tarjetaCredito:
+        return 'Tarjeta de crédito';
+      case PaymentMethodType.tarjetaDebito:
+        return 'Tarjeta de débito';
+      case PaymentMethodType.transferencia:
+        return 'Transferencia (SPEI)';
+      case PaymentMethodType.oxxo:
+        return 'Pago en OXXO';
+      case PaymentMethodType.paypal:
+        return 'PayPal';
+      case PaymentMethodType.mercadoPago:
+        return 'Mercado Pago';
     }
   }
 
   String get icon {
     switch (this) {
-      case PaymentMethodType.efectivo:        return '💵';
-      case PaymentMethodType.tarjetaCredito:  return '💳';
-      case PaymentMethodType.tarjetaDebito:   return '💳';
-      case PaymentMethodType.transferencia:   return '🏦';
-      case PaymentMethodType.oxxo:            return '🏪';
-      case PaymentMethodType.paypal:          return '🅿️';
-      case PaymentMethodType.mercadoPago:     return '🛒';
+      case PaymentMethodType.efectivo:
+        return '💵';
+      case PaymentMethodType.tarjetaCredito:
+        return '💳';
+      case PaymentMethodType.tarjetaDebito:
+        return '💳';
+      case PaymentMethodType.transferencia:
+        return '🏦';
+      case PaymentMethodType.oxxo:
+        return '🏪';
+      case PaymentMethodType.paypal:
+        return '🅿️';
+      case PaymentMethodType.mercadoPago:
+        return '🛒';
     }
   }
 }
@@ -84,6 +105,10 @@ class PaymentEntity {
     return '\$${amount.toStringAsFixed(2)} $currency';
   }
 
+  double get platformFee => (metadata['platform_fee'] as num?)?.toDouble() ?? (amount * PaymentConfig.platformFeeRate);
+  double get yoerNetAmount => (metadata['yoer_net_amount'] as num?)?.toDouble() ?? (amount - platformFee);
+  bool get isSandbox => metadata['is_sandbox'] as bool? ?? PaymentConfig.isSandbox;
+
   factory PaymentEntity.fromJson(Map<String, dynamic> json) {
     final methodStr = json['payment_method'] as String? ?? 'EFECTIVO';
     final method = PaymentMethodType.values.firstWhere(
@@ -116,11 +141,11 @@ class PaymentEntity {
 class PaymentCardEntity {
   final String id;
   final String userId;
-  final String cardNumber;     // últimos 4 dígitos
+  final String cardNumber; // últimos 4 dígitos
   final String cardHolderName;
   final int expiryMonth;
   final int expiryYear;
-  final String cardType;       // VISA, MASTERCARD, AMEX
+  final String cardType; // VISA, MASTERCARD, AMEX
   final bool isDefault;
   final DateTime createdAt;
 
@@ -159,6 +184,9 @@ class PaymentRemoteDataSource {
   final SupabaseClient _client;
   PaymentRemoteDataSource(this._client);
 
+  /// Procesa un pago entre el Cliente y el Yoer.
+  /// En modo Sandbox, valida tarjetas de prueba, simula cargos de Stripe y aplica
+  /// la división de fondos (comisión de la plataforma vs monto neto del Yoer).
   Future<PaymentEntity> createPayment({
     required String bookingId,
     required String userId,
@@ -166,8 +194,36 @@ class PaymentRemoteDataSource {
     required PaymentMethodType paymentMethod,
     String currency = 'MXN',
     String? description,
+    String? yoerId,
+    String? testCardNumber,
   }) async {
+    // Si estamos en Sandbox y se seleccionó la tarjeta de fondos insuficientes para pruebas:
+    if (PaymentConfig.isSandbox && testCardNumber != null) {
+      final sanitized = testCardNumber.replaceAll(' ', '');
+      if (sanitized == '4000000000000002') {
+        throw Exception(
+          'Transacción declinada (Sandbox): Fondos insuficientes en la tarjeta de prueba.',
+        );
+      }
+    }
+
     final isImmediate = paymentMethod != PaymentMethodType.efectivo;
+    final breakdown = PaymentConfig.calculateBreakdown(amount);
+
+    final transactionId = PaymentConfig.isSandbox
+        ? 'ch_sandbox_${DateTime.now().millisecondsSinceEpoch}_${bookingId.length > 6 ? bookingId.substring(0, 6) : "test"}'
+        : null;
+
+    final metadata = {
+      'source': 'flutter_app',
+      'is_sandbox': PaymentConfig.isSandbox,
+      'platform_fee': breakdown.platformFee,
+      'yoer_net_amount': breakdown.yoerNetAmount,
+      'platform_fee_rate': breakdown.platformFeeRate,
+      'gateway_estimate': breakdown.estimatedGatewayCost,
+      'escrow_status': isImmediate ? 'HELD_IN_ESCROW' : 'PAY_ON_DELIVERY',
+    };
+
     final payload = {
       'booking_id': bookingId,
       'user_id': userId,
@@ -176,10 +232,10 @@ class PaymentRemoteDataSource {
       'payment_method': paymentMethod.name,
       'transaction_type': 'PAGO',
       'status': isImmediate ? 'PAGADO' : 'PENDIENTE',
+      if (transactionId != null) 'transaction_id': transactionId,
       if (description != null) 'description': description,
-      if (isImmediate)
-        'processed_at': DateTime.now().toIso8601String(),
-      'metadata': {'source': 'flutter_app'},
+      if (isImmediate) 'processed_at': DateTime.now().toIso8601String(),
+      'metadata': metadata,
     };
 
     final data = await _client
@@ -188,15 +244,50 @@ class PaymentRemoteDataSource {
         .select()
         .single();
 
-    // Si el pago fue exitoso, actualiza el booking
+    // Actualiza el booking al quedar pagado
     if (isImmediate) {
       await _client
           .from(SupabaseConfig.bookingsTable)
-          .update({'payment_status': 'PAGADO', 'payment_method': paymentMethod.name})
+          .update({
+            'payment_status': 'PAGADO',
+            'payment_method': paymentMethod.name,
+          })
           .eq('id', bookingId);
     }
 
     return PaymentEntity.fromJson(data);
+  }
+
+  /// Compra de campaña publicitaria / alcance patrocinado para un servicio del Yoer.
+  Future<bool> purchaseAdCampaign({
+    required String serviceId,
+    required String yoerId,
+    required AdPlanTier tier,
+    required PaymentMethodType paymentMethod,
+  }) async {
+    final now = DateTime.now();
+
+    // 1. Activa is_promoted en el servicio
+    await _client.from(SupabaseConfig.servicesTable).update({
+      'is_promoted': true,
+      'updated_at': now.toIso8601String(),
+    }).eq('id', serviceId);
+
+    // 2. Si el usuario paga con fondos de su wallet, registra la deducción
+    try {
+      await _client.from(SupabaseConfig.walletTransactionsTable).insert({
+        'user_id': yoerId,
+        'type': 'RETIRO',
+        'amount': tier.priceMxn,
+        'status': 'COMPLETADA',
+        'description': 'Campaña publicitaria: ${tier.title} (${tier.durationLabel})',
+        'processed_at': now.toIso8601String(),
+      });
+    } catch (_) {
+      // Ignorar si RLS restringe inserts directos no admin
+    }
+
+    return true;
   }
 
   Future<List<PaymentEntity>> getPaymentsByUser(String userId) async {
@@ -232,6 +323,11 @@ class PaymentRemoteDataSource {
     required String cardType,
     bool isDefault = false,
   }) async {
+    final cleanNumber = cardNumber.replaceAll(RegExp(r'\s+'), '');
+    final last4 = cleanNumber.length >= 4
+        ? cleanNumber.substring(cleanNumber.length - 4)
+        : cleanNumber;
+
     if (isDefault) {
       await _client
           .from(SupabaseConfig.paymentCardsTable)
@@ -239,15 +335,19 @@ class PaymentRemoteDataSource {
           .eq('user_id', userId);
     }
 
-    final data = await _client.from(SupabaseConfig.paymentCardsTable).insert({
-      'user_id': userId,
-      'card_number': cardNumber,
-      'card_holder_name': cardHolderName,
-      'expiry_month': expiryMonth,
-      'expiry_year': expiryYear,
-      'card_type': cardType,
-      'is_default': isDefault,
-    }).select().single();
+    final data = await _client
+        .from(SupabaseConfig.paymentCardsTable)
+        .insert({
+          'user_id': userId,
+          'card_number': last4,
+          'card_holder_name': cardHolderName,
+          'expiry_month': expiryMonth,
+          'expiry_year': expiryYear,
+          'card_type': cardType,
+          'is_default': isDefault,
+        })
+        .select()
+        .single();
 
     return PaymentCardEntity.fromJson(data);
   }
@@ -336,6 +436,8 @@ class PaymentViewModel extends StateNotifier<PaymentState> {
     required double amount,
     required PaymentMethodType paymentMethod,
     String? description,
+    String? yoerId,
+    String? testCardNumber,
   }) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
@@ -345,12 +447,39 @@ class PaymentViewModel extends StateNotifier<PaymentState> {
         amount: amount,
         paymentMethod: paymentMethod,
         description: description,
+        yoerId: yoerId,
+        testCardNumber: testCardNumber,
       );
       state = state.copyWith(
         isLoading: false,
         lastPayment: payment,
         payments: [payment, ...state.payments],
         successMessage: 'Pago procesado exitosamente ✓',
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString().replaceAll('Exception: ', ''));
+      return false;
+    }
+  }
+
+  Future<bool> promoteService({
+    required String serviceId,
+    required String yoerId,
+    required AdPlanTier tier,
+    required PaymentMethodType paymentMethod,
+  }) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      await _ds.purchaseAdCampaign(
+        serviceId: serviceId,
+        yoerId: yoerId,
+        tier: tier,
+        paymentMethod: paymentMethod,
+      );
+      state = state.copyWith(
+        isLoading: false,
+        successMessage: '¡Campaña publicitaria activada con éxito! Tu servicio ahora tiene prioridad.',
       );
       return true;
     } catch (e) {

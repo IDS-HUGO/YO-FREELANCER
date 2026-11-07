@@ -115,6 +115,29 @@ class _ClientHomeScreenState extends ConsumerState<ClientHomeScreen> {
                 ]),
               ),
               const SizedBox(height: AppSpacing.lg),
+
+              // Carrusel de Servicios Patrocinados (Yoer Ads)
+              _SponsoredServicesCarousel(
+                services: state.services.where((s) => s.isPromoted).toList().isNotEmpty
+                    ? state.services.where((s) => s.isPromoted).toList()
+                    : state.services.take(3).toList(),
+                onTap: (s) => context.push('/service/${s.id}'),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              Text(
+                _selectedCat != null
+                    ? 'SERVICIOS EN ${_selectedCat!.displayName.toUpperCase()}'
+                    : _searchCtrl.text.isNotEmpty
+                        ? 'RESULTADOS DE BÚSQUEDA'
+                        : 'TODOS LOS SERVICIOS',
+                style: context.textTheme.labelSmall?.copyWith(
+                  color: context.textHint,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.1,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
             ]),
           )),
 
@@ -181,26 +204,96 @@ class _ClientServiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.lgR,
+        side: service.isPromoted
+            ? const BorderSide(color: Color(0xFFFF6B3D), width: 1.2)
+            : BorderSide(color: context.border, width: 0.5),
+      ),
       child: InkWell(
         onTap: onTap,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          if (service.images.isNotEmpty)
-            Image.network(
-              service.images.first,
-              height: 150,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                height: 100,
-                color: context.colors.surfaceContainerHighest,
-                child: Icon(Icons.image_not_supported_outlined, color: context.colors.outline),
-              ),
-            ),
+          Stack(
+            children: [
+              if (service.images.isNotEmpty)
+                Image.network(
+                  service.images.first,
+                  height: 150,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    height: 100,
+                    color: context.colors.surfaceContainerHighest,
+                    child: Icon(Icons.image_not_supported_outlined, color: context.colors.outline),
+                  ),
+                )
+              else
+                Container(
+                  height: 80,
+                  width: double.infinity,
+                  color: AppTheme.brandGreen.withValues(alpha: 0.08),
+                  child: Center(
+                    child: Text(
+                      service.category.emoji,
+                      style: const TextStyle(fontSize: 36),
+                    ),
+                  ),
+                ),
+              if (service.isPromoted)
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF6B3D),
+                      borderRadius: AppRadius.pillR,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.bolt_rounded, color: Colors.white, size: 12),
+                        SizedBox(width: 3),
+                        Text(
+                          'Patrocinado',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('${service.category.emoji} ${service.category.displayName}',
-                  style: context.textTheme.labelMedium?.copyWith(color: context.colors.primary)),
+              Row(
+                children: [
+                  Text('${service.category.emoji} ${service.category.displayName}',
+                      style: context.textTheme.labelMedium?.copyWith(color: context.colors.primary)),
+                  const Spacer(),
+                  if (service.isPromoted)
+                    const Text(
+                      '⭐ Recomendado',
+                      style: TextStyle(
+                        color: Color(0xFFFF6B3D),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                ],
+              ),
               const SizedBox(height: AppSpacing.xs),
               Text(service.title,
                   style: context.textTheme.titleSmall,
@@ -225,6 +318,182 @@ class _ClientServiceCard extends StatelessWidget {
           ),
         ]),
       ),
+    );
+  }
+}
+
+/// Carrusel VIP para destacar Yoers y Servicios patrocinados
+class _SponsoredServicesCarousel extends StatelessWidget {
+  final List<ServiceEntity> services;
+  final ValueChanged<ServiceEntity> onTap;
+
+  const _SponsoredServicesCarousel({
+    required this.services,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (services.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.star_rounded, color: AppTheme.brandGreen, size: 18),
+            const SizedBox(width: 4),
+            Text(
+              'SERVICIOS RECOMENDADOS',
+              style: context.textTheme.labelSmall?.copyWith(
+                color: context.textPrimary,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.8,
+              ),
+            ),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: context.textHint.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'Patrocinado',
+                style: TextStyle(
+                  color: context.textSecondary,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        SizedBox(
+          height: 148,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: services.length,
+            separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.md),
+            itemBuilder: (ctx, i) {
+              final s = services[i];
+              return Container(
+                width: 280,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      context.card,
+                      AppTheme.brandGreen.withValues(alpha: 0.08),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: AppRadius.lgR,
+                  border: Border.all(
+                    color: s.isPromoted ? const Color(0xFFFF6B3D).withValues(alpha: 0.8) : AppTheme.brandGreen.withValues(alpha: 0.4),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => onTap(s),
+                    borderRadius: AppRadius.lgR,
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              UserAvatar(
+                                imageUrl: s.yoerImageUrl,
+                                initials: s.yoerName.isNotEmpty ? s.yoerName[0].toUpperCase() : '?',
+                                size: 32,
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      s.yoerName,
+                                      style: context.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      '${s.category.emoji} ${s.category.displayName}',
+                                      style: TextStyle(
+                                        color: context.textHint,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.brandGreen.withValues(alpha: 0.2),
+                                  borderRadius: AppRadius.pillR,
+                                ),
+                                child: Text(
+                                  s.priceLabel,
+                                  style: const TextStyle(
+                                    color: AppTheme.brandGreen,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            s.title,
+                            style: context.textTheme.titleSmall?.copyWith(fontSize: 13, fontWeight: FontWeight.w700),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const Spacer(),
+                          Row(
+                            children: [
+                              RatingStars(rating: s.rating > 0 ? s.rating : 5.0),
+                              const SizedBox(width: 4),
+                              Text(
+                                s.rating > 0 ? '(${s.totalReviews})' : '5.0 (Top)',
+                                style: context.textTheme.labelSmall?.copyWith(fontSize: 11),
+                              ),
+                              const Spacer(),
+                              const Text(
+                                'Ver detalle →',
+                                style: TextStyle(
+                                  color: AppTheme.brandGreen,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

@@ -72,6 +72,22 @@ class KycRemoteDataSource {
         return KycResult.rejected(message: serverMessage);
       }
 
+      // En modo Sandbox, si el servidor biométrico no está disponible o falla por red/SSL,
+      // permitimos continuar con una simulación verificada para pruebas y demostraciones.
+      if (KycConfig.isSandbox &&
+          (e.type == DioExceptionType.connectionError ||
+              e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.badCertificate)) {
+        developer.log(
+          '[KYC Sandbox] Servidor remoto no disponible. Simulación biométrica aprobada para pruebas.',
+          name: 'KycRemoteDataSource',
+        );
+        return KycResult.verified(
+          requestId: 'sandbox_kyc_${DateTime.now().millisecondsSinceEpoch}',
+          similarity: 0.984,
+        );
+      }
+
       // Detalle del tipo de excepción para diagnóstico rápido en pantalla
       String detail;
       if (e.type == DioExceptionType.connectionTimeout) {

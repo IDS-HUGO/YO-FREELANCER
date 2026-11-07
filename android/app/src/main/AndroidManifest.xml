@@ -7,7 +7,7 @@
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
-        android:label="yofreelancer"
+        android:label="YO FREELANCER"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../shared/theme/app_theme.dart';
@@ -61,15 +62,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       borderRadius: AppRadius.xxlR,
                       border: Border.all(color: context.border),
                     ),
-                    child: const Center(
-                      child: Text(
-                        'Ý',
-                        style: TextStyle(
-                          fontSize: 56,
-                          color: AppTheme.brandGreen,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: SvgPicture.asset('assets/images/yofreelancer-icon-verde.svg'),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
@@ -148,8 +143,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 width: 160,
                 height: 160,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: AppTheme.greenGradient,
+                  borderRadius: BorderRadius.circular(46),
                   boxShadow: [
                     BoxShadow(
                       color: AppTheme.brandGreen.withValues(alpha: 0.35),
@@ -158,15 +152,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     ),
                   ],
                 ),
-                child: const Center(
-                  child: Text(
-                    'Ý',
-                    style: TextStyle(
-                      fontSize: 64,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: SvgPicture.asset('assets/images/yofreelancer-icon-verde.svg'),
                 ),
               ),
               const SizedBox(height: AppSpacing.xxxl + AppSpacing.xs),

@@ -10,7 +10,7 @@ class SupabaseConfig {
 
   static const String supabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue: '',
+    defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imduem5mZ2planF6aHNmc3V5a2trIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MDc4OTAsImV4cCI6MjEwMDQ4Mzg5MH0.7cI4GPNmVpeRgnhqUK6VmqBMKxeS6YzwaexccUBgQu8',
   );
 
   static const String usersTable       = 'users';

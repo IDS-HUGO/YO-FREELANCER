@@ -449,6 +449,8 @@ create index if not exists idx_services_category  on public.services(category);
 create index if not exists idx_services_city      on public.services(city);
 create index if not exists idx_services_is_active on public.services(is_active);
 create index if not exists idx_services_rating    on public.services(rating desc);
+create index if not exists idx_services_promoted  on public.services(is_promoted, is_active);
+create index if not exists idx_services_title_trgm on public.services using gin (title gin_trgm_ops);
 
 alter table public.services enable row level security;
 
@@ -492,10 +494,13 @@ create table if not exists public.bookings (
   cancellation_reason  text
 );
 
-create index if not exists idx_bookings_yoer_id   on public.bookings(yoer_id);
-create index if not exists idx_bookings_client_id on public.bookings(client_id);
-create index if not exists idx_bookings_status    on public.bookings(status);
-create index if not exists idx_bookings_date      on public.bookings(scheduled_date);
+create index if not exists idx_bookings_yoer_id       on public.bookings(yoer_id);
+create index if not exists idx_bookings_client_id     on public.bookings(client_id);
+create index if not exists idx_bookings_service_id    on public.bookings(service_id);
+create index if not exists idx_bookings_status        on public.bookings(status);
+create index if not exists idx_bookings_date          on public.bookings(scheduled_date);
+create index if not exists idx_bookings_yoer_status   on public.bookings(yoer_id, status);
+create index if not exists idx_bookings_client_status on public.bookings(client_id, status);
 
 alter table public.bookings enable row level security;
 
@@ -535,6 +540,10 @@ create table if not exists public.payments (
 
 alter table public.payments enable row level security;
 
+create index if not exists idx_payments_booking_id on public.payments(booking_id);
+create index if not exists idx_payments_user_id    on public.payments(user_id);
+create index if not exists idx_payments_status     on public.payments(status);
+
 drop policy if exists "Pago visible por usuario" on public.payments;
 create policy "Pago visible por usuario"
   on public.payments for select using (auth.uid() = user_id);
@@ -559,6 +568,10 @@ create table if not exists public.reviews (
 );
 
 alter table public.reviews enable row level security;
+
+create index if not exists idx_reviews_service_id  on public.reviews(service_id);
+create index if not exists idx_reviews_reviewed_id on public.reviews(reviewed_id);
+create index if not exists idx_reviews_booking_id  on public.reviews(booking_id);
 drop policy if exists "Reseñas visibles" on public.reviews;
 create policy "Reseñas visibles" on public.reviews for select using (true);
 
@@ -1609,3 +1622,171 @@ DROP TRIGGER IF EXISTS on_profile_created_wallet ON public.profiles;
 CREATE TRIGGER on_profile_created_wallet
   AFTER INSERT ON public.profiles
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_wallet();
+-- ──────────────────────────────────────────────────
+-- MÓDULO DE MONETIZACIÓN: PLATFORM REVENUES & ADS
+-- ──────────────────────────────────────────────────
+
+-- 1. Tabla de Registro de Ingresos de la Plataforma
+create table if not exists public.platform_revenues (
+  id uuid default uuid_generate_v4() primary key,
+  booking_id uuid references public.bookings(id) on delete set null,
+  service_id uuid references public.services(id) on delete set null,
+  user_id uuid references public.profiles(id) on delete set null,
+  revenue_type text not null check (revenue_type in ('COMISION_SERVICIO', 'PUBLICIDAD_ALCANCE', 'RETIRO_EXPRES')),
+  gross_amount double precision not null,
+  platform_fee double precision not null,
+  gateway_fee double precision default 0.0,
+  net_profit double precision not null,
+  currency text default 'MXN',
+  is_sandbox boolean default true,
+  metadata jsonb default '{}',
+  created_at timestamptz default now()
+);
+
+alter table public.platform_revenues enable row level security;
+
+create index if not exists idx_platform_revenues_created_at on public.platform_revenues(created_at desc);
+create index if not exists idx_platform_revenues_type       on public.platform_revenues(revenue_type);
+create index if not exists idx_platform_revenues_user       on public.platform_revenues(user_id);
+
+-- Solo lectura para administradores / service role
+drop policy if exists "Admin ve ingresos de plataforma" on public.platform_revenues;
+create policy "Admin ve ingresos de plataforma"
+  on public.platform_revenues for select
+  using (auth.jwt() ->> 'role' = 'service_role');
+
+-- 2. Tabla de Campañas Publicitarias (Yoer Ads)
+create table if not exists public.ad_campaigns (
+  id uuid default uuid_generate_v4() primary key,
+  service_id uuid references public.services(id) on delete cascade not null,
+  yoer_id uuid references public.profiles(id) on delete cascade not null,
+  plan_tier text not null check (plan_tier in ('CAMPANA_3D', 'CAMPANA_7D', 'CAMPANA_15D')),
+  amount_paid double precision not null,
+  started_at timestamptz default now(),
+  expires_at timestamptz not null,
+  is_active boolean default true,
+  impressions integer default 0,
+  clicks integer default 0,
+  inquiries integer default 0,
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_ad_campaigns_service on public.ad_campaigns(service_id);
+create index if not exists idx_ad_campaigns_yoer on public.ad_campaigns(yoer_id);
+
+alter table public.ad_campaigns enable row level security;
+
+drop policy if exists "Yoer ve sus campañas" on public.ad_campaigns;
+create policy "Yoer ve sus campañas"
+  on public.ad_campaigns for select
+  using (auth.uid() = yoer_id);
+
+drop policy if exists "Yoer crea campaña" on public.ad_campaigns;
+create policy "Yoer crea campaña"
+  on public.ad_campaigns for insert
+  with check (auth.uid() = yoer_id);
+
+-- 3. Actualización de credit_wallet_on_completion para registrar la comisión de la plataforma
+create or replace function public.credit_wallet_on_completion()
+returns trigger as $$
+declare
+  commission_rate constant double precision := 0.10; -- 10% de comisión de la plataforma
+  net_amount double precision;
+  platform_fee double precision;
+  has_real_payment boolean;
+  already_credited boolean;
+begin
+  if new.status = 'COMPLETADA' and old.status is distinct from 'COMPLETADA'
+     and new.payment_status = 'PAGADO' then
+
+    select exists(
+      select 1 from public.payments where booking_id = new.id and status = 'PAGADO'
+    ) into has_real_payment;
+
+    select exists(
+      select 1 from public.wallet_transactions
+      where booking_id = new.id and type = 'PAGO_RECIBIDO'
+    ) into already_credited;
+
+    if not has_real_payment or already_credited then
+      return new;
+    end if;
+
+    platform_fee := round((new.total_price * commission_rate)::numeric, 2);
+    net_amount := new.total_price - platform_fee;
+
+    -- Acredita 90% a la cartera del Yoer
+    insert into public.wallet_accounts (user_id, balance)
+    values (new.yoer_id, net_amount)
+    on conflict (user_id) do update
+      set balance = public.wallet_accounts.balance + excluded.balance,
+          updated_at = now();
+
+    -- Transacción del Yoer
+    insert into public.wallet_transactions (user_id, type, amount, status, booking_id, description, processed_at)
+    values (new.yoer_id, 'PAGO_RECIBIDO', net_amount, 'COMPLETADA', new.id,
+            'Pago neto (90%) por: ' || new.service_name, now());
+
+    -- Transacción de comisión retenida
+    insert into public.wallet_transactions (user_id, type, amount, status, booking_id, description, processed_at)
+    values (new.yoer_id, 'COMISION', platform_fee, 'COMPLETADA', new.id,
+            'Comisión de intermediación (10%) YO FREELANCER: ' || new.service_name, now());
+
+    -- Registro contable de ganancias de la plataforma
+    insert into public.platform_revenues (
+      booking_id, service_id, user_id, revenue_type, gross_amount, platform_fee, net_profit, is_sandbox
+    ) values (
+      new.id, new.service_id, new.yoer_id, 'COMISION_SERVICIO', new.total_price,
+      platform_fee, platform_fee, false
+    );
+
+    -- Notificación
+    insert into public.notifications (user_id, type, title, body, data)
+    values (new.yoer_id, 'PAGO_RECIBIDO', 'Pago recibido y liberado',
+            '$' || round(net_amount::numeric, 2) || ' acreditado en tu wallet (10% comisión retenida)',
+            jsonb_build_object('booking_id', new.id));
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+-- 4. Función RPC para compra de Campaña de Ads
+create or replace function public.activate_yoer_ad_campaign(
+  p_service_id uuid,
+  p_yoer_id uuid,
+  p_plan_tier text,
+  p_amount double precision,
+  p_duration_days integer
+)
+returns jsonb as $$
+declare
+  v_campaign_id uuid;
+  v_expires_at timestamptz;
+begin
+  v_expires_at := now() + (p_duration_days || ' days')::interval;
+
+  -- 1. Activa servicio promocionado
+  update public.services
+  set is_promoted = true,
+      updated_at = now()
+  where id = p_service_id;
+
+  -- 2. Registra la campaña
+  insert into public.ad_campaigns (service_id, yoer_id, plan_tier, amount_paid, expires_at)
+  values (p_service_id, p_yoer_id, p_plan_tier, p_amount, v_expires_at)
+  returning id into v_campaign_id;
+
+  -- 3. Registra 100% de la ganancia para la plataforma
+  insert into public.platform_revenues (
+    service_id, user_id, revenue_type, gross_amount, platform_fee, net_profit, is_sandbox
+  ) values (
+    p_service_id, p_yoer_id, 'PUBLICIDAD_ALCANCE', p_amount, p_amount, p_amount, false
+  );
+
+  return jsonb_build_object(
+    'success', true,
+    'campaign_id', v_campaign_id,
+    'expires_at', v_expires_at
+  );
+end;
+$$ language plpgsql security definer;

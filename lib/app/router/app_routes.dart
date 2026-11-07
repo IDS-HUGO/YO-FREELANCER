@@ -34,6 +34,9 @@ abstract class AppRoutes {
   static const volunteering   = '/volunteering';
   static const artistMode     = '/artist-mode';
 
+  // Legal & Términos
+  static const legalTerms     = '/legal-terms';
+
   // Verificación facial de identidad (Tarea 2, ver docs/KYC.md)
   static const kyc            = '/kyc';
 }

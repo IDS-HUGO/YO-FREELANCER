@@ -1,38 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Sistema de diseño de YO FREE-LANCER
-/// Paleta verde, generada desde un seed Material 3 y afinada a la
-/// identidad de marca original.
+/// Sistema de diseño de YO FREE-LANCER.
 class AppTheme {
   AppTheme._();
 
-  static const Color brandGreen        = Color(0xFF32B354);
-  static const Color brandGreenLight   = Color(0xFF4CAF50);
-  static const Color brandGreenDark    = Color(0xFF1E7A33);
-  static const Color brandGreenAccent  = Color(0xFFC8E6C9);
+  static const Color brandGreen        = Color(0xFFA5D067);
+  static const Color brandGreenLight   = Color(0xFFA1BA42);
+  static const Color brandGreenDark    = Color(0xFF8BA531);
+  static const Color brandGreenAccent  = Color(0xFFDCEBBE);
+  static const Color brandOrangeAccent = Color(0xFFFF6B3D); // Mandarina oficial del isotipo
 
-  static const Color bgDark            = Color(0xFF121513);
-  static const Color surfaceDark       = Color(0xFF1E231F);
-  static const Color cardDark          = Color(0xFF27302A);
-  static const Color cardInnerDark     = Color(0xFF1A2A1E);
-  static const Color borderDark        = Color(0xFF2E3A31);
-  static const Color textPrimaryDark   = Color(0xFFE9F2EB);
-  static const Color textSecondaryDark = Color(0xFF8EA990);
-  static const Color textHintDark      = Color(0xFF586B5C);
-  static const Color alertRed          = Color(0xFF9A2626);
-  static const Color alertRedLight     = Color(0xFFCF6679);
-  static const Color warningOrange     = Color(0xFFFF9800);
+  static const Color bgDark            = Color(0xFF0D1308); // Negro obsidiana olivo profundo
+  static const Color surfaceDark       = Color(0xFF141C0C); // Elevación 1
+  static const Color cardDark          = Color(0xFF1B2511); // Elevación 2
+  static const Color cardInnerDark     = Color(0xFF243018); // Elevación 3
+  static const Color borderDark        = Color(0xFF334320); // Borde de alta definición
+  static const Color textPrimaryDark   = Color(0xFFFAF8F2); // Blanco perla puro (17:1 contraste)
+  static const Color textSecondaryDark = Color(0xFFB8C2A8); // Secundario accesible WCAG AAA (8.5:1)
+  static const Color textHintDark      = Color(0xFF869273);
+  static const Color alertRed          = Color(0xFFC8402F);
+  static const Color alertRedLight     = Color(0xFFE16A5A);
+  static const Color warningOrange     = Color(0xFFFF6B3D); // Mandarina oficial
   static const Color infoBlue          = Color(0xFF2196F3);
 
-  static const Color bgLight           = Color(0xFFF5F7F5);
-  static const Color surfaceLight      = Color(0xFFFFFFFF);
-  static const Color cardLight         = Color(0xFFF0F5F1);
-  static const Color cardInnerLight    = Color(0xFFE3EFE5);
-  static const Color borderLight       = Color(0xFFE0EAE2);
-  static const Color textPrimaryLight  = Color(0xFF121513);
-  static const Color textSecondaryLight= Color(0xFF4A6450);
-  static const Color textHintLight     = Color(0xFF93A899);
+  static const Color bgLight           = Color(0xFFF5F1E6);
+  static const Color surfaceLight      = Color(0xFFFFFDF7);
+  static const Color cardLight         = Color(0xFFEDE9D9);
+  static const Color cardInnerLight    = Color(0xFFE3E8D1);
+  static const Color borderLight       = Color(0xFFD1D8BC);
+  static const Color textPrimaryLight  = Color(0xFF16200A);
+  static const Color textSecondaryLight= Color(0xFF5E6650);
+  static const Color textHintLight     = Color(0xFF7A836B);
 
   static TextTheme _buildTextTheme(Color primary, Color secondary) {
     final base = GoogleFonts.spaceGroteskTextTheme();
@@ -93,11 +92,11 @@ class AppTheme {
     brightness: Brightness.dark,
   ).copyWith(
     primary: brandGreen,
-    onPrimary: Colors.white,
+    onPrimary: bgDark,
     primaryContainer: cardInnerDark,
     onPrimaryContainer: brandGreenAccent,
     secondary: brandGreenLight,
-    onSecondary: Colors.black,
+    onSecondary: bgDark,
     secondaryContainer: cardDark,
     onSecondaryContainer: textPrimaryDark,
     tertiary: warningOrange,
@@ -130,11 +129,11 @@ class AppTheme {
     brightness: Brightness.light,
   ).copyWith(
     primary: brandGreen,
-    onPrimary: Colors.white,
+    onPrimary: textPrimaryLight,
     primaryContainer: brandGreenAccent,
     onPrimaryContainer: brandGreenDark,
     secondary: brandGreenLight,
-    onSecondary: Colors.white,
+    onSecondary: textPrimaryLight,
     secondaryContainer: cardLight,
     onSecondaryContainer: textPrimaryLight,
     tertiary: warningOrange,

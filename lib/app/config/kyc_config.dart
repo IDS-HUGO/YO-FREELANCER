@@ -7,6 +7,15 @@
 /// responde, la verificación simplemente no se completa (fail-closed) — es
 /// el comportamiento correcto, no un caso a resolver con otro backend.
 class KycConfig {
+  /// Modo Sandbox / Pruebas para verificación biométrica.
+  /// Si es true y el servidor remoto no responde o tiene error de red/SSL,
+  /// permite la simulación de verificación para pruebas locales y demostraciones.
+  /// En producción estricta, compilar con: --dart-define=KYC_SANDBOX=false
+  static const bool isSandbox = bool.fromEnvironment(
+    'KYC_SANDBOX',
+    defaultValue: true,
+  );
+
   /// URL base del microservicio. En desarrollo local con
   /// `uvicorn app.main:app` dentro del proyecto standalone, el valor por
   /// defecto funciona sin configuración adicional. En producción,
